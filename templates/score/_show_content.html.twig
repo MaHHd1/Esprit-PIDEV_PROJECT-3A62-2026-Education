@@ -1,0 +1,172 @@
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ enseignant is defined ? 'Détails du score' : 'Ma note' }}</h1>
+        <div>
+            {% if enseignant is defined %}
+                <a href="{{ path('app_score_edit', {'id': score.id}) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Modifier
+                </a>
+            {% endif %}
+            <a href="{{ path('app_score_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header {{ enseignant is defined ? 'bg-warning' : 'bg-primary' }} text-dark">
+            <h3 class="mb-0">
+                <i class="bi bi-clipboard-check"></i>
+                Score #{{ score.id }}
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="bi bi-file-earmark-text"></i> Informations de l'évaluation</h4>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th width="40%">Évaluation</th>
+                                <td><strong>{{ score.soumission.evaluation.titre }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Type</th>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ score.soumission.evaluation.typeEvaluation }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Cours</th>
+                                <td>{{ score.soumission.evaluation.cours ? score.soumission.evaluation.cours.codeCours : 'N/A' }}</td>
+                            </tr>
+                            {% if enseignant is defined %}
+                            <tr>
+                                <th>Étudiant</th>
+                                <td><strong>ID: {{ score.soumission.idEtudiant }}</strong></td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Date de soumission</th>
+                                <td>{{ score.soumission.dateSoumission|date('d/m/Y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Statut soumission</th>
+                                <td>
+                                    {% if score.soumission.statut == 'soumise' %}
+                                        <span class="badge bg-success">Soumise à temps</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">En retard</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <h4><i class="bi bi-star-fill"></i> Notation</h4>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th width="40%">Note obtenue</th>
+                                <td>
+                                    <h3 class="mb-0">
+                                        {% set pourcentage = (score.note / score.noteSur * 100)|round %}
+                                        <span class="badge {% if pourcentage >= 50 %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ score.note }}/{{ score.noteSur }}
+                                        </span>
+                                    </h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Pourcentage</th>
+                                <td>
+                                    <h4 class="mb-0">
+                                        <span class="badge {% if pourcentage >= 50 %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ pourcentage }}%
+                                        </span>
+                                    </h4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Résultat</th>
+                                <td>
+                                    {% if pourcentage >= 50 %}
+                                        <span class="badge bg-success fs-5">✓ RÉUSSI</span>
+                                    {% else %}
+                                        <span class="badge bg-danger fs-5">✗ ÉCHOUÉ</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Statut de correction</th>
+                                <td>
+                                    {% if score.statutCorrection == 'corrige' %}
+                                        <span class="badge bg-success">Corrigé</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">En cours</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date de correction</th>
+                                <td>
+                                    <i class="bi bi-calendar-check"></i>
+                                    {{ score.dateCorrection|date('d/m/Y à H:i') }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if score.commentaireEnseignant %}
+            <div class="mt-4">
+                <h4><i class="bi bi-chat-left-text"></i> Commentaire de l'enseignant</h4>
+                <div class="alert alert-info">
+                    <i class="bi bi-quote"></i>
+                    {{ score.commentaireEnseignant|nl2br }}
+                </div>
+            </div>
+            {% else %}
+            <div class="mt-4">
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle"></i>
+                    Aucun commentaire de l'enseignant
+                </div>
+            </div>
+            {% endif %}
+
+            {# Lien vers la soumission #}
+            <div class="mt-3">
+                <a href="{{ path('app_soumission_show', {'id': score.soumission.id}) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-file-text"></i> Voir la soumission
+                </a>
+            </div>
+        </div>
+
+        {% if enseignant is defined %}
+        <div class="card-footer">
+            <form method="post" action="{{ path('app_score_delete', {'id': score.id}) }}" 
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce score ?');" 
+                  class="d-inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ score.id) }}">
+                <button class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Supprimer
+                </button>
+            </form>
+            <a href="{{ path('app_score_edit', {'id': score.id}) }}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Modifier
+            </a>
+            <a href="{{ path('app_score_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+

@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ module.titreModule }}{% endblock %}
+
+{% block body %}
+  <h1>{{ module.titreModule }}</h1>
+  <p>{{ module.description|raw }}</p>
+
+  <h3>Contenus</h3>
+  <ul>
+    {% for contenu in module.contenus %}
+      <li>
+        <a href="{{ path('app_contenu_show', {'id': contenu.id}) }}">{{ contenu.titre }}</a>
+        {% if not contenu.estPublic %}<span class="badge bg-secondary">Premium</span>{% endif %}
+      </li>
+    {% else %}
+      <li>Aucun contenu.</li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

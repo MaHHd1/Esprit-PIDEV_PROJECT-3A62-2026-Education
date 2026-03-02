@@ -1,0 +1,440 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Liste des événements{% endblock %}
+
+{% block admin_content %}
+    <div class="container py-4">
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">Liste des événements</h1>
+                <p class="text-muted mb-0">Gestion des événements avec recherche et filtres</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ path('export_evenements_list_pdf', {
+                    search: criteria.search,
+                    type: criteria.type,
+                    statut: criteria.statut,
+                    visibilite: criteria.visibilite,
+                    date_debut: criteria.date_debut,
+                    sort: criteria.sort,
+                    direction: criteria.direction
+                }) }}" class="btn btn-outline-danger">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
+                </a>
+                <a href="{{ path('app_evenement_new') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Nouvel événement
+                </a>
+            </div>
+        </div>
+
+        <!-- Barre de recherche et filtres -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <!-- Recherche texte -->
+                    <div class="col-md-4">
+                        <label class="form-label">Recherche</label>
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="search" 
+                                   placeholder="Titre, description, lieu, créateur..." 
+                                   value="{{ criteria.search }}">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filtre Type -->
+                    <div class="col-md-2">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="type">
+                            <option value="">Tous</option>
+                            <option value="webinaire" {{ criteria.type == 'webinaire' ? 'selected' : '' }}>Webinaire</option>
+                            <option value="examen" {{ criteria.type == 'examen' ? 'selected' : '' }}>Examen</option>
+                            <option value="reunion" {{ criteria.type == 'reunion' ? 'selected' : '' }}>Réunion</option>
+                            <option value="atelier" {{ criteria.type == 'atelier' ? 'selected' : '' }}>Atelier</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtre Statut -->
+                    <div class="col-md-2">
+                        <label class="form-label">Statut</label>
+                        <select class="form-select" name="statut">
+                            <option value="">Tous</option>
+                            <option value="planifie" {{ criteria.statut == 'planifie' ? 'selected' : '' }}>Planifié</option>
+                            <option value="en_cours" {{ criteria.statut == 'en_cours' ? 'selected' : '' }}>En cours</option>
+                            <option value="termine" {{ criteria.statut == 'termine' ? 'selected' : '' }}>Terminé</option>
+                            <option value="annule" {{ criteria.statut == 'annule' ? 'selected' : '' }}>Annulé</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtre Visibilité -->
+                    <div class="col-md-2">
+                        <label class="form-label">Visibilité</label>
+                        <select class="form-select" name="visibilite">
+                            <option value="">Toutes</option>
+                            <option value="public" {{ criteria.visibilite == 'public' ? 'selected' : '' }}>Public</option>
+                            <option value="prive" {{ criteria.visibilite == 'prive' ? 'selected' : '' }}>Privé</option>
+                            <option value="par_invitation" {{ criteria.visibilite == 'par_invitation' ? 'selected' : '' }}>Par invitation</option>
+                        </select>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="d-flex gap-2 w-100">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-funnel me-1"></i> Filtrer
+                            </button>
+                            <a href="{{ path('app_evenement_index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Compteurs rapides -->
+        {% if evenements|length > 0 %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card card-body bg-primary bg-opacity-10 p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0 fw-bold text-primary">{{ evenements|length }}</h5>
+                                <small class="text-primary">Événements trouvés</small>
+                            </div>
+                            <i class="bi bi-calendar-event text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-body bg-warning bg-opacity-10 p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0 fw-bold text-warning">
+                                    {{ evenements|filter(e => e.statut.value == 'planifie')|length }}
+                                </h5>
+                                <small class="text-warning">Planifiés</small>
+                            </div>
+                            <i class="bi bi-clock text-warning fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-body bg-success bg-opacity-10 p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0 fw-bold text-success">
+                                    {{ evenements|filter(e => e.visibilite.value == 'public')|length }}
+                                </h5>
+                                <small class="text-success">Publics</small>
+                            </div>
+                            <i class="bi bi-globe text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-body bg-info bg-opacity-10 p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0 fw-bold text-info">{{ total_participations|default(0) }}</h5>
+                                <small class="text-info">Participations</small>
+                            </div>
+                            <i class="bi bi-people text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if evenements|length > 0 %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart-line me-2"></i>
+                        Participations par événement
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="participationsChart" height="110"></canvas>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Tableau principal -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Événements ({{ evenements|length }})
+                </h5>
+                
+                <!-- Options de tri -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-sort-down me-1"></i>
+                        {% if criteria.sort == 'e.dateDebut' and criteria.direction == 'DESC' %}
+                            Tri: Date récente
+                        {% elseif criteria.sort == 'e.dateDebut' and criteria.direction == 'ASC' %}
+                            Tri: Date ancienne
+                        {% elseif criteria.sort == 'e.titre' %}
+                            Tri: Titre A-Z
+                        {% elseif criteria.sort == 'e.capaciteMax' %}
+                            Tri: Capacité
+                        {% else %}
+                            Trier par
+                        {% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_evenement_index', {sort: 'e.dateDebut', direction: 'DESC'}) }}">
+                                <i class="bi bi-sort-down-alt me-2"></i> Date récente
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_evenement_index', {sort: 'e.dateDebut', direction: 'ASC'}) }}">
+                                <i class="bi bi-sort-up-alt me-2"></i> Date ancienne
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_evenement_index', {sort: 'e.titre', direction: 'ASC'}) }}">
+                                <i class="bi bi-sort-alpha-down me-2"></i> Titre A-Z
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ path('app_evenement_index', {sort: 'e.capaciteMax', direction: 'DESC'}) }}">
+                                <i class="bi bi-sort-numeric-down me-2"></i> Capacité élevée
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>
+                                    <a href="{{ path('app_evenement_index', {sort: 'e.titre', direction: criteria.sort == 'e.titre' and criteria.direction == 'ASC' ? 'DESC' : 'ASC'}) }}" 
+                                       class="text-decoration-none text-dark">
+                                        Titre
+                                        {% if criteria.sort == 'e.titre' %}
+                                            <i class="bi bi-caret-{{ criteria.direction == 'ASC' ? 'up' : 'down' }}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>Type</th>
+                                <th>
+                                    <a href="{{ path('app_evenement_index', {sort: 'e.dateDebut', direction: criteria.sort == 'e.dateDebut' and criteria.direction == 'ASC' ? 'DESC' : 'ASC'}) }}" 
+                                       class="text-decoration-none text-dark">
+                                        Date début
+                                        {% if criteria.sort == 'e.dateDebut' %}
+                                            <i class="bi bi-caret-{{ criteria.direction == 'ASC' ? 'up' : 'down' }}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>Lieu</th>
+                                <th>
+                                    <a href="{{ path('app_evenement_index', {sort: 'e.capaciteMax', direction: criteria.sort == 'e.capaciteMax' and criteria.direction == 'ASC' ? 'DESC' : 'ASC'}) }}" 
+                                       class="text-decoration-none text-dark">
+                                        Capacité
+                                        {% if criteria.sort == 'e.capaciteMax' %}
+                                            <i class="bi bi-caret-{{ criteria.direction == 'ASC' ? 'up' : 'down' }}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>Statut</th>
+                                <th>Visibilité</th>
+                                <th>Créateur</th>
+                                <th>Participants</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evenement in evenements %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-muted">#{{ evenement.id }}</td>
+                                    <td>
+                                        <strong>{{ evenement.titre }}</strong>
+                                        {% if evenement.description %}
+                                            <br><small class="text-muted">{{ evenement.description|slice(0, 50) }}{{ evenement.description|length > 50 ? '...' : '' }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ evenement.typeEvenement.value|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="d-block">{{ evenement.dateDebut|date('d/m/Y') }}</small>
+                                        <small class="text-muted">{{ evenement.dateDebut|date('H:i') }}</small>
+                                    </td>
+                                    <td>{{ evenement.lieu|default('-') }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ evenement.capaciteMax|default('-') }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if evenement.statut.value == 'planifie' %}bg-warning
+                                            {% elseif evenement.statut.value == 'en_cours' %}bg-primary
+                                            {% elseif evenement.statut.value == 'termine' %}bg-success
+                                            {% elseif evenement.statut.value == 'annule' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ evenement.statut.value|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if evenement.visibilite.value == 'public' %}bg-success
+                                            {% elseif evenement.visibilite.value == 'prive' %}bg-secondary
+                                            {% elseif evenement.visibilite.value == 'par_invitation' %}bg-primary
+                                            {% else %}bg-light text-dark{% endif %}">
+                                            {{ evenement.visibilite.value|replace({'_': ' '})|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ evenement.createur ? evenement.createur.email : 'Anonyme' }}</small>
+                                    </td>
+                                    <td>
+                                        {% set participants = participation_counts[evenement.id]|default(0) %}
+                                        <span class="badge bg-dark">{{ participants }}</span>
+                                        {% if evenement.capaciteMax %}
+                                            <small class="text-muted d-block">{{ ((participants / evenement.capaciteMax) * 100)|round(0, 'floor') }}%</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}" 
+                                               class="btn btn-outline-info" title="Voir">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}" 
+                                               class="btn btn-outline-primary" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form method="post" 
+                                                  action="{{ path('app_evenement_delete', {'id': evenement.id}) }}" 
+                                                  class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                                                <button type="submit" 
+                                                        class="btn btn-outline-danger" 
+                                                        title="Supprimer"
+                                                        onclick="return confirm('Supprimer cet événement ?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="11" class="text-center py-4">
+                                        <div class="py-3">
+                                            <i class="bi bi-search fs-1 text-muted"></i>
+                                            <h5 class="mt-2 text-muted">Aucun événement trouvé</h5>
+                                            <p class="text-muted">Aucun événement ne correspond à vos critères de recherche</p>
+                                            <a href="{{ path('app_evenement_index') }}" class="btn btn-outline-primary">
+                                                Réinitialiser les filtres
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {% if evenements|length > 0 %}
+                <div class="card-footer bg-white border-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            Affichage de {{ evenements|length }} événement(s)
+                        </small>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Cliquez sur les en-têtes pour trier
+                        </small>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <style>
+        .table th a:hover {
+            text-decoration: underline;
+        }
+        .badge {
+            font-size: 0.8em;
+            padding: 0.35em 0.65em;
+        }
+        .btn-group .btn {
+            border-radius: 4px;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Auto-submit des filtres sélectionnés
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-submit des selects de filtres
+            document.querySelectorAll('select[name="type"], select[name="statut"], select[name="visibilite"]').forEach(function(select) {
+                select.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+            
+            // Gestion des tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            const chartCanvas = document.getElementById('participationsChart');
+            if (chartCanvas && typeof Chart !== 'undefined') {
+                const labels = [
+                    {% for evenement in evenements %}
+                        "{{ evenement.titre|e('js') }}"{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ];
+                const data = [
+                    {% for evenement in evenements %}
+                        {{ participation_counts[evenement.id]|default(0) }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ];
+
+                new Chart(chartCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Participants',
+                            data: data,
+                            backgroundColor: 'rgba(13, 110, 253, 0.35)',
+                            borderColor: '#0d6efd',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

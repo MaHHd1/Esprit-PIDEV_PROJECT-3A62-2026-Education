@@ -1,0 +1,252 @@
+{% extends 'admin/admin_base.html.twig' %}
+{% import 'admin/macros/form_errors.html.twig' as form_errors %}
+
+{% block title %}Modifier Contenu - Administration{% endblock %}
+
+{% block admin_content %}
+    {% set cours = contenu.cours %}
+    {% set module = cours ? cours.module : null %}
+    <div class="row">
+        <div class="col-12 mb-3">
+            <div class="d-sm-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 mb-sm-0">Modifier le Contenu</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_admin_modules_list') }}">Modules</a></li>
+                            {% if module %}
+                                <li class="breadcrumb-item"><a href="{{ path('app_admin_module_show', {'id': module.id}) }}">{{ module.titreModule }}</a></li>
+                            {% else %}
+                                <li class="breadcrumb-item text-muted">Module non defini</li>
+                            {% endif %}
+                            {% if cours %}
+                                <li class="breadcrumb-item"><a href="{{ path('app_admin_cours_show', {'id': cours.id}) }}">{{ cours.titre }}</a></li>
+                            {% else %}
+                                <li class="breadcrumb-item text-muted">Cours non defini</li>
+                            {% endif %}
+                            <li class="breadcrumb-item"><a href="{{ path('app_admin_contenu_show', {'id': contenu.id}) }}">{{ contenu.titre }}</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-grid d-sm-block">
+                    <a href="{{ path('app_admin_contenu_show', {'id': contenu.id}) }}" class="btn btn-sm btn-primary-soft mb-0">
+                        <i class="bi bi-arrow-left me-1"></i>Retour au detail
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body p-4">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            {{ form_errors.global_errors(form) }}
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <h5 class="mb-3">Contenu General</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.cours, 'Cours *') }}
+                        {{ form_errors.select_with_errors(form.cours) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Types de Contenu *</label>
+                    <div class="border rounded p-3">
+                        {% for child in form.typeContenu %}
+                            <div class="form-check">
+                                {{ form_widget(child, {'attr': {'class': 'form-check-input js-content-type', 'data-type': child.vars.value}}) }}
+                                <label class="form-check-label" for="{{ child.vars.id }}">{{ child.vars.label }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if form.typeContenu.vars.errors|length > 0 %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.typeContenu.vars.errors %}
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ error.message }}<br>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-12">
+                    <div class="mb-3">
+                        {{ form_label(form.titre, 'Titre *') }}
+                        {{ form_errors.field_with_errors(form.titre) }}
+                    </div>
+                </div>
+
+                <div class="col-12 js-type-panel" data-type-panel="lien video">
+                    <div class="mb-3">
+                        {{ form_label(form.urlContenu, 'Lien externe (pour Lien/Video)') }}
+                        {{ form_errors.field_with_errors(form.urlContenu) }}
+                        <div id="youtube-preview" class="border rounded p-2 mt-2 d-none"></div>
+                    </div>
+                </div>
+
+                <div class="col-12 js-type-panel" data-type-panel="texte">
+                    <div class="mb-3">
+                        {{ form_label(form.texteContenu, 'Texte du chapitre') }}
+                        {{ form_errors.textarea_with_errors(form.texteContenu, 6) }}
+                    </div>
+                </div>
+
+                <div class="col-md-4 js-type-panel" data-type-panel="pdf">
+                    <div class="mb-3">
+                        {{ form_label(form.pdfFile, 'Fichier PDF') }}
+                        {{ form_errors.field_with_errors(form.pdfFile) }}
+                        {% if contenu.ressourcesForDisplay.pdf is defined and contenu.ressourcesForDisplay.pdf %}
+                            <small class="d-block mt-1 text-muted">Actuel: <a href="{{ contenu.ressourcesForDisplay.pdf }}" target="_blank">ouvrir PDF</a></small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4 js-type-panel" data-type-panel="ppt">
+                    <div class="mb-3">
+                        {{ form_label(form.pptFile, 'Fichier PPT/PPTX') }}
+                        {{ form_errors.field_with_errors(form.pptFile) }}
+                        {% if contenu.ressourcesForDisplay.ppt is defined and contenu.ressourcesForDisplay.ppt %}
+                            <small class="d-block mt-1 text-muted">Actuel: <a href="{{ contenu.ressourcesForDisplay.ppt }}" target="_blank">ouvrir PPT</a></small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4 js-type-panel" data-type-panel="video">
+                    <div class="mb-3">
+                        {{ form_label(form.videoFile, 'Fichier Video') }}
+                        {{ form_errors.field_with_errors(form.videoFile) }}
+                        {% if contenu.ressourcesForDisplay.video_file is defined and contenu.ressourcesForDisplay.video_file %}
+                            <small class="d-block mt-1 text-muted">Actuel: <a href="{{ contenu.ressourcesForDisplay.video_file }}" target="_blank">ouvrir video</a></small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-12 js-type-panel" data-type-panel="quiz">
+                    <div class="border rounded p-3">
+                        <h6 class="mb-3">Association Quiz</h6>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a href="{{ path('teacher_quiz_index') }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">Mes Quiz</a>
+                            <a href="{{ path('quiz_new') }}" class="btn btn-sm btn-primary" target="_blank" rel="noopener">Nouveau Quiz</a>
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.quizExistingId, 'Quiz existant') }}
+                            {{ form_widget(form.quizExistingId, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(form.quizExistingId) }}
+                            {% if contenu.ressourcesForDisplay.quiz_title is defined and contenu.ressourcesForDisplay.quiz_title %}
+                                <small class="d-block mt-1 text-muted">Actuel: {{ contenu.ressourcesForDisplay.quiz_title }}</small>
+                            {% endif %}
+                            <small class="text-muted">Creez d'abord le quiz via "Nouveau Quiz", puis revenez ici pour l'importer.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="mb-3">
+                        {{ form_label(form.description, 'Description') }}
+                        {{ form_errors.textarea_with_errors(form.description, 4) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.duree, 'Duree (minutes)') }}
+                        {{ form_errors.field_with_errors(form.duree) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.ordreAffichage, "Ordre d'affichage") }}
+                        {{ form_errors.field_with_errors(form.ordreAffichage) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check mb-3">
+                        {{ form_widget(form.estPublic, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.estPublic, 'Contenu public', {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Mettre a jour
+                        </button>
+                        <a href="{{ path('app_admin_contenu_show', {'id': contenu.id}) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Annuler
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            function selectedTypes() {
+                return Array.from(document.querySelectorAll('.js-content-type:checked')).map(function (el) {
+                    return el.getAttribute('data-type');
+                });
+            }
+
+            function updatePanels() {
+                var types = selectedTypes();
+                document.querySelectorAll('.js-type-panel').forEach(function (panel) {
+                    var allowed = panel.getAttribute('data-type-panel').split(' ');
+                    var show = allowed.some(function (t) { return types.includes(t); });
+                    panel.style.display = show ? '' : 'none';
+                });
+            }
+
+            document.querySelectorAll('.js-content-type').forEach(function (checkbox) {
+                checkbox.addEventListener('change', updatePanels);
+            });
+
+            var urlInput = document.getElementById('{{ form.urlContenu.vars.id }}');
+            var preview = document.getElementById('youtube-preview');
+            function loadPreview() {
+                if (!urlInput || !preview) {
+                    return;
+                }
+                var val = (urlInput.value || '').trim();
+                if (val === '') {
+                    preview.classList.add('d-none');
+                    preview.innerHTML = '';
+                    return;
+                }
+                fetch('{{ path('api_youtube_oembed') }}?url=' + encodeURIComponent(val))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data.ok || !data.preview) {
+                            preview.classList.add('d-none');
+                            preview.innerHTML = '';
+                            return;
+                        }
+                        preview.classList.remove('d-none');
+                        preview.innerHTML = (data.preview.thumbnail_url ? '<img src=\"' + data.preview.thumbnail_url + '\" class=\"img-fluid rounded mb-2\" alt=\"preview\">' : '') +
+                            '<div><strong>' + (data.preview.title || 'Video') + '</strong></div>';
+                    })
+                    .catch(function () {
+                        preview.classList.add('d-none');
+                        preview.innerHTML = '';
+                    });
+            }
+            if (urlInput) {
+                urlInput.addEventListener('blur', loadPreview);
+            }
+
+            updatePanels();
+            loadPreview();
+        })();
+    </script>
+{% endblock %}

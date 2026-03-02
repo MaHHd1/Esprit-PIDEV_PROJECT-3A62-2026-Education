@@ -1,0 +1,488 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+
+
+{% block admin_content %}
+<style>
+    .admin-page { font-family: 'Roboto', sans-serif; color: #1e1e2d; }
+    .admin-page h3 { font-family: 'Heebo', sans-serif; }
+
+    .admin-header {
+        background: linear-gradient(135deg, #1e1e2d, #3d3d5c);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+    .admin-header h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .admin-header p  { margin: 0; font-size: .8rem; opacity: .7; }
+    .badge-admin {
+        background: rgba(255,255,255,.15);
+        color: #fff;
+        font-size: .7rem;
+        font-weight: 700;
+        padding: .25rem .65rem;
+        border-radius: 50px;
+        letter-spacing: .04em;
+    }
+
+    /* ── Search ── */
+    .admin-search .form-control {
+        border-radius: 8px 0 0 8px;
+        border: 1px solid #dee2e6;
+        font-size: .88rem;
+        padding: .55rem .9rem;
+    }
+    .admin-search .form-control:focus {
+        border-color: #1e1e2d;
+        box-shadow: 0 0 0 3px rgba(30,30,45,.1);
+        outline: none;
+    }
+    .admin-search .btn-search {
+        border-radius: 0 8px 8px 0;
+        border: 1px solid #dee2e6;
+        border-left: none;
+        background: #f8f9fa;
+        font-size: .88rem;
+        padding: .55rem 1.1rem;
+        transition: background .2s;
+    }
+    .admin-search .btn-search:hover { background: #1e1e2d; color: #fff; border-color: #1e1e2d; }
+
+    /* ── Table ── */
+    .admin-table {
+        background: #fff;
+        border: 1px solid #e4e6ea;
+        border-radius: 12px;
+        overflow: visible; /* important : ne pas bloquer le z-index des modals */
+        box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+    .admin-table table { margin: 0; width: 100%; border-collapse: separate; border-spacing: 0; }
+    .admin-table thead tr {
+        background: #f8f9fa;
+        border-bottom: 2px solid #e4e6ea;
+    }
+    /* coins arrondis sur le thead */
+    .admin-table thead th:first-child { border-radius: 12px 0 0 0; }
+    .admin-table thead th:last-child  { border-radius: 0 12px 0 0; }
+    /* coins arrondis sur la dernière ligne */
+    .admin-table tbody tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+    .admin-table tbody tr:last-child td:last-child  { border-radius: 0 0 12px 0; }
+    .admin-table thead th {
+        font-family: 'Heebo', sans-serif;
+        font-size: .75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: #6c757d;
+        padding: .85rem 1rem;
+        white-space: nowrap;
+    }
+    .admin-table tbody tr {
+        border-bottom: 1px solid #f0f0f5;
+        transition: background .15s;
+    }
+    .admin-table tbody tr:last-child { border-bottom: none; }
+    .admin-table tbody tr:hover { background: #fafafa; }
+    .admin-table td {
+        padding: .85rem 1rem;
+        font-size: .85rem;
+        color: #495057;
+        vertical-align: middle;
+    }
+
+    .forum-title-cell { font-weight: 600; color: #1e1e2d; max-width: 260px; }
+    .forum-title-cell small {
+        display: block; font-weight: 400; font-size: .75rem; color: #adb5bd;
+        margin-top: .15rem; white-space: nowrap; overflow: hidden;
+        text-overflow: ellipsis; max-width: 240px;
+    }
+
+    .badge-type { font-size: .68rem; font-weight: 700; padding: .22rem .55rem; border-radius: 50px; background: rgba(30,30,45,.08); color: #1e1e2d; }
+    .badge-statut-ouvert  { background: rgba(25,135,84,.1);  color: #198754; font-size: .68rem; font-weight: 700; padding: .22rem .55rem; border-radius: 50px; }
+    .badge-statut-ferme   { background: rgba(220,53,69,.1);  color: #dc3545; font-size: .68rem; font-weight: 700; padding: .22rem .55rem; border-radius: 50px; }
+    .badge-statut-epingle { background: rgba(13,110,253,.1); color: #0d6efd; font-size: .68rem; font-weight: 700; padding: .22rem .55rem; border-radius: 50px; }
+
+    .stat-mini { font-size: .78rem; color: #6c757d; white-space: nowrap; }
+    .stat-mini i { font-size: .75rem; }
+    .stat-mini .s-like    { color: #198754; }
+    .stat-mini .s-dislike { color: #dc3545; }
+    .stat-mini .s-report  { color: #fd7e14; }
+
+    .btn-admin-delete {
+        display: inline-flex; align-items: center; gap: .3rem;
+        padding: .3rem .7rem; border-radius: 6px;
+        border: 1px solid rgba(220,53,69,.3);
+        background: rgba(220,53,69,.07); color: #dc3545;
+        font-size: .75rem; font-weight: 600; font-family: 'Heebo', sans-serif;
+        cursor: pointer; transition: background .15s, color .15s;
+    }
+    .btn-admin-delete:hover { background: #dc3545; color: #fff; border-color: #dc3545; }
+
+    .btn-admin-view {
+        display: inline-flex; align-items: center; gap: .3rem;
+        padding: .3rem .7rem; border-radius: 6px;
+        border: 1px solid #e4e6ea; background: #fff; color: #495057;
+        font-size: .75rem; font-weight: 600; font-family: 'Heebo', sans-serif;
+        cursor: pointer; transition: background .15s;
+    }
+    .btn-admin-view:hover { background: #f0f0f5; color: #1e1e2d; }
+
+    /* ── Modal ── */
+    .modal-admin .modal-content {
+        border: none; border-radius: 14px; overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,.15);
+    }
+    .modal-admin .modal-header {
+        background: linear-gradient(135deg, #1e1e2d, #3d3d5c);
+        color: #fff; border: none; padding: 1.1rem 1.5rem;
+    }
+    .modal-admin .modal-title { font-family: 'Heebo', sans-serif; font-weight: 700; font-size: 1rem; }
+    .modal-admin .btn-close { filter: invert(1); opacity: .7; }
+    .modal-admin .modal-body { padding: 1.5rem; }
+    .modal-admin .modal-footer { border-top: 1px solid #e4e6ea; padding: .85rem 1.5rem; background: #fafafa; }
+
+    .modal-field-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #adb5bd; margin-bottom: .25rem; }
+    .modal-field-value { font-size: .88rem; color: #1e1e2d; line-height: 1.65; margin-bottom: 1rem; }
+    .modal-field-value.desc { background: #f8f9fa; border-radius: 8px; padding: .75rem 1rem; color: #495057; }
+
+    .modal-cover { width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem; display: block; }
+
+    .modal-stats-row {
+        display: flex; gap: .75rem; flex-wrap: wrap;
+        background: #f8f9fa; border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1rem;
+    }
+    .modal-stat { display: flex; align-items: center; gap: .35rem; font-size: .8rem; font-weight: 600; }
+    .modal-stat.views   { color: #3d3d4e; }
+    .modal-stat.likes   { color: #198754; }
+    .modal-stat.dislikes{ color: #dc3545; }
+    .modal-stat.reports { color: #fd7e14; }
+
+    .mod-rules-admin {
+        background: #fffbeb; border: 1px solid #fde68a;
+        border-left: 4px solid #f59e0b; border-radius: 8px;
+        padding: .85rem 1rem; font-size: .85rem; color: #78350f;
+        line-height: 1.65; margin-bottom: 1rem;
+    }
+    .mod-rules-admin strong { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: #92400e; margin-bottom: .3rem; }
+
+    /* ── Empty ── */
+    .empty-admin { text-align: center; padding: 3rem 1rem; color: #adb5bd; }
+    .empty-admin i { font-size: 2.5rem; opacity: .3; display: block; margin-bottom: .75rem; }
+
+    /* ── Pagination ── */
+    .admin-page .pagination .page-link { color: #1e1e2d; border-color: #dee2e6; border-radius: 8px !important; margin: 0 2px; font-size: .82rem; padding: .35rem .65rem; }
+    .admin-page .pagination .page-item.active .page-link { background: #1e1e2d; border-color: #1e1e2d; color: #fff; font-weight: 700; }
+    .admin-page .pagination .page-link:hover { background: rgba(30,30,45,.08); }
+</style>
+
+<div class="admin-page">
+
+    {# ── Header ── #}
+    <div class="admin-header">
+        <div>
+            <h3><i class="bi bi-shield-fill me-2"></i>Administration — Forums</h3>
+            <p>{{ total }} forum{% if total > 1 %}s{% endif %} au total &bull; page {{ page }}/{{ pages }}</p>
+        </div>
+        <span class="badge-admin"><i class="bi bi-person-fill-gear me-1"></i>Admin</span>
+    </div>
+
+    {# ── Search ── #}
+    <form method="get" action="{{ path('admin_forum_list') }}" class="mb-4">
+        <div class="input-group admin-search" style="max-width: 500px;">
+            <input class="form-control" name="q" value="{{ q }}" placeholder="Rechercher un forum…">
+            <button type="submit" class="btn btn-search">
+                <i class="bi bi-search me-1"></i>Rechercher
+            </button>
+        </div>
+    </form>
+
+    {# ── Table ── #}
+    <div class="admin-table mb-4">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Forum</th>
+                    <th>Créateur</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                    <th>Stats</th>
+                    <th>Dernière activité</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in forums %}
+                    <tr>
+                        <td style="color:#adb5bd; font-size:.78rem;">{{ f.id }}</td>
+
+                        <td class="forum-title-cell">
+                            {{ f.titre|slice(0, 45) }}{% if f.titre|length > 45 %}…{% endif %}
+                            <small>{{ f.description|slice(0, 60) }}{% if f.description|length > 60 %}…{% endif %}</small>
+                        </td>
+
+                        <td><span style="font-size:.82rem; font-weight:600;">{{ f.createur.username }}</span></td>
+
+                        <td><span class="badge-type">{{ f.type }}</span></td>
+
+                        <td>
+                            {% if f.statut == 'ouvert' %}
+                                <span class="badge-statut-ouvert"><i class="bi bi-unlock-fill me-1"></i>ouvert</span>
+                            {% elseif f.statut == 'ferme' %}
+                                <span class="badge-statut-ferme"><i class="bi bi-lock-fill me-1"></i>fermé</span>
+                            {% else %}
+                                <span class="badge-statut-epingle"><i class="bi bi-pin-fill me-1"></i>épinglé</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="stat-mini d-flex gap-2">
+                                <span><i class="bi bi-eye"></i> {{ f.nombreVues }}</span>
+                                <span class="s-like"><i class="bi bi-hand-thumbs-up-fill"></i> {{ f.likes ?? 0 }}</span>
+                                <span class="s-dislike"><i class="bi bi-hand-thumbs-down-fill"></i> {{ f.dislikes ?? 0 }}</span>
+                                <span class="s-report"><i class="bi bi-flag-fill"></i> {{ f.signalements ?? 0 }}</span>
+                            </div>
+                        </td>
+
+                        <td style="font-size:.78rem; color:#adb5bd; white-space:nowrap;">
+                            {% if f.derniereActivite %}
+                                <i class="bi bi-clock me-1"></i>{{ f.derniereActivite|date('d/m/Y H:i') }}
+                            {% else %}—{% endif %}
+                        </td>
+
+                        <td>
+                            <div class="d-flex gap-2">
+                                {# Bouton Voir → ouvre le modal #}
+                                <button class="btn-admin-view"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalForum{{ f.id }}">
+                                    <i class="bi bi-eye"></i>Voir
+                                </button>
+
+                                <form method="post"
+                                      action="{{ path('admin_forum_delete', {id: f.id}) }}"
+                                      onsubmit="return confirm('Supprimer « {{ f.titre|e('js') }} » ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_forum' ~ f.id) }}">
+                                    <button type="submit" class="btn-admin-delete">
+                                        <i class="bi bi-trash"></i>Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {# ══ MODAL détail forum ══ #}
+                    <div class="modal fade modal-admin" id="modalForum{{ f.id }}"
+                         tabindex="-1" aria-labelledby="modalLabel{{ f.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalLabel{{ f.id }}">
+                                        <i class="bi bi-chat-dots me-2"></i>
+                                        {{ f.titre|slice(0,60) }}{% if f.titre|length > 60 %}…{% endif %}
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+
+                                <div class="modal-body">
+
+                                    {# Image de couverture #}
+                                    {% if f.imageCouvertureUrl %}
+                                        {% set img = f.imageCouvertureUrl|trim %}
+                                        {% if img starts with 'www.' %}{% set img = 'https://' ~ img %}{% endif %}
+                                        <img class="modal-cover" src="{{ img }}" alt="cover">
+                                    {% endif %}
+
+                                    {# Badges #}
+                                    <div class="d-flex gap-2 mb-3 flex-wrap">
+                                        <span class="badge-type">{{ f.type }}</span>
+                                        {% if f.statut == 'ouvert' %}
+                                            <span class="badge-statut-ouvert"><i class="bi bi-unlock-fill me-1"></i>ouvert</span>
+                                        {% elseif f.statut == 'ferme' %}
+                                            <span class="badge-statut-ferme"><i class="bi bi-lock-fill me-1"></i>fermé</span>
+                                        {% else %}
+                                            <span class="badge-statut-epingle"><i class="bi bi-pin-fill me-1"></i>épinglé</span>
+                                        {% endif %}
+                                        {% if f.estModifie %}
+                                            <span style="font-size:.68rem;font-weight:700;padding:.22rem .55rem;border-radius:50px;background:rgba(255,193,7,.15);color:#856404;">
+                                                <i class="bi bi-pencil-fill me-1"></i>modifié
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    {# Créateur + dates #}
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-sm-4">
+                                            <div class="modal-field-label">Créateur</div>
+                                            <div class="modal-field-value">
+                                                <i class="bi bi-person-fill me-1 text-muted"></i>{{ f.createur.username }}
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="modal-field-label">Dernière activité</div>
+                                            <div class="modal-field-value">
+                                                {% if f.derniereActivite %}
+                                                    <i class="bi bi-clock me-1 text-muted"></i>{{ f.derniereActivite|date('d/m/Y H:i') }}
+                                                {% else %}—{% endif %}
+                                            </div>
+                                        </div>
+                                        {% if f.estModifie and f.dateModification %}
+                                        <div class="col-sm-4">
+                                            <div class="modal-field-label">Modifié le</div>
+                                            <div class="modal-field-value">
+                                                <i class="bi bi-clock-history me-1 text-muted"></i>{{ f.dateModification|date('d/m/Y H:i') }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    {# Stats #}
+                                    <div class="modal-stats-row">
+                                        <span class="modal-stat views"><i class="bi bi-eye-fill"></i>{{ f.nombreVues }} vues</span>
+                                        <span class="modal-stat likes"><i class="bi bi-hand-thumbs-up-fill"></i>{{ f.likes ?? 0 }} likes</span>
+                                        <span class="modal-stat dislikes"><i class="bi bi-hand-thumbs-down-fill"></i>{{ f.dislikes ?? 0 }} dislikes</span>
+                                        <span class="modal-stat reports"><i class="bi bi-flag-fill"></i>{{ f.signalements ?? 0 }} signalements</span>
+                                    </div>
+
+                                    {# Description complète #}
+                                    <div class="modal-field-label">Description complète</div>
+                                    <div class="modal-field-value desc">{{ f.description|nl2br }}</div>
+
+                                    {# Règles de modération #}
+                                    {% if f.reglesModeration %}
+                                        <div class="mod-rules-admin">
+                                            <strong><i class="bi bi-shield-fill-check me-1"></i>Règles de modération</strong>
+                                            {{ f.reglesModeration|nl2br }}
+                                        </div>
+                                    {% endif %}
+
+                                    {# URL image #}
+                                    {% if f.imageCouvertureUrl %}
+                                        <div class="modal-field-label">URL image de couverture</div>
+                                        <div class="modal-field-value">
+                                            <a href="{{ f.imageCouvertureUrl }}" target="_blank" rel="noopener"
+                                               style="font-size:.82rem; word-break:break-all;">
+                                                {{ f.imageCouvertureUrl }}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+
+                                    {# ── Commentaires liés ── #}
+                                    {% set forumComments = commentsByForum[f.id] ?? [] %}
+                                    <hr style="border-color:#e4e6ea; margin: 1rem 0;">
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <div class="modal-field-label mb-0">Commentaires</div>
+                                        <span style="background:#1e1e2d;color:#fff;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;">
+                                            {{ forumComments|length }}
+                                        </span>
+                                    </div>
+
+                                    {% if forumComments is empty %}
+                                        <p style="font-size:.82rem; color:#adb5bd; text-align:center; padding:.75rem;">
+                                            <i class="bi bi-chat-left me-1"></i>Aucun commentaire.
+                                        </p>
+                                    {% else %}
+                                        {% for c in forumComments %}
+                                            <div style="background:#f8f9fa;border:1px solid #e4e6ea;border-left:3px solid {% if c.statut == 'supprime' %}#dc3545{% elseif c.statut == 'en_attente' %}#ffc107{% else %}#1e1e2d{% endif %};border-radius:8px;padding:.75rem 1rem;margin-bottom:.6rem;">
+                                                <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                                                    <div>
+                                                        <span style="font-weight:700;font-size:.82rem;">{{ c.utilisateur.username }}</span>
+                                                        <span style="font-size:.72rem;color:#adb5bd;margin-left:.5rem;">
+                                                            <i class="bi bi-clock me-1"></i>{{ c.datePublication|date('d/m/Y H:i') }}
+                                                        </span>
+                                                        {% if c.statut == 'supprime' %}
+                                                            <span style="font-size:.65rem;font-weight:700;padding:.15rem .45rem;border-radius:50px;background:rgba(220,53,69,.1);color:#dc3545;margin-left:.4rem;">supprimé</span>
+                                                        {% elseif c.statut == 'en_attente' %}
+                                                            <span style="font-size:.65rem;font-weight:700;padding:.15rem .45rem;border-radius:50px;background:rgba(255,193,7,.15);color:#856404;margin-left:.4rem;">en attente</span>
+                                                        {% endif %}
+                                                        {% if c.parent %}
+                                                            <span style="font-size:.65rem;color:#7c3aed;margin-left:.4rem;"><i class="bi bi-reply-fill"></i> réponse</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="d-flex gap-2 align-items-center">
+                                                        <span style="font-size:.72rem;color:#198754;"><i class="bi bi-hand-thumbs-up-fill"></i> {{ c.likes }}</span>
+                                                        <span style="font-size:.72rem;color:#dc3545;"><i class="bi bi-hand-thumbs-down-fill"></i> {{ c.dislikes }}</span>
+                                                        <span style="font-size:.72rem;color:#fd7e14;"><i class="bi bi-flag-fill"></i> {{ c.signalements }}</span>
+                                                        {% if c.statut != 'supprime' %}
+                                                            <form method="post"
+                                                                  action="{{ path('admin_comment_delete', {id: c.id}) }}"
+                                                                  onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_comment' ~ c.id) }}">
+                                                                <button type="submit" class="btn-admin-delete" style="padding:.2rem .55rem;font-size:.7rem;">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div style="font-size:.82rem;color:#495057;margin-top:.4rem;line-height:1.6;">
+                                                    {{ c.contenu|slice(0,200) }}{% if c.contenu|length > 200 %}…{% endif %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+                                        Fermer
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    {# ══ /MODAL ══ #}
+
+                {% else %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-admin">
+                                <i class="bi bi-chat-dots"></i>
+                                <p>Aucun forum trouvé.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# ── Pagination ── #}
+    {% if pages > 1 %}
+    <div class="d-sm-flex justify-content-sm-between align-items-sm-center">
+        <p class="mb-0 text-muted small">Page <strong>{{ page }}</strong> sur <strong>{{ pages }}</strong></p>
+        <nav>
+            <ul class="pagination pagination-sm mb-0 d-inline-flex">
+                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                    <a class="page-link" href="{{ path('admin_forum_list', {page: page - 1, q: q}) }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% for p in 1..pages %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ path('admin_forum_list', {page: p, q: q}) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                <li class="page-item {% if page == pages %}disabled{% endif %}">
+                    <a class="page-link" href="{{ path('admin_forum_list', {page: page + 1, q: q}) }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+</div>{# /admin-page #}
+
+
+{% endblock %}

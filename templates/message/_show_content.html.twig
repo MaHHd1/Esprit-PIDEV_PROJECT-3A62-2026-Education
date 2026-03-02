@@ -1,0 +1,634 @@
+<style>
+    .show-page { font-family: 'Roboto', sans-serif; }
+    .show-page h3, .show-page h5, .show-page h6 { font-family: 'Heebo', sans-serif; }
+
+    /* ── Message principal ── */
+    .msg-root {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-left: 5px solid #0d6efd;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        padding: 1.5rem;
+        margin-bottom: 1.75rem;
+        position: relative;
+    }
+    .msg-root .msg-label {
+        position: absolute;
+        top: -10px; left: 1.2rem;
+        background: #0d6efd;
+        color: #fff;
+        font-size: .68rem;
+        font-weight: 700;
+        font-family: 'Heebo', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        padding: .15rem .65rem;
+        border-radius: 50px;
+    }
+    .msg-meta {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        flex-wrap: wrap;
+        margin-bottom: .85rem;
+        margin-top: .3rem;
+    }
+    .msg-avatar {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: #0d6efd;
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 700;
+        font-family: 'Heebo', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .msg-avatar.green  { background: #198754; }
+    .msg-avatar.purple { background: #6f42c1; }
+    .msg-avatar.orange { background: #fd7e14; }
+
+    .msg-author { font-weight: 700; font-size: .9rem; color: #212529; }
+    .msg-arrow  { color: #adb5bd; font-size: .75rem; }
+    .msg-dest   { font-size: .88rem; color: #495057; }
+    .msg-date   {
+        margin-left: auto;
+        font-size: .78rem;
+        color: #6c757d;
+        display: flex; align-items: center; gap: .3rem;
+    }
+    .msg-subject {
+        font-family: 'Heebo', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1a1a2e;
+        margin-bottom: .75rem;
+        display: flex; align-items: center; gap: .5rem;
+    }
+    .msg-subject .tag-badge {
+        font-size: .7rem;
+        font-weight: 600;
+        background: rgba(13,110,253,.1);
+        color: #0d6efd;
+        padding: .2rem .6rem;
+        border-radius: 50px;
+        font-family: 'Roboto', sans-serif;
+    }
+    .msg-body {
+        font-size: .9rem;
+        color: #495057;
+        line-height: 1.8;
+        border-top: 1px solid #e9ecef;
+        padding-top: .85rem;
+        white-space: pre-wrap;
+    }
+
+    /* ── Réponses ── */
+    .replies-section { margin-bottom: 1.5rem; }
+    .replies-title {
+        font-family: 'Heebo', sans-serif;
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        display: flex; align-items: center; gap: .5rem;
+    }
+    .replies-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e9ecef;
+    }
+
+    .reply-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.1rem 1.25rem;
+        margin-bottom: .75rem;
+        transition: box-shadow .2s;
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    .reply-card::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 4px;
+        background: #e9ecef;
+        border-radius: 4px 0 0 4px;
+    }
+    .reply-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    .reply-card:hover::before { background: #198754; }
+
+    .reply-meta {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-wrap: wrap;
+        margin-bottom: .55rem;
+    }
+    .reply-avatar {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: rgba(25,135,84,.15);
+        color: #198754;
+        font-size: .7rem;
+        font-weight: 700;
+        font-family: 'Heebo', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .reply-author { font-weight: 700; font-size: .85rem; color: #212529; }
+    .reply-dest   { font-size: .82rem; color: #6c757d; }
+    .reply-date   { margin-left: auto; font-size: .75rem; color: #adb5bd; }
+    .reply-body   { font-size: .875rem; color: #495057; line-height: 1.7; white-space: pre-wrap; }
+
+    /* ── Boutons d'action ── */
+    .btn-action {
+        width: 36px; height: 36px;
+        border-radius: 9px;
+        padding: 0;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .85rem;
+        cursor: pointer;
+        transition: background .2s, color .2s, transform .15s;
+        text-decoration: none;
+        flex-shrink: 0;
+    }
+    .btn-action:hover { transform: scale(1.08); }
+    .btn-reply   { background: rgba(13,110,253,.12); color: #0d6efd; }
+    .btn-reply:hover  { background: #0d6efd;  color: #fff; }
+    .btn-archive { background: rgba(108,117,125,.12); color: #6c757d; }
+    .btn-archive:hover { background: #6c757d; color: #fff; }
+
+    /* ── Tooltip ── */
+    .btn-wrap { position: relative; display: inline-flex; }
+    .btn-wrap .tip {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #212529;
+        color: #fff;
+        font-size: .68rem;
+        font-weight: 600;
+        white-space: nowrap;
+        padding: .2rem .5rem;
+        border-radius: 5px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .18s;
+        z-index: 10;
+    }
+    .btn-wrap .tip::after {
+        content: '';
+        position: absolute;
+        top: 100%; left: 50%;
+        transform: translateX(-50%);
+        border: 4px solid transparent;
+        border-top-color: #212529;
+    }
+    .btn-wrap:hover .tip { opacity: 1; }
+
+    /* ── Reply CTA card ── */
+    .reply-cta {
+        background: linear-gradient(135deg, #f0f4ff 0%, #f8f9fa 100%);
+        border: 1px dashed #c7d7fd;
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .reply-cta p { margin: 0; font-size: .85rem; color: #6c757d; }
+    .reply-cta strong { color: #212529; }
+    .btn-reply-main {
+        background: linear-gradient(135deg, #0d6efd, #6ea8fe);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .55rem 1.4rem;
+        font-family: 'Heebo', sans-serif;
+        font-weight: 700;
+        font-size: .88rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        text-decoration: none;
+        transition: opacity .2s, transform .15s;
+        box-shadow: 0 4px 12px rgba(13,110,253,.3);
+        white-space: nowrap;
+    }
+    .btn-reply-main:hover { opacity: .9; transform: translateY(-1px); color: #fff; }
+
+    /* ── IA Boutons ── */
+    .btn-ai-suggest {
+        background: linear-gradient(135deg, #6f42c1, #a78bfa);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .45rem 1.1rem;
+        font-family: 'Heebo', sans-serif;
+        font-weight: 700;
+        font-size: .82rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        text-decoration: none;
+        transition: opacity .2s, transform .15s;
+        box-shadow: 0 4px 12px rgba(111,66,193,.25);
+        white-space: nowrap;
+    }
+    .btn-ai-suggest:hover { opacity: .88; transform: translateY(-1px); color: #fff; }
+    .btn-ai-suggest:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .btn-ai-summary {
+        background: linear-gradient(135deg, #0dcaf0, #6ea8fe);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .45rem 1.1rem;
+        font-family: 'Heebo', sans-serif;
+        font-weight: 700;
+        font-size: .82rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        text-decoration: none;
+        transition: opacity .2s, transform .15s;
+        box-shadow: 0 4px 12px rgba(13,202,240,.25);
+        white-space: nowrap;
+    }
+    .btn-ai-summary:hover { opacity: .88; transform: translateY(-1px); color: #fff; }
+    .btn-ai-summary:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* ── Suggestion IA box ── */
+    .ai-suggestion-box {
+        background: linear-gradient(135deg, #faf5ff 0%, #f0f4ff 100%);
+        border: 1px solid #d8b4fe;
+        border-left: 4px solid #6f42c1;
+        border-radius: 10px;
+        padding: 1rem 1.2rem;
+        margin-top: 1rem;
+        display: none;
+    }
+    .ai-suggestion-box .ai-label {
+        font-family: 'Heebo', sans-serif;
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #6f42c1;
+        margin-bottom: .5rem;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+    .ai-suggestion-box textarea {
+        width: 100%;
+        border: 1px solid #d8b4fe;
+        border-radius: 8px;
+        padding: .65rem .85rem;
+        font-size: .875rem;
+        color: #212529;
+        background: #fff;
+        resize: vertical;
+        min-height: 100px;
+        font-family: 'Roboto', sans-serif;
+        line-height: 1.6;
+    }
+    .ai-suggestion-box textarea:focus {
+        outline: none;
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 3px rgba(111,66,193,.1);
+    }
+    .ai-suggestion-actions {
+        display: flex;
+        gap: .5rem;
+        margin-top: .6rem;
+        flex-wrap: wrap;
+    }
+
+    /* ── Summary IA box ── */
+    .ai-summary-box {
+        background: linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%);
+        border: 1px solid #a5f3fc;
+        border-left: 4px solid #0dcaf0;
+        border-radius: 10px;
+        padding: 1rem 1.2rem;
+        margin-top: 1rem;
+        display: none;
+    }
+    .ai-summary-box .ai-label {
+        font-family: 'Heebo', sans-serif;
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #0891b2;
+        margin-bottom: .6rem;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+    .ai-summary-box .summary-content {
+        font-size: .875rem;
+        color: #1e3a5f;
+        line-height: 1.8;
+        white-space: pre-wrap;
+    }
+
+    /* ── Spinner ── */
+    .ai-spinner {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(255,255,255,.4);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+        display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<div class="show-page">
+
+{# ── En-tête ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">
+            <i class="bi bi-envelope-open-fill text-primary me-2"></i>Conversation
+        </h3>
+        <p class="mb-0 text-muted small">
+            <i class="bi bi-tag me-1"></i>{{ root.objet }}
+        </p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-sm btn-outline-secondary mb-0"
+           href="{{ path('message_inbox', {u: activeUser.id}) }}">
+            <i class="bi bi-inbox me-1"></i>Inbox
+        </a>
+        <a class="btn btn-sm btn-outline-secondary mb-0"
+           href="{{ path('message_sent', {u: activeUser.id}) }}">
+            <i class="bi bi-send me-1"></i>Envoyés
+        </a>
+        <a class="btn btn-sm btn-outline-secondary mb-0"
+           href="{{ path('message_archive', {u: activeUser.id}) }}">
+            <i class="bi bi-archive me-1"></i>Archives
+        </a>
+
+       
+    </div>
+</div>
+
+{# 📝 Résumé IA box — Admin uniquement #}
+{% if authChecker is defined and authChecker.isAdmin() %}
+<div class="ai-summary-box" id="summary-box">
+    <div class="ai-label">
+        <i class="bi bi-stars"></i> Résumé de la conversation — IA
+    </div>
+    <div class="summary-content" id="summary-content"></div>
+</div>
+{% endif %}
+
+{# ── Message principal ── #}
+<div class="msg-root">
+    <span class="msg-label"><i class="bi bi-envelope-fill me-1"></i>Message original</span>
+
+    <div class="msg-meta">
+        <span class="msg-avatar">{{ root.expediteur.username|slice(0,1)|upper }}</span>
+        <span class="msg-author">{{ root.expediteur.username }}</span>
+        <i class="bi bi-arrow-right msg-arrow"></i>
+        <span class="msg-dest">{{ root.destinataire.username }}</span>
+
+        <span class="badge rounded-pill bg-{% if root.statut == 'lu' %}success{% else %}primary{% endif %} bg-opacity-10 text-{% if root.statut == 'lu' %}success{% else %}primary{% endif %} ms-1">
+            {% if root.statut == 'lu' %}<i class="bi bi-check-circle-fill me-1"></i>{% else %}<i class="bi bi-envelope-fill me-1"></i>{% endif %}
+            {{ root.statut }}
+        </span>
+
+        <span class="msg-date">
+            <i class="bi bi-clock"></i>
+            {{ root.dateEnvoi ? root.dateEnvoi|date('d/m/Y H:i') : '' }}
+        </span>
+
+        {# Actions rapides #}
+        <div class="d-flex gap-2 ms-2">
+            <div class="btn-wrap">
+                <a href="{{ path('message_reply', {id: message.id, u: activeUser.id}) }}"
+                   class="btn-action btn-reply">
+                    <i class="bi bi-reply-fill"></i>
+                </a>
+                <span class="tip">Répondre</span>
+            </div>
+            <div class="btn-wrap">
+                <form method="post"
+                      action="{{ path('message_toggle_archive', {id: message.id, u: activeUser.id, from: 'inbox'}) }}">
+                    <button type="submit" class="btn-action btn-archive">
+                        <i class="bi bi-archive"></i>
+                    </button>
+                </form>
+                <span class="tip">Archiver</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="msg-subject">
+        <span class="tag-badge">Objet</span>
+        {{ root.objet }}
+    </div>
+
+    <div class="msg-body">{{ root.contenu|nl2br }}</div>
+</div>
+
+{# ── Réponses ── #}
+{% if thread|length > 1 %}
+<div class="replies-section">
+    <div class="replies-title">
+        <i class="bi bi-reply-all-fill text-success"></i>
+        {{ thread|length - 1 }} réponse{% if (thread|length - 1) > 1 %}s{% endif %}
+    </div>
+
+    {% for m in thread %}
+        {% if m.id != root.id %}
+        <div class="reply-card">
+            <div class="reply-meta">
+                <span class="reply-avatar">{{ m.expediteur.username|slice(0,1)|upper }}</span>
+                <span class="reply-author">{{ m.expediteur.username }}</span>
+                <i class="bi bi-arrow-right" style="color:#adb5bd;font-size:.7rem;"></i>
+                <span class="reply-dest">{{ m.destinataire.username }}</span>
+                <span class="reply-date">
+                    <i class="bi bi-clock me-1"></i>
+                    {{ m.dateEnvoi ? m.dateEnvoi|date('d/m/Y H:i') : '' }}
+                </span>
+            </div>
+            <div class="reply-body">{{ m.contenu|nl2br }}</div>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ── CTA Répondre + Bouton Suggérer IA ── #}
+<div class="reply-cta">
+    <p>
+        <i class="bi bi-reply-fill text-primary me-2"></i>
+        Répondre à <strong>{{ root.expediteur.username }}</strong>
+    </p>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+        <form method="post"
+              action="{{ path('message_toggle_archive', {id: message.id, u: activeUser.id, from: 'inbox'}) }}">
+            <button type="submit" class="btn btn-sm btn-outline-secondary mb-0">
+                <i class="bi bi-archive me-1"></i>Archiver / Désarchiver
+            </button>
+        </form>
+
+        {# 💡 Bouton Suggérer une réponse IA #}
+        <button id="btn-suggest"
+                data-id="{{ message.id }}"
+                class="btn-ai-suggest">
+            <span class="ai-spinner" id="spinner-suggest"></span>
+            <i class="bi bi-magic" id="icon-suggest"></i>
+            Suggérer une réponse
+        </button>
+
+        <a href="{{ path('message_reply', {id: message.id, u: activeUser.id}) }}"
+           class="btn-reply-main">
+            <i class="bi bi-reply-fill"></i>Répondre
+        </a>
+    </div>
+</div>
+
+{# ── 💡 Suggestion IA box (apparaît après clic) ── #}
+<div class="ai-suggestion-box" id="suggestion-box">
+    <div class="ai-label">
+        <i class="bi bi-magic"></i> Suggestion de réponse — IA
+    </div>
+    <textarea id="suggestion-text" rows="4" placeholder="La suggestion IA apparaîtra ici..."></textarea>
+    <div class="ai-suggestion-actions">
+        <button id="btn-use-suggestion" class="btn btn-sm btn-outline-primary mb-0">
+            <i class="bi bi-arrow-up-right-circle me-1"></i>
+            Utiliser cette réponse
+        </button>
+        <button onclick="document.getElementById('suggestion-box').style.display='none'"
+                class="btn btn-sm btn-outline-secondary mb-0">
+            <i class="bi bi-x me-1"></i>Fermer
+        </button>
+    </div>
+</div>
+
+</div>{# /show-page #}
+
+{# ═══════════════════════════════════════════════════════
+   JavaScript — Groq IA : Suggestion & Résumé
+   ═══════════════════════════════════════════════════════ #}
+<script>
+(function () {
+
+    // ─────────────────────────────────────────────────────
+    //  💡 SUGGESTION DE RÉPONSE
+    // ─────────────────────────────────────────────────────
+    const btnSuggest    = document.getElementById('btn-suggest');
+    const spinnerSuggest = document.getElementById('spinner-suggest');
+    const iconSuggest   = document.getElementById('icon-suggest');
+    const suggestionBox = document.getElementById('suggestion-box');
+    const suggestionTxt = document.getElementById('suggestion-text');
+
+    if (btnSuggest) {
+        btnSuggest.addEventListener('click', async function () {
+            const id = this.dataset.id;
+
+            // État chargement
+            btnSuggest.disabled   = true;
+            spinnerSuggest.style.display = 'inline-block';
+            iconSuggest.style.display    = 'none';
+
+            try {
+                const res  = await fetch(`/messages/${id}/suggest-reply`);
+                const data = await res.json();
+
+                if (data.error) {
+                    alert('⚠️ ' + data.error);
+                    return;
+                }
+
+                // Afficher la suggestion
+                suggestionTxt.value          = data.suggestion ?? '';
+                suggestionBox.style.display  = 'block';
+                suggestionBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                // Bouton "Utiliser" → redirige vers reply avec suggestion dans l'URL
+                document.getElementById('btn-use-suggestion').onclick = function () {
+                    const base    = `/messages/${id}/reply?u={{ activeUser.id }}`;
+                    const encoded = encodeURIComponent(suggestionTxt.value);
+                    window.location.href = base + '&suggestion=' + encoded;
+                };
+
+            } catch (e) {
+                alert('Erreur : impossible de contacter le service IA.');
+            } finally {
+                btnSuggest.disabled          = false;
+                spinnerSuggest.style.display = 'none';
+                iconSuggest.style.display    = 'inline';
+            }
+        });
+    }
+
+    // ─────────────────────────────────────────────────────
+    //  📝 RÉSUMÉ DU THREAD — Admin
+    // ─────────────────────────────────────────────────────
+    const btnSummary     = document.getElementById('btn-summary');
+    const spinnerSummary = document.getElementById('spinner-summary');
+    const iconSummary    = document.getElementById('icon-summary');
+    const summaryBox     = document.getElementById('summary-box');
+    const summaryContent = document.getElementById('summary-content');
+
+    if (btnSummary) {
+        btnSummary.addEventListener('click', async function () {
+            const id = this.dataset.id;
+
+            // État chargement
+            btnSummary.disabled          = true;
+            spinnerSummary.style.display = 'inline-block';
+            iconSummary.style.display    = 'none';
+
+            try {
+                const res  = await fetch(`/messages/${id}/summary`);
+                const data = await res.json();
+
+                if (data.error) {
+                    alert('⚠️ ' + data.error);
+                    return;
+                }
+
+                // Afficher le résumé
+                summaryContent.textContent  = data.summary ?? '';
+                summaryBox.style.display    = 'block';
+                summaryBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            } catch (e) {
+                alert('Erreur : impossible de contacter le service IA.');
+            } finally {
+                btnSummary.disabled          = false;
+                spinnerSummary.style.display = 'none';
+                iconSummary.style.display    = 'inline';
+            }
+        });
+    }
+
+})();
+</script>

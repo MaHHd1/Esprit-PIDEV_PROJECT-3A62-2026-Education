@@ -1,0 +1,146 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Administration — Détail Module{% endblock %}
+
+{% block admin_content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-2">{{ module.titreModule }}</h1>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_modules_list') }}">Modules</a></li>
+            <li class="breadcrumb-item active">{{ module.titreModule }}</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ path('app_admin_module_edit', {'id': module.id}) }}" class="btn btn-outline-primary">Modifier</a>
+        <form method="post" action="{{ path('app_admin_module_delete', {'id': module.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce module ?');">
+          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ module.id) }}" />
+          <button class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Informations du Module -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Informations du Module</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Titre :</strong>
+                <p>{{ module.titreModule }}</p>
+              </div>
+              <div class="col-md-6">
+                <strong>Statut :</strong>
+                <p><span class="badge bg-info">{{ module.statut }}</span></p>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Ordre d'affichage :</strong>
+                <p>{{ module.ordreAffichage }}</p>
+              </div>
+              <div class="col-md-6">
+                <strong>Durée estimée :</strong>
+                <p>{{ module.dureeEstimeeHeures ?? '—' }} heures</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <strong>Description :</strong>
+                <p>{{ module.description ?? '—' }}</p>
+              </div>
+            </div>
+            {% if module.datePublication %}
+              <div class="row">
+                <div class="col-12">
+                  <strong>Date de publication :</strong>
+                  <p>{{ module.datePublication|date('d/m/Y H:i') }}</p>
+                </div>
+              </div>
+            {% endif %}
+            {% if module.objectifsApprentissage %}
+              <div class="row">
+                <div class="col-12">
+                  <strong>Objectifs d'apprentissage :</strong>
+                  <p>{{ module.objectifsApprentissage }}</p>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Cours du Module -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Cours du module ({{ module.cours|length }})</h5>
+            <a href="{{ path('app_admin_cours_new') }}" class="btn btn-sm btn-primary">Ajouter un Cours</a>
+          </div>
+          <div class="card-body">
+            {% if module.cours|length > 0 %}
+              <div class="list-group">
+                {% for cours in module.cours %}
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong>{{ cours.titre }}</strong>
+                      <div class="text-muted small">{{ cours.codeCours }}</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <a href="{{ path('app_admin_cours_show', {'id': cours.id}) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                      <a href="{{ path('app_admin_cours_edit', {'id': cours.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                      <form method="post" action="{{ path('app_admin_cours_delete', {'id': cours.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cours.id) }}" />
+                        <button class="btn btn-sm btn-danger">Supprimer</button>
+                      </form>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted text-center py-4">Aucun cours pour ce module.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Résumé</h5>
+          </div>
+          <div class="card-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-6">ID :</dt>
+              <dd class="col-sm-6"><code>{{ module.id }}</code></dd>
+
+              <dt class="col-sm-6">Statut :</dt>
+              <dd class="col-sm-6"><span class="badge bg-info">{{ module.statut }}</span></dd>
+
+              <dt class="col-sm-6">Cours :</dt>
+              <dd class="col-sm-6"><span class="badge bg-primary">{{ module.cours|length }}</span></dd>
+
+              <dt class="col-sm-6">Durée :</dt>
+              <dd class="col-sm-6">{{ module.dureeEstimeeHeures ?? '—' }}h</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Actions</h5>
+          </div>
+          <div class="card-body">
+            <a href="{{ path('app_admin_modules_list') }}" class="btn btn-outline-secondary w-100">Retour aux Modules</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

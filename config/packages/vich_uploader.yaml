@@ -1,0 +1,35 @@
+# config/packages/vich_uploader.yaml
+vich_uploader:
+    db_driver: orm
+    mappings:
+        # Forum
+        forum_image:
+            uri_prefix: /uploads/forum/images
+            upload_destination: '%kernel.project_dir%/public/uploads/forum/images'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            delete_on_remove: true
+            delete_on_update: true
+            inject_on_load: false
+
+        forum_attachment:
+            uri_prefix: /uploads/forum/attachments
+            upload_destination: '%kernel.project_dir%/public/uploads/forum/attachments'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            delete_on_remove: true
+            delete_on_update: true
+            inject_on_load: false
+
+        # Evaluation / Soumission
+        evaluation_pdf:
+            uri_prefix: /uploads/evaluations
+            upload_destination: '%kernel.project_dir%/public/uploads/evaluations'
+            namer: Vich\UploaderBundle\Naming\UniqidNamer
+            delete_on_remove: true
+            delete_on_update: true
+
+        soumission_pdf:
+            uri_prefix: /uploads/soumissions
+            upload_destination: '%kernel.project_dir%/public/uploads/soumissions'
+            namer: Vich\UploaderBundle\Naming\UniqidNamer
+            delete_on_remove: true
+            delete_on_update: true

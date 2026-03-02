@@ -1,0 +1,434 @@
+{# templates/score/show.html.twig #}
+{% extends enseignant is defined ? 'enseignant/prof_base.html.twig' : 'etudiant/student_base.html.twig' %}
+
+{% block title %}Détails du score{% endblock %}
+
+{% block page_title %}
+    {% if enseignant is defined %}Détails de la correction{% endif %}
+{% endblock %}
+
+{% block main_content %}
+    {% if enseignant is defined %}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ enseignant is defined ? 'Détails du score' : 'Ma note' }}</h1>
+        <div>
+            {% if enseignant is defined %}
+                <a href="{{ path('app_score_edit', {'id': score.id}) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Modifier
+                </a>
+            {% endif %}
+            <a href="{{ path('app_score_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header {{ enseignant is defined ? 'bg-warning' : 'bg-primary' }} text-dark">
+            <h3 class="mb-0">
+                <i class="bi bi-clipboard-check"></i>
+                Score #{{ score.id }}
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="bi bi-file-earmark-text"></i> Informations de l'évaluation</h4>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th width="40%">Évaluation</th>
+                                <td><strong>{{ score.soumission.evaluation.titre }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Type</th>
+                                <td>
+                                    <span class="badge bg-info">
+                                        {{ score.soumission.evaluation.typeEvaluation }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Cours</th>
+                                <td>{{ score.soumission.evaluation.cours ? score.soumission.evaluation.cours.codeCours : 'N/A' }}</td>
+                            </tr>
+                            {% if enseignant is defined %}
+                            <tr>
+                                <th>Étudiant</th>
+                                <td><strong>ID: {{ score.soumission.idEtudiant }}</strong></td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Date de soumission</th>
+                                <td>{{ score.soumission.dateSoumission|date('d/m/Y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Statut soumission</th>
+                                <td>
+                                    {% if score.soumission.statut == 'soumise' %}
+                                        <span class="badge bg-success">Soumise à temps</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">En retard</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <h4><i class="bi bi-star-fill"></i> Notation</h4>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th width="40%">Note obtenue</th>
+                                <td>
+                                    <h3 class="mb-0">
+                                        {% set pourcentage = (score.note / score.noteSur * 100)|round %}
+                                        <span class="badge {% if pourcentage >= 50 %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ score.note }}/{{ score.noteSur }}
+                                        </span>
+                                    </h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Pourcentage</th>
+                                <td>
+                                    <h4 class="mb-0">
+                                        <span class="badge {% if pourcentage >= 50 %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ pourcentage }}%
+                                        </span>
+                                    </h4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Résultat</th>
+                                <td>
+                                    {% if pourcentage >= 50 %}
+                                        <span class="badge bg-success fs-5">✓ RÉUSSI</span>
+                                    {% else %}
+                                        <span class="badge bg-danger fs-5">✗ ÉCHOUÉ</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Statut de correction</th>
+                                <td>
+                                    {% if score.statutCorrection == 'corrige' %}
+                                        <span class="badge bg-success">Corrigé</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">En cours</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date de correction</th>
+                                <td>
+                                    <i class="bi bi-calendar-check"></i>
+                                    {{ score.dateCorrection|date('d/m/Y à H:i') }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if score.commentaireEnseignant %}
+            <div class="mt-4">
+                <h4><i class="bi bi-chat-left-text"></i> Commentaire de l'enseignant</h4>
+                <div class="alert alert-info">
+                    <i class="bi bi-quote"></i>
+                    {{ score.commentaireEnseignant|nl2br }}
+                </div>
+            </div>
+            {% else %}
+            <div class="mt-4">
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle"></i>
+                    Aucun commentaire de l'enseignant
+                </div>
+            </div>
+            {% endif %}
+
+            {# Affichage des fichiers pour l'enseignant #}
+            {% if enseignant is defined %}
+            <div class="mt-4">
+                <h4><i class="bi bi-file-pdf"></i> Fichiers</h4>
+                <div class="row">
+                    {# Fichier de l'évaluation #}
+                    <div class="col-md-6">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <strong>Fichier de l'évaluation (énoncé)</strong>
+                            </div>
+                            <div class="card-body">
+                                {% if score.soumission.evaluation.pdfFilename %}
+                                    <a href="{{ vich_uploader_asset(score.soumission.evaluation, 'pdfFile') }}" 
+                                       target="_blank" 
+                                       class="btn btn-info btn-sm w-100">
+                                        <i class="fas fa-download"></i> Télécharger l'énoncé
+                                    </a>
+                                {% else %}
+                                    <p class="text-muted mb-0"><i class="fas fa-times"></i> Aucun fichier</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Fichier de la soumission #}
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <strong>Fichier de la soumission (étudiant)</strong>
+                            </div>
+                            <div class="card-body">
+                                {% if score.soumission.pdfFilename %}
+                                    <a href="{{ vich_uploader_asset(score.soumission, 'pdfFile') }}" 
+                                       target="_blank" 
+                                       class="btn btn-success btn-sm w-100">
+                                        <i class="fas fa-download"></i> Télécharger la soumission
+                                    </a>
+                                {% else %}
+                                    <p class="text-muted mb-0"><i class="fas fa-times"></i> Aucun fichier</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Information du commentaire étudiant #}
+            {% if score.soumission.commentaireEtudiant %}
+            <div class="mt-4">
+                <h4><i class="bi bi-chat-left"></i> Commentaire de l'étudiant</h4>
+                <div class="alert alert-secondary">
+                    <i class="bi bi-quote"></i>
+                    {{ score.soumission.commentaireEtudiant|nl2br }}
+                </div>
+            </div>
+            {% endif %}
+            <div class="mt-3">
+                <a href="{{ path('app_soumission_show', {'id': score.soumission.id}) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-file-text"></i> Voir la soumission
+                </a>
+            </div>
+        </div>
+
+        {% if enseignant is defined %}
+        <div class="card-footer">
+            <form method="post" action="{{ path('app_score_delete', {'id': score.id}) }}" 
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce score ?');" 
+                  class="d-inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ score.id) }}">
+                <button class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Supprimer
+                </button>
+            </form>
+            <a href="{{ path('app_score_edit', {'id': score.id}) }}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Modifier
+            </a>
+            <a href="{{ path('app_score_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+    {% else %}
+        Pas de contenu
+    {% endif %}
+{% endblock %}
+
+{% block student_content %}
+    {% if student is defined %}
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Ma note</h1>
+                <div>
+                    <a href="{{ path('app_score_index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header bg-primary text-dark">
+                    <h3 class="mb-0">
+                        <i class="bi bi-clipboard-check"></i>
+                        Score #{{ score.id }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4><i class="bi bi-file-earmark-text"></i> Informations de l'évaluation</h4>
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th width="40%">Évaluation</th>
+                                        <td><strong>{{ score.soumission.evaluation.titre }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Type</th>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ score.soumission.evaluation.typeEvaluation }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Cours</th>
+                                        <td>{{ score.soumission.evaluation.cours ? score.soumission.evaluation.cours.codeCours : 'N/A' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date de soumission</th>
+                                        <td>{{ score.soumission.dateSoumission|date('d/m/Y H:i') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Statut soumission</th>
+                                        <td>
+                                            {% if score.soumission.statut == 'soumise' %}
+                                                <span class="badge bg-success">Soumise à temps</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">En retard</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4><i class="bi bi-star-fill"></i> Notation</h4>
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th width="40%">Note obtenue</th>
+                                        <td>
+                                            <h3 class="mb-0">
+                                                {% set pourcentage = (score.note / score.noteSur * 100)|round %}
+                                                <span class="badge {% if pourcentage >= 50 %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {{ score.note }}/{{ score.noteSur }}
+                                                </span>
+                                            </h3>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Pourcentage</th>
+                                        <td>
+                                            <h4 class="mb-0">
+                                                <span class="badge {% if pourcentage >= 50 %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {{ pourcentage }}%
+                                                </span>
+                                            </h4>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Résultat</th>
+                                        <td>
+                                            {% if pourcentage >= 50 %}
+                                                <span class="badge bg-success fs-5">✓ RÉUSSI</span>
+                                            {% else %}
+                                                <span class="badge bg-danger fs-5">✗ ÉCHOUÉ</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Statut de correction</th>
+                                        <td>
+                                            {% if score.statutCorrection == 'corrige' %}
+                                                <span class="badge bg-success">Corrigé</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">En cours</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date de correction</th>
+                                        <td>
+                                            <i class="bi bi-calendar-check"></i>
+                                            {{ score.dateCorrection|date('d/m/Y à H:i') }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if score.commentaireEnseignant %}
+                    <div class="mt-4">
+                        <h4><i class="bi bi-chat-left-text"></i> Commentaire de l'enseignant</h4>
+                        <div class="alert alert-info">
+                            <i class="bi bi-quote"></i>
+                            {{ score.commentaireEnseignant|nl2br }}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mt-4">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle"></i>
+                            Aucun commentaire de l'enseignant
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# Affichage des fichiers pour l'étudiant #}
+                    <div class="mt-4">
+                        <h4><i class="bi bi-file-pdf"></i> Fichiers</h4>
+                        <div class="row">
+                            {# Fichier de l'évaluation #}
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <strong>Fichier de l'évaluation (énoncé)</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if score.soumission.evaluation.pdfFilename %}
+                                            <a href="{{ vich_uploader_asset(score.soumission.evaluation, 'pdfFile') }}" 
+                                               target="_blank" 
+                                               class="btn btn-info btn-sm w-100">
+                                                <i class="fas fa-download"></i> Télécharger l'énoncé
+                                            </a>
+                                        {% else %}
+                                            <p class="text-muted mb-0"><i class="fas fa-times"></i> Aucun fichier</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Fichier de la soumission #}
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <strong>Votre soumission</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if score.soumission.pdfFilename %}
+                                            <a href="{{ vich_uploader_asset(score.soumission, 'pdfFile') }}" 
+                                               target="_blank" 
+                                               class="btn btn-success btn-sm w-100">
+                                                <i class="fas fa-download"></i> Télécharger votre soumission
+                                            </a>
+                                        {% else %}
+                                            <p class="text-muted mb-0"><i class="fas fa-times"></i> Aucun fichier</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Lien vers la soumission #}
+                    <div class="mt-3">
+                        <a href="{{ path('app_soumission_show', {'id': score.soumission.id}) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-file-text"></i> Voir la soumission
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

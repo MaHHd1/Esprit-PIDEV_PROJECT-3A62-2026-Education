@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle question{% endblock %}
+
+{% block body %}
+
+<div class="container mt-4">
+    <h2>Ajouter une question au quiz : {{ quiz.titre }}</h2>
+
+    {{ form_start(form) }}
+
+    {{ form_row(form.enonce) }}
+    {{ form_row(form.type_question) }}
+    {{ form_row(form.points) }}
+    {{ form_row(form.temps_suggere_secondes) }}
+
+    <div id="answers-area"></div>
+
+    <input type="hidden" id="answers" name="answers">
+
+    <button class="btn btn-primary mt-3">Enregistrer</button>
+
+    {{ form_end(form) }}
+</div>
+
+<script>
+const typeSelect = document.querySelector('#question_type_question');
+const answersArea = document.getElementById('answers-area');
+
+typeSelect.addEventListener('change', function () {
+    answersArea.innerHTML = '';
+
+    if (this.value === 'choix_multiple') {
+        answersArea.innerHTML = `
+            <h5>Réponses (cochez les bonnes réponses)</h5>
+            <div class="answer-item">
+                <input type="text" placeholder="Réponse A" class="answer-text">
+                <input type="checkbox" class="answer-correct"> Correct
+            </div>
+            <div class="answer-item">
+                <input type="text" placeholder="Réponse B" class="answer-text">
+                <input type="checkbox" class="answer-correct"> Correct
+            </div>
+        `;
+    }
+
+    if (this.value === 'vrai_faux') {
+        answersArea.innerHTML = `
+            <h5>Bonne réponse</h5>
+            <select id="vf">
+                <option value="true">Vrai</option>
+                <option value="false">Faux</option>
+            </select>
+        `;
+    }
+});
+
+document.querySelector('form').addEventListener('submit', function (e) {
+    let answers = [];
+
+    if (typeSelect.value === 'choix_multiple') {
+        document.querySelectorAll('.answer-item').forEach((el) => {
+            const text = el.querySelector('.answer-text').value;
+            const correct = el.querySelector('.answer-correct').checked;
+            if (text.trim() !== '') {
+                answers.push({text, correct});
+            }
+        });
+    }
+
+    if (typeSelect.value === 'vrai_faux') {
+        answers.push({
+            text: 'Vrai ou Faux',
+            correct: document.getElementById('vf').value === 'true'
+        });
+    }
+
+    document.getElementById('answers').value = JSON.stringify(answers);
+});
+</script>
+
+{% endblock %}

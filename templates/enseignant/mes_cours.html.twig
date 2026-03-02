@@ -1,0 +1,152 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Mes Cours - Enseignant{% endblock %}
+{% block page_title %}Mes Cours{% endblock %}
+{% block page_subtitle %}Cours assignes a {{ enseignant.prenom }} {{ enseignant.nom }}{% endblock %}
+{% block page_actions %}
+    <a href="{{ path('app_enseignant_mes_cours_new') }}" class="btn btn-primary">Ajouter un Cours</a>
+{% endblock %}
+
+{% block main_content %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-1">Total inscrits</h6>
+                    <h3 class="mb-0">{{ total_students|default(0) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-1">Taux activite etudiants</h6>
+                    <h3 class="mb-0">{{ activity_rate|default(0) }}%</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Top cours consultes</h6>
+                    {% if top_viewed_courses|default([])|length > 0 %}
+                        <ul class="list-group list-group-flush">
+                            {% for courseView in top_viewed_courses|slice(0, 4) %}
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-start">
+                                    <div class="me-2">
+                                        <div class="fw-semibold">{{ courseView.cours_titre|slice(0, 42) }}{% if courseView.cours_titre|length > 42 %}...{% endif %}</div>
+                                        <small class="text-muted">{{ courseView.cours_code }}</small>
+                                    </div>
+                                    <span class="badge bg-light text-dark border">{{ courseView.views }} vues</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="small text-muted">Aucune vue pour le moment.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Liste des cours ({{ cours|length }})</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end mb-3">
+                <div class="col-md-5">
+                    <label class="form-label mb-1">Recherche</label>
+                    <input
+                        type="text"
+                        name="q"
+                        class="form-control"
+                        placeholder="Titre, code, description..."
+                        value="{{ filters.q|default('') }}"
+                    >
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-1">Visibilite</label>
+                    <select name="statut" class="form-select">
+                        <option value="" {{ (filters.statut|default('')) == '' ? 'selected' : '' }}>Tous</option>
+                        <option value="ouvert" {{ (filters.statut|default('')) == 'ouvert' ? 'selected' : '' }}>Affiche</option>
+                        <option value="brouillon" {{ (filters.statut|default('')) == 'brouillon' ? 'selected' : '' }}>Masque</option>
+                        <option value="ferme" {{ (filters.statut|default('')) == 'ferme' ? 'selected' : '' }}>Ferme</option>
+                        <option value="archive" {{ (filters.statut|default('')) == 'archive' ? 'selected' : '' }}>Archive</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-1">Module</label>
+                    <select name="module_id" class="form-select">
+                        <option value="" {{ (filters.module_id|default('')) == '' ? 'selected' : '' }}>Tous</option>
+                        {% for module in modules|default([]) %}
+                            <option value="{{ module.id }}" {{ (filters.module_id|default('')) == (module.id ~ '') ? 'selected' : '' }}>
+                                {{ module.titreModule }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button class="btn btn-primary w-100">Filtrer</button>
+                    <a href="{{ path('app_enseignant_mes_cours') }}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+
+            {% if cours|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Titre</th>
+                                <th>Module</th>
+                                <th>Visibilite</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in cours %}
+                                <tr>
+                                    <td><code>{{ c.codeCours }}</code></td>
+                                    <td>{{ c.titre }}</td>
+                                    <td>{{ c.module ? c.module.titreModule : '-' }}</td>
+                                    <td>
+                                        {% if c.statut == 'ouvert' %}
+                                            <span class="badge bg-success">Affiche</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Masque</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <form method="post" action="{{ path('app_enseignant_mes_cours_toggle_visibility', {'id': c.id}) }}" style="display:inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_course_visibility' ~ c.id) }}">
+                                            {% if c.statut == 'ouvert' %}
+                                                <button class="btn btn-sm btn-outline-warning">Masquer</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-success">Afficher</button>
+                                            {% endif %}
+                                        </form>
+                                        <a href="{{ path('app_enseignant_mes_cours_contenus', {'id': c.id}) }}" class="btn btn-sm btn-outline-primary">Contenus</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if pagination is defined and pagination.total_pages > 1 %}
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">Page {{ pagination.current_page }} / {{ pagination.total_pages }}</small>
+                        <div class="btn-group btn-group-sm">
+                            {% set prevPage = pagination.current_page > 1 ? pagination.current_page - 1 : 1 %}
+                            {% set nextPage = pagination.current_page < pagination.total_pages ? pagination.current_page + 1 : pagination.total_pages %}
+                            <a class="btn btn-outline-secondary {{ pagination.current_page <= 1 ? 'disabled' : '' }}" href="{{ path('app_enseignant_mes_cours', {'page': prevPage, 'q': filters.q|default(''), 'statut': filters.statut|default(''), 'module_id': filters.module_id|default('')}) }}">Precedent</a>
+                            <a class="btn btn-outline-secondary {{ pagination.current_page >= pagination.total_pages ? 'disabled' : '' }}" href="{{ path('app_enseignant_mes_cours', {'page': nextPage, 'q': filters.q|default(''), 'statut': filters.statut|default(''), 'module_id': filters.module_id|default('')}) }}">Suivant</a>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-muted text-center py-4 mb-0">Aucun cours assigne pour le moment.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

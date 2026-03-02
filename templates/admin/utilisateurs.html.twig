@@ -1,0 +1,287 @@
+{# utilisateurs.html.twig #}
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Liste des Utilisateurs - Eduport{% endblock %}
+
+{% block admin_content %}
+    <!-- Title -->
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-2 mb-sm-0">Utilisateurs</h1>
+        </div>
+    </div>
+
+    <div class="card bg-transparent">
+
+        <!-- Card header START -->
+        <div class="card-header bg-transparent border-bottom px-0">
+            <!-- Search and select START -->
+            <div class="row g-3 align-items-center justify-content-between">
+                <!-- Search bar -->
+                <div class="col-md-8">
+                    <form class="rounded position-relative" method="get" id="filterForm">
+                        <input class="form-control bg-transparent" type="search" name="search" placeholder="Rechercher un utilisateur..." aria-label="Search" value="{{ criteria.search|default('') }}">
+                        <button class="bg-transparent p-2 position-absolute top-50 end-0 translate-middle-y border-0 text-primary-hover text-reset" type="submit">
+                            <i class="fas fa-search fs-6 "></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Filter buttons -->
+                <div class="col-md-4">
+                    <div class="d-flex gap-2">
+                        <select name="type" class="form-select form-select-sm" form="filterForm">
+                            <option value="all">Tous les types</option>
+                            {% set typeOptions = filterOptions.types|default(['Étudiant', 'Enseignant', 'Administrateur']) %}
+                            {% for type in typeOptions %}
+                                <option value="{{ type }}" {{ (criteria.type|default('')) == type ? 'selected' : '' }}>{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="statut" class="form-select form-select-sm" form="filterForm">
+                            <option value="all">Tous les statuts</option>
+                            {% set statutOptions = filterOptions.statuts|default(['actif', 'inactif', 'suspendu', 'diplome']) %}
+                            {% for statut in statutOptions %}
+                                <option value="{{ statut }}" {{ (criteria.statut|default('')) == statut ? 'selected' : '' }}>{{ statut|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- Search and select END -->
+        </div>
+        <!-- Card header END -->
+
+        <!-- Card body START -->
+        <div class="card-body px-0">
+            <div class="table-responsive border-0">
+                <table class="table table-dark-gray align-middle p-4 mb-0 table-hover">
+                    <!-- Table head -->
+                    <thead>
+                    <tr>
+                        <th scope="col" class="border-0 rounded-start">Utilisateur</th>
+                        <th scope="col" class="border-0">Type</th>
+                        <th scope="col" class="border-0">Email</th>
+                        <th scope="col" class="border-0">Informations</th>
+                        <th scope="col" class="border-0">Statut</th>
+                        <th scope="col" class="border-0">Date création</th>
+                        <th scope="col" class="border-0 rounded-end">Actions</th>
+                    </tr>
+                    </thead>
+
+                    <!-- Table body START -->
+                    <tbody>
+                    {% if users is defined and users is not empty %}
+                        {% for user in users %}
+                            <tr>
+                                <!-- Table data -->
+                                <td>
+                                    <div class="d-flex align-items-center position-relative">
+                                        <!-- Avatar -->
+                                        <div class="avatar avatar-md">
+                                            <div class="avatar-img rounded-circle bg-{{ user.type == 'etudiant' ? 'success' : (user.type == 'enseignant' ? 'warning' : 'purple') }} bg-opacity-10" style="width: 40px; height: 40px;">
+                                                <span class="text-{{ user.type == 'etudiant' ? 'success' : (user.type == 'enseignant' ? 'warning' : 'purple') }} position-absolute top-50 start-50 translate-middle fw-bold">
+                                                    {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-0 ms-3">
+                                            <!-- Title -->
+                                            <h6 class="mb-0">{{ user.prenom }} {{ user.nom }}</h6>
+                                            {% if user.matricule is defined and user.matricule is not empty %}
+                                                <small class="text-muted">{{ user.matricule }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Table data -->
+                                <td>
+                                    <span class="badge bg-{{ user.type == 'etudiant' ? 'success' : (user.type == 'enseignant' ? 'warning' : 'purple') }}">
+                                        {% if user.type == 'etudiant' %}Étudiant
+                                        {% elseif user.type == 'enseignant' %}Enseignant
+                                        {% else %}Administrateur
+                                        {% endif %}
+                                    </span>
+                                </td>
+
+                                <!-- Table data -->
+                                <td>{{ user.email }}</td>
+
+                                <!-- Table data -->
+                                <td>
+                                    {% if user.type == 'etudiant' %}
+                                        <div class="small">
+                                            <div><strong>Niveau:</strong> {{ user.niveau|default('') }}</div>
+                                            <div><strong>Spécialisation:</strong> {{ user.specialisation|default('') }}</div>
+                                        </div>
+                                    {% elseif user.type == 'enseignant' %}
+                                        <div class="small">
+                                            <div><strong>Spécialité:</strong> {{ user.specialite|default('') }}</div>
+                                            <div><strong>Expérience:</strong> {{ user.experience|default('') }} ans</div>
+                                        </div>
+                                    {% else %}
+                                        <div class="small">
+                                            <div><strong>Département:</strong> {{ user.departement|default('') }}</div>
+                                            <div><strong>Fonction:</strong> {{ user.fonction|default('') }}</div>
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Table data -->
+                                <td>
+                                    <span class="badge bg-{{ user.statut == 'actif' or user.statut == 'Actif' ? 'success' : 'secondary' }}">
+                                        {{ user.statut }}
+                                    </span>
+                                </td>
+
+                                <!-- Table data -->
+                                <td>{{ user.date_creation|date('d/m/Y H:i') }}</td>
+
+                                <!-- Table data -->
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <!-- Voir button -->
+                                        <a href="{{ path('app_administrateur_utilisateur_show', {'type': user.type, 'id': user.id}) }}" class="btn btn-light btn-round me-1 mb-1 mb-md-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Voir">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        <!-- Modifier button -->
+                                        {% if user.type == 'etudiant' %}
+                                            <a href="{{ path('app_etudiant_edit', {'id': user.id}) }}" class="btn btn-success-soft btn-round me-1 mb-1 mb-md-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Modifier">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                        {% elseif user.type == 'enseignant' %}
+                                            <a href="{{ path('app_enseignant_edit', {'id': user.id}) }}" class="btn btn-warning-soft btn-round me-1 mb-1 mb-md-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Modifier">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ path('app_administrateur_edit', {'id': user.id}) }}" class="btn btn-primary-soft btn-round me-1 mb-1 mb-md-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Modifier">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                        {% endif %}
+
+                                        <!-- Delete button with modal trigger -->
+                                        <button type="button" class="btn btn-danger-soft btn-round me-1 mb-1 mb-md-0" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-people display-1 text-muted"></i>
+                                <h5 class="mt-3">Aucun utilisateur trouvé</h5>
+                                <p class="text-muted">Aucun utilisateur ne correspond à vos critères de recherche.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                    <!-- Table body END -->
+                </table>
+            </div>
+        </div>
+        <!-- Card body END -->
+
+        <!-- Card footer START -->
+        <div class="card-footer bg-transparent pt-0 px-0">
+            <!-- Pagination START -->
+            <div class="d-sm-flex justify-content-sm-between align-items-sm-center">
+                <!-- Content -->
+                <p class="mb-0 text-center text-sm-start">
+                    {% if users is defined and users is not empty %}
+                        Affichage de {{ users|length }} utilisateur(s)
+                    {% else %}
+                        Aucun utilisateur à afficher
+                    {% endif %}
+                </p>
+                <!-- Pagination -->
+                {% if stats is defined and stats.totalPages is defined and stats.totalPages > 1 %}
+                    <nav class="d-flex justify-content-center mb-0" aria-label="navigation">
+                        <ul class="pagination pagination-sm pagination-primary-soft mb-0 pb-0 px-0">
+                            <li class="page-item mb-0 {% if stats.page <= 1 %}disabled{% endif %}">
+                                <a class="page-link" href="{% if stats.page > 1 %}?page={{ stats.page - 1 }}{% else %}#{% endif %}" tabindex="-1">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+
+                            {% for i in range(1, min(5, stats.totalPages)) %}
+                                <li class="page-item mb-0 {% if stats.page == i %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                </li>
+                            {% endfor %}
+
+                            {% if stats.totalPages > 5 %}
+                                <li class="page-item mb-0 disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item mb-0 {% if stats.page >= stats.totalPages %}disabled{% endif %}">
+                                <a class="page-link" href="{% if stats.page < stats.totalPages %}?page={{ stats.page + 1 }}{% else %}#{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+            <!-- Pagination END -->
+        </div>
+        <!-- Card footer END -->
+    </div>
+
+    <!-- Delete Modals for each user -->
+    {% if users is defined and users is not empty %}
+        {% for user in users %}
+            <!-- Delete Confirmation Modal for {{ user.id }} -->
+            <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ user.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel{{ user.id }}">Confirmer la suppression</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{ user.prenom }} {{ user.nom }}</strong> ({{ user.email }}) ?</p>
+                            <p class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Cette action est irréversible.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <form method="post" action="
+                                {% if user.type == 'etudiant' %}
+                                    {{ path('app_etudiant_delete', {'id': user.id}) }}
+                                {% elseif user.type == 'enseignant' %}
+                                    {{ path('app_enseignant_delete', {'id': user.id}) }}
+                                {% else %}
+                                    {{ path('app_administrateur_delete', {'id': user.id}) }}
+                                {% endif %}
+                            ">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        // Auto-submit form when filter selects change
+        document.querySelectorAll('select[name="type"], select[name="statut"]').forEach(select => {
+            select.addEventListener('change', function() {
+                this.form.submit();
+            });
+        });
+
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+        });
+    </script>
+{% endblock %}

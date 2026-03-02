@@ -1,0 +1,246 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Modifier la question{% endblock %}
+
+{% block main_content %}
+<section class="pt-5 pb-5">
+    <div class="container">
+        {{ form_start(form, {'attr': {'id': 'question-edit-form', 'novalidate': 'novalidate'}}) }}
+
+        <div class="alert alert-info">
+            Type : <strong>{{ question.type_question ?? question.typeQuestion ?? 'Non spécifié' }}</strong>
+        </div>
+
+        {{ form_row(form.texte, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+        {{ form_row(form.points, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.explication_reponse, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+
+        <!-- Hidden type field -->
+        {{ form_widget(form.type_question, {'attr': {'hidden': 'hidden', 'id': 'question-type-field'}}) }}
+
+        {% set questionMetadata = question.metadata ?? {} %}
+        {% set questionType = question.type_question ?? question.typeQuestion %}
+        
+        <!-- Reverse mapping for display -->
+        {% set typeMapping = {
+            'choix_multiple': 'qcm',
+            'vrai_faux': 'vrai_faux',
+            'texte_libre': 'texte_libre'
+        } %}
+        {% set frontendType = typeMapping[questionType] ?? 'qcm' %}
+        
+        {# Store frontendType in a data attribute so JavaScript can access it #}
+        <div id="question-data-container" 
+             data-frontend-type="{{ frontendType }}"
+             data-question-type="{{ questionType }}"
+             style="display: none;"></div>
+        
+        {% if frontendType == 'qcm' %}
+            <h5>Options</h5>
+            <div id="options-container">
+                {% if questionMetadata.options is defined %}
+                    {% for option in questionMetadata.options %}
+                        <div class="option-item mb-2 p-2 border rounded">
+                            <div class="d-flex align-items-center">
+                                <input class="option-text form-control me-2" 
+                                       value="{{ option.text }}" 
+                                       placeholder="Texte de l'option">
+                                <div class="form-check me-2">
+                                    <input class="form-check-input option-correct" 
+                                           type="checkbox" 
+                                           {{ option.isCorrect ? 'checked' }}>
+                                    <label class="form-check-label">Correct</label>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger remove-option">×</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <button type="button" id="add-option" class="btn btn-sm btn-primary mt-2">
+                Ajouter option
+            </button>
+
+        {% elseif frontendType == 'vrai_faux' %}
+            <h5>Réponse correcte</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="vf" id="vf-true" value="true"
+                    {{ (questionMetadata.correct is defined and questionMetadata.correct == 'true') ? 'checked' }}>
+                <label class="form-check-label" for="vf-true">Vrai</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="vf" id="vf-false" value="false"
+                    {{ (questionMetadata.correct is defined and questionMetadata.correct == 'false') ? 'checked' }}>
+                <label class="form-check-label" for="vf-false">Faux</label>
+            </div>
+
+        {% elseif frontendType == 'texte_libre' %}
+            <h5>Mots-clés attendus</h5>
+            <input id="keywords-input" class="form-control"
+                   value="{{ questionMetadata.keywords is defined ? questionMetadata.keywords|join(', ') : '' }}"
+                   placeholder="Entrez les mots-clés séparés par des virgules">
+        {% endif %}
+
+        <input type="hidden" id="question-data" name="question_data">
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">
+                Enregistrer les modifications
+            </button>
+            <a href="{{ path('quiz_manage_questions', {'id': question.quiz.id}) }}" class="btn btn-secondary">
+                Annuler
+            </a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+
+<script>
+// Get the question type from data attributes
+const dataContainer = document.getElementById('question-data-container');
+const frontendType = dataContainer ? dataContainer.getAttribute('data-frontend-type') : 'qcm';
+const questionType = dataContainer ? dataContainer.getAttribute('data-question-type') : '';
+
+console.log('Editing question type:', questionType, '->', frontendType);
+
+// Add option functionality for QCM
+const addOptionBtn = document.getElementById('add-option');
+if (addOptionBtn) {
+    addOptionBtn.addEventListener('click', () => {
+        const container = document.getElementById('options-container');
+        if (!container) return;
+        
+        const div = document.createElement('div');
+        div.className = "option-item mb-2 p-2 border rounded";
+        
+        div.innerHTML = `
+            <div class="d-flex align-items-center">
+                <input class="option-text form-control me-2" placeholder="Texte de l'option">
+                <div class="form-check me-2">
+                    <input class="form-check-input option-correct" type="checkbox">
+                    <label class="form-check-label">Correct</label>
+                </div>
+                <button type="button" class="btn btn-sm btn-danger remove-option">×</button>
+            </div>
+        `;
+        
+        container.appendChild(div);
+        
+        // Add remove functionality
+        const removeBtn = div.querySelector('.remove-option');
+        removeBtn.addEventListener('click', function() {
+            div.remove();
+        });
+    });
+}
+
+// Add remove functionality to existing options
+document.querySelectorAll('.remove-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+        this.closest('.option-item').remove();
+    });
+});
+
+// Form submission handler
+document.getElementById('question-edit-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    console.log('Form submission started...');
+    console.log('Frontend type:', frontendType);
+    
+    // Prepare question data
+    let data = {type: frontendType};
+    
+    if (frontendType === 'qcm') {
+        data.options = [];
+        
+        document.querySelectorAll('.option-item').forEach(o => {
+            const textInput = o.querySelector('.option-text');
+            const correctCheckbox = o.querySelector('.option-correct');
+            
+            if (textInput && correctCheckbox) {
+                const text = textInput.value.trim();
+                if (text) { // Only include if text is not empty
+                    data.options.push({
+                        text: text,
+                        isCorrect: correctCheckbox.checked
+                    });
+                }
+            }
+        });
+        
+        console.log('QCM options collected:', data.options);
+        
+        // Validation
+        if (data.options.length < 2) {
+            alert('Un QCM doit avoir au moins 2 options');
+            return false;
+        }
+        
+        const hasCorrect = data.options.some(opt => opt.isCorrect);
+        if (!hasCorrect) {
+            alert('Au moins une option doit être marquée comme correcte');
+            return false;
+        }
+    }
+    
+    if (frontendType === 'vrai_faux') {
+        const selected = document.querySelector('input[name="vf"]:checked');
+        if (!selected) {
+            alert('Veuillez sélectionner la réponse correcte (Vrai ou Faux)');
+            return false;
+        }
+        data.correct = selected.value;
+        console.log('Vrai/Faux correct answer:', data.correct);
+    }
+    
+    if (frontendType === 'texte_libre') {
+        const keywordsInput = document.getElementById('keywords-input');
+        if (keywordsInput) {
+            const keywords = keywordsInput.value.trim();
+            data.keywords = keywords ? keywords.split(',').map(k => k.trim()).filter(k => k.length > 0) : [];
+            console.log('Text keywords:', data.keywords);
+        }
+    }
+    
+    // Set the hidden field
+    const questionDataField = document.getElementById('question-data');
+    if (questionDataField) {
+        questionDataField.value = JSON.stringify(data);
+        console.log('Question data set:', data);
+    } else {
+        console.error('Question data field not found!');
+        alert('Erreur: champ de données manquant');
+        return false;
+    }
+    
+    // Submit the form
+    console.log('Submitting form...');
+    this.submit();
+});
+</script>
+
+<style>
+.option-item {
+    transition: all 0.2s ease;
+}
+.remove-option {
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #dc3545;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+.remove-option:hover {
+    color: #c82333;
+    transform: scale(1.1);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,291 @@
+{% extends 'etudiant/student_base.html.twig' %}
+
+{% block title %}Générer un Quiz IA - Novalearn{% endblock %}
+
+{% block student_content %}
+
+<div class="mb-4">
+    <h3 class="mb-0">🤖 Générer un Quiz d'Auto-évaluation</h3>
+    <p class="text-muted mt-1">Génère un quiz personnalisé avec l'IA pour t'entraîner !</p>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+{% endfor %}
+{% if error %}
+    <div class="alert alert-danger alert-dismissible fade show">{{ error }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+{% endif %}
+
+<!-- Notification sauvegarde (injectée par JS) -->
+<div id="saveNotif" style="display:none"></div>
+
+<div class="row g-4">
+
+    <!-- Formulaire -->
+    <div class="col-lg-{% if historiqueAutoeval is not empty %}7{% else %}12{% endif %}">
+        <div class="card border mb-4">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="generateForm">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mode de génération</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="mode" value="subject" id="modeSubject" checked>
+                            <label class="form-check-label" for="modeSubject">📝 Par sujet</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="mode" value="document" id="modeDoc">
+                            <label class="form-check-label" for="modeDoc">📄 Par document (.txt)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="mode" value="cours" id="modeCours">
+                            <label class="form-check-label" for="modeCours">🎓 Depuis un cours</label>
+                        </div>
+                    </div>
+
+                    <div id="subjectSection">
+                        <div class="mb-3">
+                            <label class="form-label">Sujet du quiz</label>
+                            <input type="text" name="subject" class="form-control" placeholder="Ex: La photosynthèse, Les bases de Python...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Niveau</label>
+                            <select name="level" class="form-select">
+                                <option value="débutant">Débutant</option>
+                                <option value="intermédiaire" selected>Intermédiaire</option>
+                                <option value="avancé">Avancé</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="documentSection" style="display:none">
+                        <div class="mb-3">
+                            <label class="form-label">Uploader un document (.txt)</label>
+                            <input type="file" name="document" class="form-control" accept=".txt">
+                        </div>
+                    </div>
+
+                    <div id="coursSection" style="display:none">
+                        <div class="mb-3">
+                            <label class="form-label">Sélectionner un cours</label>
+                            {% if coursList is not empty %}
+                                <select name="cours_id" class="form-select">
+                                    <option value="">-- Choisir un cours --</option>
+                                    {% for cours in coursList %}
+                                        <option value="{{ cours.id }}" {% if selectedCoursId == cours.id %}selected{% endif %}>
+                                            {{ cours.titre }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <div class="alert alert-warning mb-0 small">Aucun cours disponible.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de questions</label>
+                        <select name="nb_questions" class="form-select">
+                            <option value="5">5 questions</option>
+                            <option value="10">10 questions</option>
+                            <option value="15">15 questions</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-stars me-1"></i>Générer le Quiz
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── Aperçu quiz généré ── -->
+        {% if quiz %}
+        <div class="card border border-warning mb-3">
+            <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
+                <span class="fw-bold">👀 Aperçu : {{ quiz.title }}</span>
+                <span class="badge bg-secondary">{{ quiz.questions|length }} questions</span>
+            </div>
+            <div class="card-body">
+
+                <div class="alert alert-warning py-2">
+                    ⚠️ Ce quiz n'est <strong>pas encore sauvegardé</strong>. Acceptez-le ou régénérez.
+                </div>
+
+                <!-- Questions en aperçu -->
+                <div class="row g-3" id="quizForm">
+                    {% for i, q in quiz.questions %}
+                    <div class="col-12">
+                        <div class="card border-light bg-light">
+                            <div class="card-body py-3">
+                                <h6 class="fw-bold mb-2">
+                                    <span class="text-secondary me-2">{{ '%02d'|format(i + 1) }}.</span>{{ q.question }}
+                                </h6>
+                                <ul class="list-unstyled mb-2">
+                                    {% for option in q.options %}
+                                    <li class="mb-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio"
+                                                   name="q{{ i }}" value="{{ option|slice(0,1) }}"
+                                                   id="q{{ i }}_{{ loop.index }}">
+                                            <label class="form-check-label" for="q{{ i }}_{{ loop.index }}">{{ option }}</label>
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                <div id="feedback{{ i }}" style="display:none"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Score + Corriger -->
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="fw-bold fs-5 mb-0" id="score"></p>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="corriger()">
+                                <i class="bi bi-check-circle me-1"></i>Corriger
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons Accepter / Régénérer -->
+                <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-success flex-grow-1" id="btnAccepter" onclick="accepterQuiz()">
+                        <i class="bi bi-check-lg me-1"></i>✅ Accepter & Sauvegarder
+                    </button>
+                    <a href="{{ path('quiz_ai_generate') }}" class="btn btn-outline-secondary flex-grow-1">
+                        <i class="bi bi-arrow-clockwise me-1"></i>🔄 Régénérer
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bloc auto-évaluations -->
+    {% if historiqueAutoeval is not empty %}
+    <div class="col-lg-5">
+        <div class="card border h-100">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-journal-check me-2"></i>Mes Auto-évaluations</span>
+                <span class="badge bg-white text-primary">{{ historiqueAutoeval|length }}</span>
+            </div>
+            <div class="card-body p-0" style="max-height: 520px; overflow-y: auto;">
+                <ul class="list-group list-group-flush">
+                    {% for q in historiqueAutoeval %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div>
+                            <div class="fw-bold small">{{ q.titre }}</div>
+                            <div class="text-muted" style="font-size:11px;">
+                                {{ q.questions|length }} question(s) —
+                                {{ q.dateCreation ? q.dateCreation|date('d/m/Y H:i') : 'N/A' }}
+                            </div>
+                        </div>
+                        <a href="{{ path('quiz_show_complet', {id: q.id}) }}" class="btn btn-sm btn-outline-primary ms-2">
+                            <i class="bi bi-play-fill"></i> Passer
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// Toggle sections formulaire
+document.querySelectorAll('input[name="mode"]').forEach(r => {
+    r.addEventListener('change', function () {
+        document.getElementById('subjectSection').style.display  = this.value === 'subject'  ? '' : 'none';
+        document.getElementById('documentSection').style.display = this.value === 'document' ? '' : 'none';
+        document.getElementById('coursSection').style.display    = this.value === 'cours'    ? '' : 'none';
+    });
+});
+
+{% if selectedCoursId %}
+// ✅ Remettre le bon mode actif si on revient après génération depuis un cours
+document.getElementById('modeCours').checked = true;
+document.getElementById('subjectSection').style.display  = 'none';
+document.getElementById('coursSection').style.display    = '';
+{% endif %}
+
+{% if quiz %}
+const questions = {{ quiz.questions|json_encode|raw }};
+const saveUrl   = '{{ saveUrl }}';
+
+// ✅ Payload enrichi avec le cours_id
+const quizPayload = Object.assign({}, {{ quiz|json_encode|raw }}, {
+    cours_id: {{ selectedCoursId is not null ? selectedCoursId : 'null' }}
+});
+
+// Corriger les réponses
+function corriger() {
+    let score = 0;
+    questions.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const feedback = document.getElementById(`feedback${i}`);
+        feedback.style.display = '';
+        if (selected && selected.value === q.correct) {
+            score++;
+            feedback.innerHTML = `<div class="alert alert-success py-1 mb-0 small">
+                <i class="bi bi-check-circle me-1"></i>Correct ! <em>${q.explanation ?? ''}</em>
+            </div>`;
+        } else {
+            feedback.innerHTML = `<div class="alert alert-danger py-1 mb-0 small">
+                <i class="bi bi-x-circle me-1"></i>Mauvaise réponse. Bonne réponse : <strong>${q.correct}</strong>. <em>${q.explanation ?? ''}</em>
+            </div>`;
+        }
+    });
+    document.getElementById('score').textContent = `Score : ${score} / ${questions.length}`;
+    document.getElementById('score').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Accepter & Sauvegarder
+async function accepterQuiz() {
+    const btn = document.getElementById('btnAccepter');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sauvegarde...';
+
+    try {
+        const res  = await fetch(saveUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(quizPayload),
+        });
+        const json = await res.json();
+
+        const notif = document.getElementById('saveNotif');
+        if (json.success) {
+            notif.innerHTML = `<div class="alert alert-success alert-dismissible fade show">
+                ✅ ${json.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+            notif.style.display = '';
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Sauvegardé !';
+            btn.classList.replace('btn-success', 'btn-secondary');
+            setTimeout(() => location.href = '{{ path('quiz_ai_generate') }}', 1500);
+        } else {
+            throw new Error(json.error ?? 'Erreur inconnue');
+        }
+    } catch (e) {
+        document.getElementById('saveNotif').innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+        document.getElementById('saveNotif').style.display = '';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>✅ Accepter & Sauvegarder';
+    }
+}
+{% endif %}
+</script>
+{% endblock %}

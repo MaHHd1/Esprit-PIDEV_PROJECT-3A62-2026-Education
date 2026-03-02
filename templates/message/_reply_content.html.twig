@@ -1,0 +1,397 @@
+<style>
+    /* ── Fonts ── */
+    .reply-page { font-family: 'Roboto', sans-serif; }
+    .reply-page h3,
+    .reply-page h5,
+    .reply-page .form-label { font-family: 'Heebo', sans-serif; }
+
+    /* ── En-tête ── */
+    .reply-page .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.75rem;
+    }
+    .reply-page .page-header h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: .2rem;
+    }
+    .reply-page .page-header .subtitle {
+        font-size: .82rem;
+        color: #6c757d;
+    }
+    .reply-page .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .45rem 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #fff;
+        color: #495057;
+        font-size: .82rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background .2s, border-color .2s, color .2s;
+        white-space: nowrap;
+    }
+    .reply-page .btn-back:hover {
+        background: #f0f4ff;
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+
+    /* ── Message original ── */
+    .original-card {
+        background: linear-gradient(135deg, #f0f4ff 0%, #f8f9fa 100%);
+        border: 1px solid #c7d7fd;
+        border-left: 5px solid #0d6efd;
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.75rem;
+        position: relative;
+    }
+    .original-card .quoted-label {
+        position: absolute;
+        top: -10px;
+        left: 1.2rem;
+        background: #0d6efd;
+        color: #fff;
+        font-size: .68rem;
+        font-weight: 700;
+        font-family: 'Heebo', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        padding: .15rem .6rem;
+        border-radius: 50px;
+    }
+    .original-card .meta-row {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-wrap: wrap;
+        margin-bottom: .65rem;
+        margin-top: .3rem;
+    }
+    .original-card .avatar-sm {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: #0d6efd;
+        color: #fff;
+        font-size: .72rem;
+        font-weight: 700;
+        font-family: 'Heebo', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .original-card .meta-name  { font-weight: 700; font-size: .85rem; color: #212529; }
+    .original-card .meta-arrow { color: #adb5bd; font-size: .75rem; }
+    .original-card .meta-dest  { font-size: .85rem; color: #495057; }
+    .original-card .meta-date  { font-size: .78rem; color: #6c757d; margin-left: auto; }
+    .original-card .original-subject {
+        font-family: 'Heebo', sans-serif;
+        font-weight: 700;
+        font-size: .95rem;
+        color: #1a3a6e;
+        margin-bottom: .65rem;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+    .original-card .original-subject .badge-tag {
+        background: rgba(13,110,253,.1);
+        color: #0d6efd;
+        font-size: .7rem;
+        font-weight: 600;
+        padding: .2rem .55rem;
+        border-radius: 50px;
+        font-family: 'Roboto', sans-serif;
+    }
+    .original-card .original-body {
+        font-size: .875rem;
+        color: #495057;
+        line-height: 1.75;
+        border-top: 1px solid #dde6fb;
+        padding-top: .75rem;
+        white-space: pre-wrap;
+    }
+
+    /* ── Formulaire ── */
+    .reply-form-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.07);
+        overflow: hidden;
+    }
+    .reply-form-card .form-header {
+        background: linear-gradient(90deg, #198754 0%, #20c997 100%);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+    .reply-form-card .form-header h5 {
+        margin: 0;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+    .reply-form-card .form-header i { color: rgba(255,255,255,.85); font-size: 1.1rem; }
+    .reply-form-card .form-body { padding: 1.75rem 1.5rem; }
+
+    .reply-page .form-label {
+        font-weight: 600;
+        font-size: .82rem;
+        color: #495057;
+        margin-bottom: .35rem;
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+    }
+    .reply-page .form-label i { color: #0d6efd; }
+
+    .reply-page .form-control,
+    .reply-page .form-select {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        font-size: .875rem;
+        padding: .6rem .9rem;
+        background: #fdfdfd;
+        transition: border-color .2s, box-shadow .2s;
+        width: 100%;
+    }
+    .reply-page .form-control:focus,
+    .reply-page .form-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 3px rgba(25,135,84,.12);
+        background: #fff;
+        outline: none;
+    }
+    .reply-page textarea.form-control { min-height: 160px; resize: vertical; }
+
+    /* ── Bouton envoyer ── */
+    .btn-send-reply {
+        background: linear-gradient(135deg, #198754, #20c997);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .6rem 1.75rem;
+        font-family: 'Heebo', sans-serif;
+        font-weight: 700;
+        font-size: .88rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        transition: opacity .2s, transform .15s;
+        box-shadow: 0 4px 12px rgba(25,135,84,.3);
+    }
+    .btn-send-reply:hover { opacity: .9; transform: translateY(-1px); }
+
+    /* ── Bouton annuler ── */
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .55rem 1.1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #fff;
+        color: #6c757d;
+        font-size: .85rem;
+        text-decoration: none;
+        transition: background .2s, color .2s;
+        cursor: pointer;
+    }
+    .btn-cancel:hover { background: #f8f9fa; color: #495057; }
+
+    /* ── Bannière suggestion IA ── */
+    .ai-prefilled-banner {
+        background: linear-gradient(135deg, #faf5ff 0%, #f0f4ff 100%);
+        border: 1px solid #d8b4fe;
+        border-left: 4px solid #6f42c1;
+        border-radius: 10px;
+        padding: .75rem 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        font-size: .82rem;
+        color: #6f42c1;
+        font-weight: 600;
+        font-family: 'Heebo', sans-serif;
+    }
+    .ai-prefilled-banner i { font-size: 1rem; }
+</style>
+
+<div class="reply-page">
+
+    {# ── En-tête ── #}
+    <div class="page-header">
+        <div>
+            <h3><i class="bi bi-reply-fill text-primary me-2"></i>Répondre</h3>
+            <span class="subtitle">Connecté en tant que <strong>{{ activeUser.username }}</strong></span>
+        </div>
+        <a href="{{ path('message_show', {id: parent.id, u: activeUser.id}) }}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>Retour au message
+        </a>
+    </div>
+
+    {# ── Message original ── #}
+    <div class="original-card">
+        <span class="quoted-label"><i class="bi bi-quote me-1"></i>Message original</span>
+
+        <div class="meta-row">
+            <span class="avatar-sm">{{ parent.expediteur.username|slice(0,1)|upper }}</span>
+            <span class="meta-name">{{ parent.expediteur.username }}</span>
+            <i class="bi bi-arrow-right meta-arrow"></i>
+            <span class="meta-dest">{{ parent.destinataire.username }}</span>
+            <span class="meta-date">
+                <i class="bi bi-clock me-1"></i>
+                {{ parent.dateEnvoi ? parent.dateEnvoi|date('d/m/Y H:i') : '' }}
+            </span>
+        </div>
+
+        <div class="original-subject">
+            <span class="badge-tag">Objet</span>
+            {{ parent.objet }}
+        </div>
+
+        <div class="original-body">{{ parent.contenu|nl2br }}</div>
+    </div>
+
+    {# ── Formulaire de réponse ── #}
+    <div class="reply-form-card">
+
+        <div class="form-header">
+            <i class="bi bi-reply-fill"></i>
+            <h5>Votre réponse</h5>
+        </div>
+
+        <div class="form-body">
+
+            {# ── Bannière si suggestion IA pré-remplie ── #}
+            <div class="ai-prefilled-banner" id="ai-banner" style="display:none;">
+                <i class="bi bi-magic"></i>
+                Réponse pré-remplie par l'IA — modifiez-la avant d'envoyer.
+                <button type="button"
+                        onclick="document.getElementById('ai-banner').style.display='none'"
+                        style="margin-left:auto;background:none;border:none;color:#6f42c1;cursor:pointer;font-size:.9rem;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+                {# Destinataire #}
+                <div class="mb-4">
+                    <label class="form-label" for="{{ form.destinataire.vars.id }}">
+                        <i class="bi bi-person-fill"></i>Destinataire
+                    </label>
+                    {{ form_widget(form.destinataire, { attr: { class: 'form-control' } }) }}
+                    {{ form_errors(form.destinataire) }}
+                </div>
+
+                {# Objet #}
+                <div class="mb-4">
+                    <label class="form-label" for="{{ form.objet.vars.id }}">
+                        <i class="bi bi-tag-fill"></i>Objet
+                    </label>
+                    {{ form_widget(form.objet, { attr: { class: 'form-control' } }) }}
+                    {{ form_errors(form.objet) }}
+                </div>
+
+                {# Contenu — pré-rempli si suggestion IA dans l'URL #}
+                <div class="mb-4">
+                    <label class="form-label" for="{{ form.contenu.vars.id }}">
+                        <i class="bi bi-chat-left-text-fill"></i>Message
+                    </label>
+                    {{ form_widget(form.contenu, {
+                        attr: {
+                            class: 'form-control',
+                            id: 'reply-contenu',
+                            placeholder: 'Écrivez votre réponse ici…'
+                        }
+                    }) }}
+                    {{ form_errors(form.contenu) }}
+                </div>
+
+                {# Actions #}
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{{ path('message_show', {id: parent.id, u: activeUser.id}) }}"
+                       class="btn-cancel">
+                        <i class="bi bi-x-lg"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn-send-reply">
+                        <i class="bi bi-reply-fill"></i>Envoyer la réponse
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+
+    </div>
+    {# ── Modal Message Bloqué ── #}
+{% if app.flashes('danger') %}
+<div class="modal fade show" id="modalBlocked" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-3 shadow">
+            <div class="modal-header border-0 pb-0" style="background:#fff2f2; border-radius:12px 12px 0 0;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-x-fill text-danger" style="font-size:1.5rem;"></i>
+                    <h5 class="modal-title fw-bold text-danger mb-0">Message bloqué</h5>
+                </div>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="font-size:3rem;">🚫</div>
+                <p class="fw-semibold mt-2 mb-0" style="color:#495057;">
+                    Votre réponse n'a pas pu être envoyée.
+                </p>
+                <p class="text-muted small mt-1">
+                    Elle a été détectée comme inappropriée par notre système de modération.
+                </p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pt-0">
+                <button type="button" class="btn btn-danger px-4"
+                        onclick="document.getElementById('modalBlocked').style.display='none'">
+                    <i class="bi bi-pencil-square me-1"></i>Corriger ma réponse
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+</div>
+
+{# ═══════════════════════════════════════════════════════
+   JS — Lire la suggestion depuis l'URL et pré-remplir
+   ═══════════════════════════════════════════════════════ #}
+<script>
+(function () {
+    const params     = new URLSearchParams(window.location.search);
+    const suggestion = params.get('suggestion');
+
+    if (suggestion) {
+        // ✅ Chercher par name au lieu de id — toujours fiable avec Symfony
+        const textarea = document.querySelector('textarea[name*="contenu"]');
+        
+        if (textarea) {
+            textarea.value = suggestion;
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        }
+
+        const banner = document.getElementById('ai-banner');
+        if (banner) banner.style.display = 'flex';
+
+        const cleanUrl = window.location.pathname + '?u={{ activeUser.id }}';
+        window.history.replaceState({}, '', cleanUrl);
+    }
+})();
+</script>

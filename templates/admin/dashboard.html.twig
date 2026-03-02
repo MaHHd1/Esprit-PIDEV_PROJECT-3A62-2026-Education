@@ -1,0 +1,175 @@
+{# dashboard.html.twig #}
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Admin Dashboard - Eduport{% endblock %}
+
+{% block admin_content %}
+    <!-- Title with Chatbot Button -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">Dashboard</h1>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#chatbotModal">
+                    <i class="fas fa-robot me-2"></i>Assistant IA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Counter boxes START -->
+    <div class="row g-4 mb-4">
+        <!-- Counter item -->
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-primary bg-opacity-15 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Digit -->
+                    <div>
+                        <h2 class="purecounter mb-0 fw-bold" data-purecounter-start="0" data-purecounter-end="{{ stats.total_users|default(0) }}" data-purecounter-delay="200">0</h2>
+                        <span class="mb-0 h6 fw-light">Total Utilisateurs</span>
+                    </div>
+                    <!-- Icon -->
+                    <div class="icon-lg rounded-circle bg-primary text-white mb-0"><i class="fas fa-users fa-fw"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Counter item -->
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-success bg-opacity-10 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Digit -->
+                    <div>
+                        <h2 class="purecounter mb-0 fw-bold" data-purecounter-start="0" data-purecounter-end="{{ stats.etudiants|default(0) }}" data-purecounter-delay="200">0</h2>
+                        <span class="mb-0 h6 fw-light">Étudiants</span>
+                    </div>
+                    <!-- Icon -->
+                    <div class="icon-lg rounded-circle bg-success text-white mb-0"><i class="fas fa-user-graduate fa-fw"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Counter item -->
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-warning bg-opacity-10 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Digit -->
+                    <div>
+                        <h2 class="purecounter mb-0 fw-bold" data-purecounter-start="0" data-purecounter-end="{{ stats.enseignants|default(0) }}" data-purecounter-delay="200">0</h2>
+                        <span class="mb-0 h6 fw-light">Enseignants</span>
+                    </div>
+                    <!-- Icon -->
+                    <div class="icon-lg rounded-circle bg-warning text-white mb-0"><i class="fas fa-user-tie fa-fw"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Counter item -->
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-purple bg-opacity-10 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Digit -->
+                    <div>
+                        <h2 class="purecounter mb-0 fw-bold" data-purecounter-start="0" data-purecounter-end="{{ stats.administrateurs|default(0) }}" data-purecounter-delay="200">0</h2>
+                        <span class="mb-0 h6 fw-light">Administrateurs</span>
+                    </div>
+                    <!-- Icon -->
+                    <div class="icon-lg rounded-circle bg-purple text-white mb-0"><i class="fas fa-users-cog fa-fw"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Counter boxes END -->
+
+    <!-- Recent users section -->
+    <div class="row g-4">
+        <!-- Recent Students -->
+        <div class="col-lg-4">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom d-flex justify-content-between align-items-center p-4">
+                    <h5 class="card-header-title">Étudiants récents</h5>
+                    <a href="{{ path('app_administrateur_utilisateurs') }}" class="btn btn-link p-0 mb-0">Voir tous</a>
+                </div>
+                <div class="card-body p-4">
+                    {% if recentEtudiants|length > 0 %}
+                        {% for etudiant in recentEtudiants %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar avatar-sm flex-shrink-0">
+                                    <div class="avatar-img rounded-circle bg-success bg-opacity-10" style="width: 40px; height: 40px;">
+                                        <span class="text-success fw-bold">{{ etudiant.prenom|first|upper }}{{ etudiant.nom|first|upper }}</span>
+                                    </div>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0">{{ etudiant.prenom }} {{ etudiant.nom }}</h6>
+                                    <small class="text-muted">{{ etudiant.matricule }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">Aucun étudiant récent</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Teachers -->
+        <div class="col-lg-4">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom d-flex justify-content-between align-items-center p-4">
+                    <h5 class="card-header-title">Enseignants récents</h5>
+                    <a href="{{ path('app_administrateur_utilisateurs') }}" class="btn btn-link p-0 mb-0">Voir tous</a>
+                </div>
+                <div class="card-body p-4">
+                    {% if recentEnseignants|length > 0 %}
+                        {% for enseignant in recentEnseignants %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar avatar-sm flex-shrink-0">
+                                    <div class="avatar-img rounded-circle bg-warning bg-opacity-10" style="width: 40px; height: 40px;">
+                                        <span class="text-warning fw-bold">{{ enseignant.prenom|first|upper }}{{ enseignant.nom|first|upper }}</span>
+                                    </div>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0">{{ enseignant.prenom }} {{ enseignant.nom }}</h6>
+                                    <small class="text-muted">{{ enseignant.matriculeEnseignant }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">Aucun enseignant récent</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Administrators -->
+        <div class="col-lg-4">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom d-flex justify-content-between align-items-center p-4">
+                    <h5 class="card-header-title">Administrateurs récents</h5>
+                    <a href="{{ path('app_administrateur_utilisateurs') }}" class="btn btn-link p-0 mb-0">Voir tous</a>
+                </div>
+                <div class="card-body p-4">
+                    {% if recentAdmins|length > 0 %}
+                        {% for admin in recentAdmins %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar avatar-sm flex-shrink-0">
+                                    <div class="avatar-img rounded-circle bg-purple bg-opacity-10" style="width: 40px; height: 40px;">
+                                        <span class="text-purple fw-bold">{{ admin.prenom|first|upper }}{{ admin.nom|first|upper }}</span>
+                                    </div>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0">{{ admin.prenom }} {{ admin.nom }}</h6>
+                                    <small class="text-muted">{{ admin.fonction }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">Aucun administrateur récent</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Chatbot Modal -->
+    {% include 'admin/chatbot_modal.html.twig' %}
+{% endblock %}

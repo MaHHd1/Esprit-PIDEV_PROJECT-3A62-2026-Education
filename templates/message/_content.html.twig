@@ -1,0 +1,352 @@
+<style>
+    .inbox-page { font-family: 'Roboto', sans-serif; }
+    .inbox-page h3, .inbox-page h5 { font-family: 'Heebo', sans-serif; }
+
+    /* ── Table header ── */
+    .inbox-page thead th {
+        background: #f8f9fa;
+        font-size: .72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: #6c757d;
+        border-bottom: 2px solid #e9ecef;
+        padding: .9rem 1rem;
+    }
+    .inbox-page thead th:first-child { padding-left: 1.5rem; }
+    .inbox-page thead th:last-child  { padding-right: 1.5rem; }
+
+    /* ── Table rows ── */
+    .inbox-page tbody td {
+        padding: .9rem 1rem;
+        vertical-align: middle;
+        font-size: .875rem;
+        border-color: #f0f0f0;
+    }
+    .inbox-page tbody td:first-child { padding-left: 1.5rem; }
+    .inbox-page tbody td:last-child  { padding-right: 1.5rem; }
+    .inbox-page tbody tr { transition: background .15s; }
+    .inbox-page tbody tr:hover { background: #f8f9fb; }
+    .inbox-page tbody tr.unread-row { background: rgba(13,110,253,.04); }
+
+    /* ── Subject cell ── */
+    .subject-cell {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+    }
+    .subject-icon {
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .85rem;
+        flex-shrink: 0;
+    }
+    .subject-icon.read   { background: rgba(108,117,125,.1); color: #6c757d; }
+    .subject-icon.unread { background: rgba(13,110,253,.12); color: #0d6efd; }
+    .subject-text { display: flex; flex-direction: column; gap: .05rem; }
+    .subject-link {
+        font-family: 'Heebo', sans-serif;
+        font-size: .9rem;
+        color: #212529;
+        text-decoration: none;
+        transition: color .15s;
+        line-height: 1.3;
+    }
+    .subject-link:hover { color: #0d6efd; }
+    .subject-link.fw-bold { font-weight: 700; color: #1a1a2e; }
+    .subject-hint { font-size: .73rem; color: #adb5bd; }
+
+    /* ── Sender avatar ── */
+    .sender-avatar {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: rgba(13,110,253,.12);
+        color: #0d6efd;
+        font-size: .75rem;
+        font-weight: 700;
+        font-family: 'Heebo', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Action buttons ── */
+    .btn-action {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        padding: 0;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .82rem;
+        cursor: pointer;
+        transition: background .2s, color .2s, transform .15s;
+        text-decoration: none;
+        flex-shrink: 0;
+    }
+    .btn-action:hover { transform: scale(1.1); }
+
+    .btn-reply   { background: rgba(13,110,253,.12);  color: #0d6efd; }
+    .btn-reply:hover  { background: #0d6efd;  color: #fff; }
+
+    .btn-archive { background: rgba(25,135,84,.12);  color: #198754; }
+    .btn-archive:hover { background: #198754; color: #fff; }
+
+    .btn-delete  { background: rgba(220,53,69,.12);  color: #dc3545; }
+    .btn-delete:hover  { background: #dc3545;  color: #fff; }
+
+    /* ── Tooltip label ── */
+    .btn-action-wrap { position: relative; display: inline-flex; }
+    .btn-action-wrap .btn-tooltip {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #212529;
+        color: #fff;
+        font-size: .68rem;
+        font-weight: 600;
+        white-space: nowrap;
+        padding: .2rem .5rem;
+        border-radius: 5px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .18s;
+        z-index: 10;
+    }
+    .btn-action-wrap .btn-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%; left: 50%;
+        transform: translateX(-50%);
+        border: 4px solid transparent;
+        border-top-color: #212529;
+    }
+    .btn-action-wrap:hover .btn-tooltip { opacity: 1; }
+
+    /* ── Pagination ── */
+    .inbox-page .pagination .page-link {
+        color: #0d6efd;
+        border-color: #dee2e6;
+        border-radius: 8px !important;
+        margin: 0 2px;
+        font-size: .82rem;
+        padding: .35rem .65rem;
+    }
+    .inbox-page .pagination .page-item.active .page-link {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+        font-weight: 700;
+    }
+    .inbox-page .pagination .page-link:hover {
+        background: rgba(13,110,253,.08);
+        color: #0d6efd;
+    }
+</style>
+
+<div class="inbox-page">
+
+{# ── En-tête ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">
+            <i class="bi bi-inbox-fill text-primary me-2"></i>Inbox
+        </h3>
+        <p class="mb-0 text-muted small">
+            {{ total }} message{% if total > 1 %}s{% endif %} &bull; page {{ page }}/{{ pages }}
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-secondary mb-0"
+           href="{{ path('message_sent', {u: activeUser.id}) }}">
+            <i class="bi bi-send me-1"></i>Envoyés
+        </a>
+        <a class="btn btn-sm btn-outline-secondary mb-0"
+           href="{{ path('message_archive', {u: activeUser.id}) }}">
+            <i class="bi bi-archive me-1"></i>Archives
+        </a>
+        <a class="btn btn-sm btn-primary mb-0"
+           href="{{ path('message_new', {u: activeUser.id}) }}">
+            <i class="bi bi-pencil-square me-1"></i>+ Nouveau
+        </a>
+    </div>
+</div>
+
+{# ── Barre de recherche ── #}
+{% include 'message/_searchbar.html.twig' with {action: path('message_inbox')} %}
+
+{# ── Carte table ── #}
+<div class="card border bg-transparent rounded-3 mt-3">
+
+    <div class="card-header bg-transparent border-bottom py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-envelope-fill text-primary me-2"></i>Messages reçus
+            </h5>
+            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold" id="inbox-total-badge">
+                {{ total }} message{% if total > 1 %}s{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Statut</th>
+                        <th>Objet</th>
+                        <th>Expéditeur</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                {# ✅ ID ici pour le refresh Mercure #}
+                <tbody id="messages-list">
+                {% for m in messages %}
+                    <tr class="{% if m.statut != 'lu' %}unread-row{% endif %}">
+
+                        {# Statut #}
+                        <td>
+                            {% if m.statut == 'lu' %}
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Lu
+                                </span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary">
+                                    <i class="bi bi-envelope-fill me-1"></i>{{ m.statut }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        {# Objet #}
+                        <td>
+                            <div class="subject-cell">
+                                <span class="subject-icon {% if m.statut == 'lu' %}read{% else %}unread{% endif %}">
+                                    <i class="bi bi-envelope{% if m.statut != 'lu' %}-fill{% endif %}"></i>
+                                </span>
+                                <div class="subject-text">
+                                    <a href="{{ path('message_show', {id: m.id, u: activeUser.id}) }}"
+                                       class="subject-link {% if m.statut != 'lu' %}fw-bold{% endif %}">
+                                        {{ m.objet }}
+                                    </a>
+                                    <span class="subject-hint">
+                                        <i class="bi bi-person me-1"></i>{{ m.expediteur.username }}
+                                        {% if m.dateEnvoi %}
+                                            &bull; <i class="bi bi-clock me-1"></i>{{ m.dateEnvoi|date('d/m/Y') }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+
+                        {# Expéditeur #}
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="sender-avatar">
+                                    {{ m.expediteur.username|slice(0,1)|upper }}
+                                </span>
+                                <span class="small">{{ m.expediteur.username }}</span>
+                            </div>
+                        </td>
+
+                        {# Date #}
+                        <td>
+                            <span class="small text-muted">
+                                {% if m.dateEnvoi %}
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ m.dateEnvoi|date('d/m/Y H:i') }}
+                                {% endif %}
+                            </span>
+                        </td>
+
+                        {# ── Actions ── #}
+                        <td>
+                            <div class="d-flex gap-2 align-items-center">
+
+                                {# Répondre #}
+                                <div class="btn-action-wrap">
+                                    <a href="{{ path('message_reply', {id: m.id, u: activeUser.id}) }}"
+                                       class="btn-action btn-reply">
+                                        <i class="bi bi-reply-fill"></i>
+                                    </a>
+                                    <span class="btn-tooltip">Répondre</span>
+                                </div>
+
+                                {# Archiver #}
+                                <div class="btn-action-wrap">
+                                    <form method="post"
+                                          action="{{ path('message_toggle_archive', {id: m.id, u: activeUser.id, from: 'inbox'}) }}">
+                                        <button type="submit" class="btn-action btn-archive">
+                                            <i class="bi bi-archive"></i>
+                                        </button>
+                                    </form>
+                                    <span class="btn-tooltip">Archiver</span>
+                                </div>
+
+                                {# Supprimer #}
+                                <div class="btn-action-wrap">
+                                    <form method="post"
+                                          action="{{ path('message_delete', {id: m.id, u: activeUser.id, from: 'inbox'}) }}"
+                                          onsubmit="return confirm('Supprimer ce message ?');">
+                                        <button type="submit" class="btn-action btn-delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    <span class="btn-tooltip">Supprimer</span>
+                                </div>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
+                            <span class="small">Aucun message dans votre boîte de réception.</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{# ── Pagination ── #}
+{% if pages > 1 %}
+<div class="d-sm-flex justify-content-sm-between align-items-sm-center mt-3">
+    <p class="mb-0 text-muted small">Page <strong>{{ page }}</strong> sur <strong>{{ pages }}</strong></p>
+    <nav>
+        <ul class="pagination pagination-sm mb-0 d-inline-flex">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ path('message_inbox', {u: activeUser.id, page: page - 1, q: q}) }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% for p in 1..pages %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ path('message_inbox', {u: activeUser.id, page: p, q: q}) }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item {% if page == pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ path('message_inbox', {u: activeUser.id, page: page + 1, q: q}) }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+</div>{# /inbox-page #}

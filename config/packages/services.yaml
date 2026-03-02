@@ -1,0 +1,16 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../../src/'
+        exclude:
+            - '../../src/DependencyInjection/'
+            - '../../src/Entity/'
+            - '../../src/Kernel.php'
+
+    # Ton service Groq
+    App\Service\GroqService:
+        arguments:
+            $apiKey: '%env(GROQ_API_KEY)%'

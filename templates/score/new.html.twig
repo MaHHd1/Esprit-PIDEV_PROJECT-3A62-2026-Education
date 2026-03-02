@@ -1,0 +1,189 @@
+{# templates/score/new.html.twig #}
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Attribuer une note{% endblock %}
+
+{% block page_title %}Corriger une soumission{% endblock %}
+{% block page_subtitle %}Attribuer une note et un commentaire{% endblock %}
+
+{% block main_content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-clipboard-check"></i>
+                    Formulaire de notation
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Information :</strong> Une fois un score créé, vous ne pourrez plus en attribuer un autre à cette soumission. Vous pourrez cependant le modifier.
+                </div>
+
+                {# Sélection de la soumission #}
+                <div class="mb-3">
+                    {{ form_row(form.soumission, {
+                        'label': 'Soumission à corriger',
+                        'attr': {'class': 'form-select form-select-lg'}
+                    }) }}
+                </div>
+
+                {# Détails de la soumission (optionnel si tu as les champs) #}
+                <div id="soumission-details" class="alert alert-light border" style="display:none;">
+                    <h6 class="text-primary"><i class="bi bi-file-earmark-text"></i> Détails de la soumission</h6>
+                    <p class="mb-1"><strong>Date de soumission :</strong> <span id="date" class="text-muted">-</span></p>
+                    <p class="mb-1"><strong>Commentaire étudiant :</strong> <span id="contenu" class="text-dark">-</span></p>
+                    <p class="mb-3">
+                        <strong>Fichier PDF :</strong><br>
+                        <a id="fichier-link" target="_blank" class="btn btn-sm btn-primary" style="display:none;">
+                            <i class="fas fa-download"></i> Télécharger la soumission
+                        </a>
+                        <span id="fichier-none" class="text-muted">Aucun fichier</span>
+                    </p>
+                </div>
+
+                <hr>
+
+                {# Note obtenue #}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.note, {
+                            'label': 'Note obtenue',
+                            'attr': {
+                                'class': 'form-control form-control-lg',
+                                'placeholder': 'Ex: 15',
+                                'min': '0',
+                                'step': '0.5'
+                            }
+                        }) }}
+                        <small class="text-muted">
+                            <i class="bi bi-lightbulb"></i>
+                            La note maximale dépend de l'évaluation sélectionnée
+                        </small>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.noteSur, {
+                            'label': 'Note maximale',
+                            'attr': {
+                                'class': 'form-control form-control-lg',
+                                'placeholder': '0',
+                                'readonly': true,
+                                'min': '0',
+                                'step': '0.5'
+                            }
+                        }) }}
+                        <small class="text-muted">Définie dans l'évaluation</small>
+                    </div>
+                </div>
+
+                {# Commentaire #}
+                <div class="mt-3">
+                    {{ form_row(form.commentaireEnseignant, {
+                        'label': 'Commentaire pour l\'étudiant',
+                        'attr': {
+                            'class': 'form-control',
+                            'rows': 6,
+                            'placeholder': 'Excellent travail ! Quelques points à améliorer...'
+                        }
+                    }) }}
+                    <small class="text-muted">
+                        <i class="bi bi-chat-left-text"></i>
+                        Le commentaire sera visible par l'étudiant
+                    </small>
+                </div>
+
+             
+
+            <div class="card-footer bg-light">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="bi bi-check-circle"></i>
+                    Attribuer la note
+                </button>
+                <a href="{{ path('app_score_index') }}" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-x-circle"></i>
+                    Annuler
+                </a>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+{# JS pour afficher dynamiquement les détails de la soumission sélectionnée #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('{{ form.soumission.vars.id }}');
+    const detailsDiv = document.getElementById('soumission-details');
+    const fichierLink = document.getElementById('fichier-link');
+    const fichierNone = document.getElementById('fichier-none');
+    const contenuSpan = document.getElementById('contenu');
+    const dateSpan = document.getElementById('date');
+    const noteSurInput = document.getElementById('{{ form.noteSur.vars.id }}');
+    const noteInput = document.getElementById('{{ form.note.vars.id }}');
+
+    // Données des soumissions passées depuis le form
+    const soumissionsData = {
+        {% for choice in form.soumission.vars.choices %}
+            '{{ choice.value }}': {
+                'pdfUrl': '{{ choice.data.pdfFilename ? vich_uploader_asset(choice.data, 'pdfFile') : '' }}',
+                'contenu': '{{ choice.data.commentaireEtudiant|default("Pas de commentaire")|e('js') }}',
+                'date': '{{ choice.data.dateSoumission|date('d/m/Y à H:i') }}',
+                'noteMax': '{{ choice.data.evaluation.noteMax }}'
+            },
+        {% endfor %}
+    };
+
+    select.addEventListener('change', function() {
+        const value = this.value;
+        if (value && soumissionsData[value]) {
+            const data = soumissionsData[value];
+            
+            // Afficher les détails
+            detailsDiv.style.display = 'block';
+            contenuSpan.textContent = data.contenu;
+            dateSpan.textContent = data.date;
+            
+            // Afficher le PDF s'il existe
+            if (data.pdfUrl) {
+                fichierLink.href = data.pdfUrl;
+                fichierLink.style.display = 'inline-block';
+                fichierNone.style.display = 'none';
+            } else {
+                fichierLink.style.display = 'none';
+                fichierNone.style.display = 'inline';
+            }
+            
+            // Remplir la note maximale dans le champ correspondant
+            noteSurInput.value = data.noteMax;
+            
+            // Mettre à jour le placeholder de la note
+            noteInput.setAttribute('max', data.noteMax);
+            noteInput.setAttribute('placeholder', 'Note sur ' + data.noteMax);
+        } else {
+            detailsDiv.style.display = 'none';
+            noteSurInput.value = '';
+        }
+    });
+
+    // Déclencher l'événement au chargement si une valeur est déjà sélectionnée
+    if (select.value) {
+        select.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+
+<style>
+    #soumission-details {
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .form-control-lg, .form-select-lg {
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
