@@ -1,0 +1,397 @@
+{# ============================================================
+   _notifications.html.twig
+   À inclure dans ton layout principal (base.html.twig)
+   dans la navbar : {% include '_notifications.html.twig' %}
+   ============================================================ #}
+
+<style>
+.notif-bell-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.notif-bell-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: .4rem;
+    border-radius: 8px;
+    color: #6c757d;
+    font-size: 1.2rem;
+    transition: color .2s, background .2s;
+    position: relative;
+}
+.notif-bell-btn:hover { background: #f0f4ff; color: #0d6efd; }
+
+/* Badge compteur */
+.notif-badge {
+    position: absolute;
+    top: 2px; right: 2px;
+    background: #dc3545;
+    color: #fff;
+    font-size: .6rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    display: none; /* caché par défaut */
+    animation: pop .3s ease;
+}
+@keyframes pop {
+    0%   { transform: scale(0); }
+    70%  { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Dropdown */
+.notif-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 340px;
+    background: #fff;
+    border: 1px solid #e4e6ea;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12);
+    z-index: 9999;
+    overflow: hidden;
+}
+.notif-dropdown.open { display: block; animation: slideDown .2s ease; }
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.notif-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid #f0f0f5;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 700;
+    font-size: .88rem;
+    color: #1e1e2d;
+}
+.notif-clear-btn {
+    font-size: .72rem;
+    color: #6c757d;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: .2rem .5rem;
+    border-radius: 5px;
+    transition: background .15s;
+}
+.notif-clear-btn:hover { background: #f0f0f5; color: #dc3545; }
+
+.notif-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+.notif-list::-webkit-scrollbar { width: 4px; }
+.notif-list::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
+
+/* Item */
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid #f8f8fa;
+    transition: background .15s;
+    cursor: default;
+    animation: fadeIn .3s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(10px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+.notif-item:hover { background: #f8f9ff; }
+.notif-item:last-child { border-bottom: none; }
+
+.notif-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+}
+.notif-icon.success { background: rgba(25,135,84,.12); color: #198754; }
+.notif-icon.primary { background: rgba(13,110,253,.12); color: #0d6efd; }
+.notif-icon.warning { background: rgba(255,193,7,.15);  color: #856404; }
+
+.notif-content { flex: 1; min-width: 0; }
+.notif-title {
+    font-size: .82rem; font-weight: 700; color: #1e1e2d;
+    margin-bottom: .2rem; line-height: 1.3;
+}
+.notif-message {
+    font-size: .77rem; color: #6c757d;
+    line-height: 1.5;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.notif-time {
+    font-size: .7rem; color: #adb5bd;
+    margin-top: .25rem;
+}
+.notif-link {
+    font-size: .72rem; color: #0d6efd;
+    text-decoration: none; font-weight: 600;
+    display: inline-block; margin-top: .3rem;
+}
+.notif-link:hover { text-decoration: underline; }
+
+/* Empty */
+.notif-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #adb5bd;
+    font-size: .82rem;
+}
+.notif-empty i { font-size: 2rem; opacity: .3; display: block; margin-bottom: .5rem; }
+
+/* Toast popup */
+.notif-toast-wrap {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    pointer-events: none;
+}
+.notif-toast {
+    background: #fff;
+    border: 1px solid #e4e6ea;
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.12);
+    padding: .85rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .7rem;
+    min-width: 300px;
+    max-width: 360px;
+    pointer-events: all;
+    animation: toastIn .35s ease;
+}
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.notif-toast.hide { animation: toastOut .3s ease forwards; }
+@keyframes toastOut {
+    to { opacity: 0; transform: translateY(20px); }
+}
+.toast-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem; flex-shrink: 0;
+}
+.toast-icon.success { background: rgba(25,135,84,.12); color: #198754; }
+.toast-icon.primary { background: rgba(13,110,253,.12); color: #0d6efd; }
+.toast-content { flex: 1; }
+.toast-title   { font-size: .82rem; font-weight: 700; color: #1e1e2d; margin-bottom: .15rem; }
+.toast-message { font-size: .75rem; color: #6c757d; line-height: 1.4; }
+.toast-close {
+    background: none; border: none; cursor: pointer;
+    color: #adb5bd; font-size: .9rem; padding: 0;
+    flex-shrink: 0; transition: color .15s;
+}
+.toast-close:hover { color: #dc3545; }
+</style>
+
+{# ── Bell button (dans ta navbar) ── #}
+<div class="notif-bell-wrap">
+    <button class="notif-bell-btn" id="notifBellBtn" title="Notifications">
+        <i class="bi bi-bell-fill"></i>
+        <span class="notif-badge" id="notifBadge">0</span>
+    </button>
+
+    <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+            <span><i class="bi bi-bell me-1"></i>Notifications</span>
+            <button class="notif-clear-btn" id="notifClearBtn">
+                <i class="bi bi-trash me-1"></i>Tout effacer
+            </button>
+        </div>
+        <div class="notif-list" id="notifList">
+            <div class="notif-empty" id="notifEmpty">
+                <i class="bi bi-bell-slash"></i>
+                Aucune notification
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Zone toasts ── #}
+<div class="notif-toast-wrap" id="notifToastWrap"></div>
+
+<script>
+(function () {
+    // ── Config Mercure ──────────────────────────────────────
+    const MERCURE_URL  = 'http://localhost:3000/.well-known/mercure';
+    const IS_ENSEIGNANT = {{ is_enseignant ? 'true' : 'false' }};
+    const IS_ETUDIANT   = {{ is_etudiant   ? 'true' : 'false' }};
+    const USERNAME      = '{{ current_user.username }}';
+
+    // ── State ───────────────────────────────────────────────
+    let notifications = [];
+
+    // ── DOM ─────────────────────────────────────────────────
+    const bellBtn    = document.getElementById('notifBellBtn');
+    const badge      = document.getElementById('notifBadge');
+    const dropdown   = document.getElementById('notifDropdown');
+    const list       = document.getElementById('notifList');
+    const emptyEl    = document.getElementById('notifEmpty');
+    const clearBtn   = document.getElementById('notifClearBtn');
+    const toastWrap  = document.getElementById('notifToastWrap');
+
+    // ── Topics Mercure selon le rôle ────────────────────────
+    const url = new URL(MERCURE_URL);
+    if (IS_ENSEIGNANT) {
+        // L'enseignant écoute son topic personnel
+        url.searchParams.append('topic', `notifications/enseignant/${USERNAME}`);
+    }
+    if (IS_ETUDIANT) {
+        // L'étudiant écoute le topic global étudiants
+        url.searchParams.append('topic', 'notifications/etudiants');
+    }
+
+    // ── Connexion SSE Mercure ───────────────────────────────
+    const es = new EventSource(url.toString());
+
+    es.onmessage = function (event) {
+        try {
+            const data = JSON.parse(event.data);
+            addNotification(data);
+            showToast(data);
+        } catch (e) {
+            console.warn('Mercure parse error', e);
+        }
+    };
+
+    es.onerror = function () {
+        console.warn('Mercure connexion perdue, reconnexion automatique...');
+    };
+
+    // ── Ajouter une notification ────────────────────────────
+    function addNotification(data) {
+        notifications.unshift(data);
+        renderList();
+        updateBadge();
+    }
+
+    // ── Rendu de la liste ───────────────────────────────────
+    function renderList() {
+        if (notifications.length === 0) {
+            emptyEl.style.display = 'block';
+            return;
+        }
+        emptyEl.style.display = 'none';
+
+        // Vider et reconstruire
+        list.innerHTML = '';
+        list.appendChild(emptyEl);
+
+        notifications.forEach(function (n) {
+            const item = document.createElement('div');
+            item.className = 'notif-item';
+            item.innerHTML = `
+                <div class="notif-icon ${n.color || 'primary'}">
+                    <i class="bi ${n.icon || 'bi-bell-fill'}"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-title">${escHtml(n.titre)}</div>
+                    <div class="notif-message">${escHtml(n.message)}</div>
+                    <div class="notif-time"><i class="bi bi-clock me-1"></i>${escHtml(n.time || '')}</div>
+                    ${n.url ? `<a class="notif-link" href="${escHtml(n.url)}">Voir <i class="bi bi-arrow-right"></i></a>` : ''}
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    // ── Badge ───────────────────────────────────────────────
+    function updateBadge() {
+        if (notifications.length > 0) {
+            badge.style.display = 'flex';
+            badge.textContent = notifications.length > 99 ? '99+' : notifications.length;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // ── Toast ───────────────────────────────────────────────
+    function showToast(data) {
+        const toast = document.createElement('div');
+        toast.className = `notif-toast`;
+        toast.innerHTML = `
+            <div class="toast-icon ${data.color || 'primary'}">
+                <i class="bi ${data.icon || 'bi-bell-fill'}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${escHtml(data.titre)}</div>
+                <div class="toast-message">${escHtml(data.message)}</div>
+            </div>
+            <button class="toast-close" title="Fermer"><i class="bi bi-x-lg"></i></button>
+        `;
+
+        // Fermer manuellement
+        toast.querySelector('.toast-close').addEventListener('click', function () {
+            dismissToast(toast);
+        });
+
+        toastWrap.appendChild(toast);
+
+        // Auto-fermeture après 5s
+        setTimeout(function () { dismissToast(toast); }, 5000);
+    }
+
+    function dismissToast(toast) {
+        toast.classList.add('hide');
+        setTimeout(function () { toast.remove(); }, 300);
+    }
+
+    // ── Toggle dropdown ─────────────────────────────────────
+    bellBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+        // Remettre badge à zéro quand on ouvre
+        if (dropdown.classList.contains('open')) {
+            badge.style.display = 'none';
+        }
+    });
+
+    // Fermer en cliquant ailleurs
+    document.addEventListener('click', function (e) {
+        if (!dropdown.contains(e.target) && e.target !== bellBtn) {
+            dropdown.classList.remove('open');
+        }
+    });
+
+    // ── Effacer tout ────────────────────────────────────────
+    clearBtn.addEventListener('click', function () {
+        notifications = [];
+        renderList();
+        updateBadge();
+    });
+
+    // ── Helper XSS ──────────────────────────────────────────
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+})();
+</script>

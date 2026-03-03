@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Participation {{ participation_evenement.id }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        {% include 'participation_evenement/_show_content.html.twig' %}
+    </div>
+{% endblock %}

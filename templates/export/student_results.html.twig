@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 13px; color: #333; margin: 30px; }
+        h1 { color: #27ae60; border-bottom: 2px solid #27ae60; padding-bottom: 8px; }
+        .meta { color: #999; font-size: 11px; margin-bottom: 20px; }
+        .score-box { background: #f0f9f0; border: 1px solid #27ae60; padding: 15px; border-radius: 6px; margin: 20px 0; text-align: center; }
+        .score { font-size: 36px; font-weight: bold; color: #27ae60; }
+        .score-sub { font-size: 16px; color: #555; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #27ae60; color: white; padding: 8px 10px; text-align: left; font-size: 12px; }
+        td { padding: 8px 10px; border-bottom: 1px solid #ddd; vertical-align: top; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .correct { color: #27ae60; font-weight: bold; }
+        .wrong { color: #e74c3c; font-weight: bold; }
+        .badge-correct { background: #27ae60; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-wrong { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .footer { margin-top: 40px; text-align: center; color: #aaa; font-size: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Mes Résultats — {{ data.quizTitre }}</h1>
+    <p class="meta">Généré le {{ data.date }} &nbsp;·&nbsp; Étudiant : {{ student.nom }} {{ student.prenom }}</p>
+
+    <div class="score-box">
+        <div class="score">{{ data.score }}%</div>
+        <div class="score-sub">{{ data.earnedPoints }} / {{ data.totalPoints }} points</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th width="4%">#</th>
+                <th width="35%">Question</th>
+                <th width="22%">Votre réponse</th>
+                <th width="22%">Réponse correcte</th>
+                <th width="10%">Résultat</th>
+                <th width="7%">Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in data.results %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ r.questionTexte }}</td>
+                <td>{{ r.studentAnswer }}</td>
+                <td>{{ r.correctAnswer }}</td>
+                <td>
+                    {% if r.isCorrect %}
+                        <span class="badge-correct">✓ Correct</span>
+                    {% else %}
+                        <span class="badge-wrong">✗ Incorrect</span>
+                    {% endif %}
+                </td>
+                <td class="{{ r.isCorrect ? 'correct' : 'wrong' }}">
+                    {% if r.isCorrect %}+{{ r.points }}{% else %}0{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">Novalearn — Document généré automatiquement</div>
+</body>
+</html>

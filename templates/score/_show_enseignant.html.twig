@@ -1,0 +1,10 @@
+{# templates/score/_show_enseignant.html.twig #}
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Détails du score{% endblock %}
+
+{% block page_title %}Détails de la correction{% endblock %}
+
+{% block main_content %}
+    {% include 'score/_show_content.html.twig' with {'user_type': 'enseignant'} %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{# templates/participation_evenement/_index_etudiant.html.twig #}
+{% extends 'etudiant/student_base.html.twig' %}
+
+{% block title %}Mes Participations{% endblock %}
+
+{% block student_content %}
+    {% include 'participation_evenement/_content.html.twig' with {'user_type': 'etudiant'} %}
+{% endblock %}

@@ -1,0 +1,198 @@
+{# templates/evaluation/index.html.twig #}
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Liste des évaluations{% endblock %}
+
+{% block main_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Liste des évaluations</h1>
+    <a href="{{ path('app_evaluation_new') }}" class="btn btn-primary">
+        + Nouvelle évaluation
+    </a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <select name="sort" class="form-control">
+                    <option value="dateCreation" {% if sortBy == 'dateCreation' %}selected{% endif %}>Date de création</option>
+                    <option value="titre" {% if sortBy == 'titre' %}selected{% endif %}>Titre</option>
+                    <option value="dateLimite" {% if sortBy == 'dateLimite' %}selected{% endif %}>Date limite</option>
+                    <option value="typeEvaluation" {% if sortBy == 'typeEvaluation' %}selected{% endif %}>Type</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="order" class="form-control">
+                    <option value="ASC" {% if order == 'ASC' %}selected{% endif %}>Croissant</option>
+                    <option value="DESC" {% if order == 'DESC' %}selected{% endif %}>Décroissant</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-secondary w-100">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+            <span class="text-muted">
+                Affichage de {{ ((currentPage - 1) * limit) + 1 }} à 
+                {{ min(currentPage * limit, totalEvaluations) }} 
+                sur {{ totalEvaluations }} évaluation(s)
+            </span>
+        </div>
+        <div>
+            <select name="limit" class="form-select form-select-sm" onchange="changeLimit(this.value)">
+                <option value="10" {% if limit == 10 %}selected{% endif %}>10 par page</option>
+                <option value="20" {% if limit == 20 %}selected{% endif %}>20 par page</option>
+                <option value="50" {% if limit == 50 %}selected{% endif %}>50 par page</option>
+                <option value="100" {% if limit == 100 %}selected{% endif %}>100 par page</option>
+            </select>
+        </div>
+    </div>
+    
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Cours</th>
+                <th>Date création</th>
+                <th>Date limite</th>
+                <th>Note max</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evaluation in evaluations %}
+            <tr>
+                <td>{{ evaluation.titre }}</td>
+                <td><span class="badge bg-info">{{ evaluation.typeEvaluation }}</span></td>
+                <td>{{ evaluation.cours ? evaluation.cours.codeCours : 'N/A' }}</td>
+                <td>{{ evaluation.dateCreation|date('d/m/Y H:i') }}</td>
+                <td>{{ evaluation.dateLimite|date('d/m/Y H:i') }}</td>
+                <td>{{ evaluation.noteMax }}</td>
+                <td>
+                    {% if evaluation.statut == 'ouverte' %}
+                        <span class="badge bg-success">Ouverte</span>
+                    {% elseif evaluation.statut == 'fermee' %}
+                        <span class="badge bg-danger">Fermée</span>
+                    {% elseif evaluation.statut == 'corrigee' %}
+                        <span class="badge bg-warning">Corrigée</span>
+                    {% else %}
+                        <span class="badge bg-primary">Publiée</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ path('app_evaluation_show', {'id': evaluation.id}) }}" class="btn btn-sm btn-info">Voir</a>
+                    <a href="{{ path('app_evaluation_edit', {'id': evaluation.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                    <form method="post" action="{{ path('app_evaluation_delete', {'id': evaluation.id}) }}" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evaluation.id) }}">
+                        <button class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette évaluation ?');">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center">Aucune évaluation trouvée</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if totalPages > 1 %}
+<nav aria-label="Pagination des évaluations">
+    <ul class="pagination justify-content-center">
+        {% if currentPage > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path('app_evaluation_index', {
+                    'search': search,
+                    'sort': sortBy,
+                    'order': order,
+                    'page': currentPage - 1,
+                    'limit': limit
+                }) }}" aria-label="Précédent">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        {% endif %}
+
+        {% set startPage = max(1, currentPage - 2) %}
+        {% set endPage = min(totalPages, currentPage + 2) %}
+        
+        {% if startPage > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path('app_evaluation_index', {
+                    'search': search,
+                    'sort': sortBy,
+                    'order': order,
+                    'page': 1,
+                    'limit': limit
+                }) }}">1</a>
+            </li>
+            {% if startPage > 2 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endif %}
+
+        {% for page in range(startPage, endPage) %}
+            <li class="page-item {% if page == currentPage %}active{% endif %}">
+                <a class="page-link" href="{{ path('app_evaluation_index', {
+                    'search': search,
+                    'sort': sortBy,
+                    'order': order,
+                    'page': page,
+                    'limit': limit
+                }) }}">{{ page }}</a>
+            </li>
+        {% endfor %}
+
+        {% if endPage < totalPages %}
+            {% if endPage < totalPages - 1 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path('app_evaluation_index', {
+                    'search': search,
+                    'sort': sortBy,
+                    'order': order,
+                    'page': totalPages,
+                    'limit': limit
+                }) }}">{{ totalPages }}</a>
+            </li>
+        {% endif %}
+
+        {% if currentPage < totalPages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path('app_evaluation_index', {
+                    'search': search,
+                    'sort': sortBy,
+                    'order': order,
+                    'page': currentPage + 1,
+                    'limit': limit
+                }) }}" aria-label="Suivant">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<script>
+function changeLimit(newLimit) {
+    const url = new URL(window.location);
+    url.searchParams.set('limit', newLimit);
+    url.searchParams.set('page', '1');
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

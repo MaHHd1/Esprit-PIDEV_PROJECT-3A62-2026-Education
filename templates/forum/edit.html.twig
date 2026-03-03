@@ -1,0 +1,5 @@
+{% if activeUser.type == 'enseignant' %}
+    {% include 'forum/_edit_enseignant.html.twig' %}
+{% elseif activeUser.type == 'etudiant' %}
+    {% include 'forum/_edit_etudiant.html.twig' %}
+{% endif %}

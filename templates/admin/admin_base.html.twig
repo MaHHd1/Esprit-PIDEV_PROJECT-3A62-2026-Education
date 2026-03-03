@@ -1,0 +1,417 @@
+{# admin_base.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <!-- **************** MAIN CONTENT START **************** -->
+    <main>
+
+        <!-- Sidebar START -->
+        <nav class="navbar sidebar navbar-expand-xl navbar-dark bg-dark">
+
+            <!-- Navbar brand for xl START -->
+            <div class="d-flex align-items-center">
+                <a class="navbar-brand" href="{{ path('app_administrateur_dashboard') }}">
+                    <img class="navbar-brand-item" src="{{ asset('assets/images/logo-light.svg') }}" alt="">
+                </a>
+            </div>
+            <!-- Navbar brand for xl END -->
+
+            <div class="offcanvas offcanvas-start flex-row custom-scrollbar h-100" data-bs-backdrop="true" tabindex="-1" id="offcanvasSidebar">
+                <div class="offcanvas-body sidebar-content d-flex flex-column bg-dark">
+
+                    <!-- User profile START -->
+                    <div class="d-flex align-items-center mb-4 p-3 border-bottom border-secondary">
+                        <!-- Avatar -->
+                        <div class="avatar me-3">
+                            {% if app.user and app.user.prenom is defined and app.user.nom is defined %}
+                                <div class="avatar-img rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                    {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                                </div>
+                            {% elseif user_name is defined and user_name %}
+                                <div class="avatar-img rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                    {{ user_name|split(' ')|first|first|upper }}{{ user_name|split(' ')|last|first|upper }}
+                                </div>
+                            {% else %}
+                                <div class="avatar-img rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                    ??
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if app.user and app.user.prenom is defined and app.user.nom is defined %}
+                                <a class="h6 mt-2 mt-sm-0 text-white" href="{{ path('app_administrateur_profile') }}">{{ app.user.prenom }} {{ app.user.nom }}</a>
+                                <p class="small m-0 text-white-50">Administrateur</p>
+                                <p class="small m-0 text-white-50">{{ app.user.email }}</p>
+                            {% elseif user_name is defined and user_name and user_email is defined and user_email %}
+                                <a class="h6 mt-2 mt-sm-0 text-white" href="{{ path('app_administrateur_profile') }}">{{ user_name }}</a>
+                                <p class="small m-0 text-white-50">Administrateur</p>
+                                <p class="small m-0 text-white-50">{{ user_email }}</p>
+                            {% else %}
+                                <a class="h6 mt-2 mt-sm-0 text-white" href="{{ path('app_login') }}">Non connecté</a>
+                                <p class="small m-0 text-white-50">Veuillez vous connecter</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- User profile END -->
+
+                    <!-- Sidebar menu START -->
+                    <ul class="navbar-nav flex-column" id="navbar-sidebar">
+
+                        <!-- Dashboard -->
+                        <li class="nav-item">
+                            <a href="{{ path('app_administrateur_dashboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_administrateur_dashboard' %}active{% endif %}">
+                                <i class="bi bi-speedometer2 fa-fw me-2"></i>Dashboard
+                            </a>
+                        </li>
+
+                        <!-- Utilisateurs -->
+                        <li class="nav-item">
+                            <a href="{{ path('app_administrateur_utilisateurs') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_administrateur_utilisateurs' %}active{% endif %}">
+                                <i class="fas fa-users fa-fw me-2"></i>Utilisateurs
+                            </a>
+                        </li>
+
+                        <!-- Ajouter Utilisateur - Menu déroulant -->
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="collapse" href="#addUserCollapse" role="button" aria-expanded="false" aria-controls="addUserCollapse">
+                                <i class="bi bi-person-plus fa-fw me-2"></i>Ajouter Utilisateur
+                                <span class="nav-link-collapse-arrow">
+                                    <i class="bi bi-chevron-down small"></i>
+                                </span>
+                            </a>
+                            <div class="collapse" id="addUserCollapse">
+                                <ul class="nav flex-column ms-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ path('app_etudiant_new') }}">
+                                            <i class="bi bi-person-vcard fa-fw me-2"></i>Nouvel Étudiant
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ path('app_enseignant_new') }}">
+                                            <i class="bi bi-person-badge fa-fw me-2"></i>Nouvel Enseignant
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ path('app_administrateur_new') }}">
+                                            <i class="bi bi-shield-check fa-fw me-2"></i>Nouvel Administrateur
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <!-- Statistiques Utilisateurs -->
+                        <li class="nav-item">
+                            <a href="{{ path('app_administrateur_statistiques') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_administrateur_statistiques' %}active{% endif %}">
+                                <i class="bi bi-bar-chart fa-fw me-2"></i>Statistiques Utilisateurs
+                            </a>
+                        </li>
+
+                        <!-- Événements -->
+                        <li class="nav-item">
+                            <a href="{{ path('app_evenement_index') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_evenement' %}active{% endif %}">
+                                <i class="bi bi-calendar-event fa-fw me-2"></i>Événements
+                            </a>
+                        </li>
+
+                        <!-- Modules -->
+                        <li class="nav-item">
+                            <a href="{{ path('app_admin_modules_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_admin_module' %}active{% endif %}">
+                                <i class="bi bi-folder2-open fa-fw me-2"></i>Modules
+                            </a>
+                        </li>
+<!-- Forums -->
+<li class="nav-item">
+    <a href="{{ path('admin_forum_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'admin_forum' %}active{% endif %}">
+        <i class="bi bi-chat-square-dots-fill fa-fw me-2"></i>Forums
+    </a>
+</li>
+
+<!-- Messages -->
+<li class="nav-item">
+    <a href="{{ path('admin_message_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'admin_message' %}active{% endif %}">
+        <i class="bi bi-chat-dots fa-fw me-2"></i>Messages
+    </a>
+</li>
+                        <!-- Profile -->
+                        <li class="nav-item">
+                            <a href="{{ path('app_administrateur_profile') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_administrateur_profile' %}active{% endif %}">
+                                <i class="bi bi-person-circle fa-fw me-2"></i>Profile
+                            </a>
+                        </li>
+
+                        <!-- Divider -->
+                        <li class="nav-item my-3"></li>
+
+                        <!-- Site public -->
+                        <li class="nav-item">
+                            <a href="{{ path('app_home') }}" class="nav-link">
+                                <i class="bi bi-house-door fa-fw me-2"></i>Site public
+                            </a>
+                        </li>
+
+                        <!-- Déconnexion -->
+                        <li class="nav-item">
+                            <a href="{{ path('app_logout') }}" class="nav-link text-danger">
+                                <i class="bi bi-power fa-fw me-2"></i>Déconnexion
+                            </a>
+                        </li>
+                    </ul>
+                    <!-- Sidebar menu end -->
+
+                    <!-- Sidebar footer START -->
+                    <div class="px-3 mt-auto pt-3">
+                        <div class="d-flex align-items-center justify-content-between text-primary-hover">
+                            <a class="h5 mb-0 text-body" href="{{ path('app_administrateur_profile') }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Profile">
+                                <i class="bi bi-person-circle"></i>
+                            </a>
+                            <a class="h5 mb-0 text-body" href="{{ path('app_home') }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Home">
+                                <i class="bi bi-globe"></i>
+                            </a>
+                            <a class="h5 mb-0 text-body" href="{{ path('app_administrateur_dashboard') }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Dashboard">
+                                <i class="bi bi-speedometer2"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Sidebar footer END -->
+
+                </div>
+            </div>
+        </nav>
+        <!-- Sidebar END -->
+
+        <!-- Page content START -->
+        <div class="page-content">
+
+            <!-- Top bar START -->
+            <nav class="navbar top-bar navbar-light border-bottom py-0 py-xl-3">
+                <div class="container-fluid p-0">
+                    <div class="d-flex align-items-center w-100">
+
+                        <!-- Logo START -->
+                        <div class="d-flex align-items-center d-xl-none">
+                            <a class="navbar-brand" href="{{ path('app_home') }}">
+                                <img class="light-mode-item navbar-brand-item h-30px" src="{{ asset('assets/images/logo-mobile.svg') }}" alt="">
+                                <img class="dark-mode-item navbar-brand-item h-30px" src="{{ asset('assets/images/logo-mobile-light.svg') }}" alt="">
+                            </a>
+                        </div>
+                        <!-- Logo END -->
+
+                        <!-- Toggler for sidebar START -->
+                        <div class="navbar-expand-xl sidebar-offcanvas-menu">
+                            <button class="navbar-toggler me-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar" aria-expanded="false" aria-label="Toggle navigation" data-bs-auto-close="outside">
+                                <i class="bi bi-text-right fa-fw h2 lh-0 mb-0 rtl-flip" data-bs-target="#offcanvasMenu"> </i>
+                            </button>
+                        </div>
+                        <!-- Toggler for sidebar END -->
+
+                        <!-- Top bar left -->
+                        <div class="navbar-expand-lg ms-auto ms-xl-0">
+
+                            <!-- Toggler for menubar START -->
+                            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTopContent" aria-controls="navbarTopContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-animation">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
+                            </button>
+                            <!-- Toggler for menubar END -->
+
+                            <!-- Topbar menu START -->
+                            <div class="collapse navbar-collapse w-100" id="navbarTopContent">
+                                <!-- Top search START -->
+                                <div class="nav my-3 my-xl-0 flex-nowrap align-items-center">
+                                    <div class="nav-item w-100">
+                                        <form class="position-relative" action="{{ path('app_administrateur_utilisateurs') }}" method="get">
+                                            <input class="form-control pe-5 bg-secondary bg-opacity-10 border-0" type="search" name="search" placeholder="Rechercher un utilisateur..." aria-label="Search">
+                                            <button class="bg-transparent px-2 py-0 border-0 position-absolute top-50 end-0 translate-middle-y" type="submit"><i class="fas fa-search fs-6 text-primary"></i></button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <!-- Top search END -->
+                            </div>
+                            <!-- Topbar menu END -->
+                        </div>
+                        <!-- Top bar left END -->
+
+                        <!-- Top bar right START -->
+                        <div class="ms-xl-auto">
+                            <ul class="navbar-nav flex-row align-items-center">
+
+                                <!-- User name display -->
+                                <li class="nav-item d-none d-md-block me-3">
+                                    <span class="nav-link text-dark">
+                                        {% if app.user and app.user.prenom is defined and app.user.nom is defined %}
+                                            <i class="bi bi-person-circle me-1"></i>{{ app.user.prenom }} {{ app.user.nom }}
+                                            <span class="badge bg-purple ms-2">Admin</span>
+                                        {% elseif user_name is defined and user_name %}
+                                            <i class="bi bi-person-circle me-1"></i>{{ user_name }}
+                                            <span class="badge bg-purple ms-2">Admin</span>
+                                        {% endif %}
+                                    </span>
+                                </li>
+
+                                <!-- Notification dropdown START -->
+                                <li class="nav-item ms-2 ms-md-3 dropdown">
+                                    <!-- Notification button -->
+                                    <a class="btn btn-light btn-round mb-0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                        <i class="bi bi-bell fa-fw"></i>
+                                    </a>
+                                    <!-- Notification dote -->
+                                    <span class="notif-badge animation-blink"></span>
+
+                                    <!-- Notification dropdown menu START -->
+                                    <div class="dropdown-menu dropdown-animation dropdown-menu-end dropdown-menu-size-md p-0 shadow-lg border-0">
+                                        <div class="card bg-transparent">
+                                            <div class="card-header bg-transparent border-bottom py-4 d-flex justify-content-between align-items-center">
+                                                <h6 class="m-0">Notifications <span class="badge bg-danger bg-opacity-10 text-danger ms-2">2 new</span></h6>
+                                                <a class="small" href="#">Clear all</a>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <ul class="list-group list-unstyled list-group-flush">
+                                                    <!-- Notif item -->
+                                                    <li>
+                                                        <a href="#" class="list-group-item-action border-0 border-bottom d-flex p-3">
+                                                            <div class="me-3">
+                                                                <div class="avatar avatar-md">
+                                                                    {% if app.user and app.user.prenom is defined and app.user.nom is defined %}
+                                                                        <div class="avatar-img rounded-circle bg-primary bg-opacity-10" style="width: 40px; height: 40px;">
+                                                                            <span class="text-primary position-absolute top-50 start-50 translate-middle fw-bold">
+                                                                                {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                                                                            </span>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <img class="avatar-img rounded-circle" src="{{ asset('assets/images/avatar/08.jpg') }}" alt="avatar">
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <p class="text-body small m-0">Nouvel utilisateur inscrit</p>
+                                                                <u class="small">Voir détails</u>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <!-- Button -->
+                                            <div class="card-footer bg-transparent border-0 py-3 text-center position-relative">
+                                                <a href="#" class="stretched-link">Voir toutes les notifications</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Notification dropdown menu END -->
+                                </li>
+                                <!-- Notification dropdown END -->
+
+                                <!-- Profile dropdown START -->
+                                <li class="nav-item ms-2 ms-md-3 dropdown">
+                                    <!-- Avatar -->
+                                    <a class="avatar avatar-sm p-0 d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-auto-close="outside" data-bs-display="static" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {% if app.user and app.user.prenom is defined and app.user.nom is defined %}
+                                            <div class="avatar-img rounded-circle bg-primary bg-opacity-10" style="width: 40px; height: 40px;">
+                                                <span class="text-primary position-absolute top-50 start-50 translate-middle fw-bold">
+                                                    {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                                                </span>
+                                            </div>
+                                        {% elseif user_name is defined and user_name %}
+                                            <div class="avatar-img rounded-circle bg-primary bg-opacity-10" style="width: 40px; height: 40px;">
+                                                <span class="text-primary position-absolute top-50 start-50 translate-middle fw-bold">
+                                                    {{ user_name|split(' ')|first|first|upper }}{{ user_name|split(' ')|last|first|upper }}
+                                                </span>
+                                            </div>
+                                        {% else %}
+                                            <div class="avatar-img rounded-circle bg-primary bg-opacity-10" style="width: 40px; height: 40px;">
+                                                <span class="text-primary position-absolute top-50 start-50 translate-middle fw-bold">??</span>
+                                            </div>
+                                        {% endif %}
+                                        {% if app.user and app.user.prenom is defined and app.user.nom is defined %}
+                                            <span class="d-none d-md-inline ms-2 text-dark">{{ app.user.prenom }} {{ app.user.nom }}</span>
+                                        {% elseif user_name is defined and user_name %}
+                                            <span class="d-none d-md-inline ms-2 text-dark">{{ user_name }}</span>
+                                        {% endif %}
+                                    </a>
+
+                                    <!-- Profile dropdown START -->
+                                    <ul class="dropdown-menu dropdown-animation dropdown-menu-end shadow pt-3" aria-labelledby="profileDropdown">
+                                        <!-- Profile info -->
+                                        <li class="px-3">
+                                            <div class="d-flex align-items-center">
+                                                <!-- Avatar -->
+                                                <div class="avatar me-3 mb-3">
+                                                    {% if app.user and app.user.prenom is defined and app.user.nom is defined %}
+                                                        <div class="avatar-img rounded-circle shadow bg-primary bg-opacity-10" style="width: 60px; height: 60px;">
+                                                            <span class="text-primary position-absolute top-50 start-50 translate-middle fw-bold">
+                                                                {{ app.user.prenom|first|upper }}{{ app.user.nom|first|upper }}
+                                                            </span>
+                                                        </div>
+                                                    {% elseif user_name is defined and user_name %}
+                                                        <div class="avatar-img rounded-circle shadow bg-primary bg-opacity-10" style="width: 60px; height: 60px;">
+                                                            <span class="text-primary position-absolute top-50 start-50 translate-middle fw-bold">
+                                                                {{ user_name|split(' ')|first|first|upper }}{{ user_name|split(' ')|last|first|upper }}
+                                                            </span>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="avatar-img rounded-circle shadow bg-primary bg-opacity-10" style="width: 60px; height: 60px;">
+                                                            <span class="text-primary position-absolute top-50 start-50 translate-middle fw-bold">??</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    {% if app.user and app.user.prenom is defined and app.user.nom is defined %}
+                                                        <a class="h6 mt-2 mt-sm-0" href="{{ path('app_administrateur_profile') }}">{{ app.user.prenom }} {{ app.user.nom }}</a>
+                                                        <p class="small m-0">{{ app.user.email }}</p>
+                                                        <p class="small m-0 text-success"><i class="bi bi-shield-check me-1"></i>Administrateur</p>
+                                                    {% elseif user_name is defined and user_name and user_email is defined and user_email %}
+                                                        <a class="h6 mt-2 mt-sm-0" href="{{ path('app_administrateur_profile') }}">{{ user_name }}</a>
+                                                        <p class="small m-0">{{ user_email }}</p>
+                                                        <p class="small m-0 text-success"><i class="bi bi-shield-check me-1"></i>Administrateur</p>
+                                                    {% else %}
+                                                        <a class="h6 mt-2 mt-sm-0" href="{{ path('app_login') }}">Non connecté</a>
+                                                        <p class="small m-0">Veuillez vous connecter</p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li> <hr class="dropdown-divider"></li>
+                                        <!-- Links -->
+                                        {% if app.user or (user_name is defined and user_name) %}
+                                            <li><a class="dropdown-item" href="{{ path('app_administrateur_dashboard') }}"><i class="bi bi-speedometer2 fa-fw me-2"></i>Dashboard</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_administrateur_profile') }}"><i class="bi bi-person-circle fa-fw me-2"></i>Mon Profil</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_administrateur_utilisateurs') }}"><i class="fas fa-users fa-fw me-2"></i>Gérer les utilisateurs</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_administrateur_statistiques') }}"><i class="bi bi-bar-chart fa-fw me-2"></i>Statistiques</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_evenement_index') }}"><i class="bi bi-calendar-event fa-fw me-2"></i>Événements</a></li>
+                                            <li> <hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_home') }}"><i class="bi bi-house fa-fw me-2"></i>Site public</a></li>
+                                            <li> <hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item bg-danger-soft-hover" href="{{ path('app_logout') }}"><i class="bi bi-power fa-fw me-2"></i>Déconnexion</a></li>
+                                        {% else %}
+                                            <li><a class="dropdown-item" href="{{ path('app_login') }}"><i class="bi bi-box-arrow-in-right fa-fw me-2"></i>Connexion</a></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_home') }}"><i class="bi bi-house fa-fw me-2"></i>Accueil</a></li>
+                                        {% endif %}
+                                    </ul>
+                                    <!-- Profile dropdown END -->
+                                </li>
+                                <!-- Profile dropdown END -->
+                            </ul>
+                        </div>
+                        <!-- Top bar right END -->
+                    </div>
+                </div>
+            </nav>
+            <!-- Top bar END -->
+
+            <!-- Page main content START -->
+            <div class="page-content-wrapper border">
+
+                {% block admin_content %}{% endblock %}
+
+            </div>
+            <!-- Page main content END -->
+
+        </div>
+        <!-- Page content END -->
+
+    </main>
+    <!-- **************** MAIN CONTENT END **************** -->
+{% endblock %}

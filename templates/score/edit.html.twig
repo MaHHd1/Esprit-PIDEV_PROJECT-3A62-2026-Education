@@ -1,0 +1,240 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Modifier le score{% endblock %}
+
+{% block page_title %}Modifier la correction{% endblock %}
+{% block page_subtitle %}Score #{{ score.id }}{% endblock %}
+
+{% block main_content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="bi bi-pencil-square"></i>
+                    Formulaire de modification
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Attention :</strong> Vous modifiez la correction de l'étudiant #{{ score.soumission.idEtudiant }}
+                </div>
+
+                {# Informations sur la soumission (lecture seule) #}
+                <div class="card bg-light mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0 text-primary">
+                            <i class="bi bi-info-circle"></i>
+                            Soumission associée
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Évaluation :</strong> 
+                                    {{ score.soumission.evaluation.titre }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Type :</strong> 
+                                    <span class="badge bg-info">
+                                        {{ score.soumission.evaluation.typeEvaluation }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Étudiant :</strong> 
+                                    #{{ score.soumission.idEtudiant }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Date de soumission :</strong> 
+                                    {{ score.soumission.dateSoumission|date('d/m/Y à H:i') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {# Fichiers PDF #}
+                        <div class="row mb-3">
+                            {# Fichier de l'évaluation #}
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white p-2">
+                                        <small><strong>Fichier de l'évaluation (énoncé)</strong></small>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        {% if score.soumission.evaluation.pdfFilename %}
+                                            <a href="{{ vich_uploader_asset(score.soumission.evaluation, 'pdfFile') }}" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-info w-100">
+                                                <i class="fas fa-download"></i> Télécharger l'énoncé
+                                            </a>
+                                        {% else %}
+                                            <p class="text-muted mb-0"><i class="fas fa-times"></i> Aucun fichier</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Fichier de la soumission #}
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white p-2">
+                                        <small><strong>Fichier de la soumission (étudiant)</strong></small>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        {% if score.soumission.pdfFilename %}
+                                            <a href="{{ vich_uploader_asset(score.soumission, 'pdfFile') }}" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-success w-100">
+                                                <i class="fas fa-download"></i> Télécharger la soumission
+                                            </a>
+                                        {% else %}
+                                            <p class="text-muted mb-0"><i class="fas fa-times"></i> Aucun fichier</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Commentaire de l'étudiant #}
+                        {% if score.soumission.commentaireEtudiant %}
+                        <div class="alert alert-secondary p-2">
+                            <strong>Commentaire étudiant :</strong>
+                            <br>
+                            <small class="text-dark">{{ score.soumission.commentaireEtudiant }}</small>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-secondary p-2">
+                            <strong>Commentaire étudiant :</strong>
+                            <br>
+                            <small class="text-dark">Aucun commentaire</small>
+                        </div>
+                        {% endif %}
+
+                        <hr class="my-2">
+                        <small class="text-muted">
+                            <i class="bi bi-lock"></i> 
+                            La soumission ne peut pas être modifiée ici
+                        </small>
+                    </div>
+                </div>
+
+                <hr>
+
+                {# Notes #}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.note, {
+                            'label': 'Note obtenue',
+                            'attr': {
+                                'class': 'form-control form-control-lg',
+                                'placeholder': 'Ex: 15',
+                                'min': '0',
+                                'max': score.noteSur,
+                                'step': '0.5'
+                            }
+                        }) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.noteSur, {
+                            'label': 'Note maximale',
+                            'attr': {
+                                'class': 'form-control form-control-lg bg-light',
+                                'readonly': true
+                            }
+                        }) }}
+                        <small class="text-muted">Définie dans l'évaluation</small>
+                    </div>
+                </div>
+
+                {# Commentaire #}
+                <div class="mt-4">
+                    {{ form_row(form.commentaireEnseignant, {
+                        'label': 'Commentaire pour l\'étudiant',
+                        'attr': {
+                            'class': 'form-control',
+                            'rows': 6,
+                            'placeholder': 'Votre feedback pour l\'étudiant...'
+                        }
+                    }) }}
+                    <small class="text-muted">
+                        <i class="bi bi-chat-left-text"></i>
+                        Ce commentaire sera visible par l'étudiant
+                    </small>
+                </div>
+
+                {# Aperçu de la note #}
+                <div class="alert alert-info mt-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Note actuelle :</strong>
+                            <h4 class="mb-0">
+                                {% set pourcentage = (score.note / score.noteSur * 100)|round %}
+                                <span class="badge {% if pourcentage >= 50 %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ score.note }}/{{ score.noteSur }}
+                                </span>
+                                <small class="text-muted">({{ pourcentage }}%)</small>
+                            </h4>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Date de correction :</strong>
+                            <p class="mb-0">{{ score.dateCorrection|date('d/m/Y à H:i') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-light">
+                <button type="submit" class="btn btn-warning btn-lg">
+                    <i class="bi bi-check-circle"></i>
+                    Mettre à jour le score
+                </button>
+                <a href="{{ path('app_score_show', {'id': score.id}) }}" class="btn btn-info btn-lg">
+                    <i class="bi bi-eye"></i>
+                    Voir les détails
+                </a>
+                <a href="{{ path('app_score_index') }}" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-x-circle"></i>
+                    Annuler
+                </a>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire en temps réel
+    const noteInput = document.getElementById('{{ form.note.vars.id }}');
+    const noteMax = {{ score.noteSur }};
+    
+    if (noteInput) {
+        noteInput.addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            
+            if (value < 0) {
+                this.value = 0;
+            } else if (value > noteMax) {
+                this.value = noteMax;
+            }
+        });
+    }
+});
+</script>
+
+<style>
+    .form-control-lg {
+        font-size: 1.2rem;
+    }
+    
+    .card-body .alert {
+        border-left: 4px solid #0d6efd;
+    }
+</style>
+{% endblock %}

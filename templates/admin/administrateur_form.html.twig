@@ -1,0 +1,81 @@
+{% block admin_content %}
+    <!-- Title -->
+    <div class="row">
+        <div class="col-12 mb-3">
+            <div class="d-sm-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-2 mb-sm-0">
+                    {% if is_edit %}Modifier l'Administrateur{% else %}Nouvel Administrateur{% endif %}
+                </h1>
+                <div class="d-grid d-sm-block">
+                    <a href="{{ path('app_administrateur_utilisateurs') }}" class="btn btn-sm btn-primary-soft mb-0">
+                        <i class="bi bi-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body p-4">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    {{ form_label(form.nom, 'Nom') }}
+                    {{ form_widget(form.nom) }}
+                    {{ form_errors(form.nom) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.prenom, 'Prénom') }}
+                    {{ form_widget(form.prenom) }}
+                    {{ form_errors(form.prenom) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.email, 'Email') }}
+                    {{ form_widget(form.email) }}
+                    {{ form_errors(form.email) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.telephone, 'Téléphone') }}
+                    {{ form_widget(form.telephone) }}
+                    {{ form_errors(form.telephone) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.departement, 'Département') }}
+                    {{ form_widget(form.departement) }}
+                    {{ form_errors(form.departement) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.fonction, 'Fonction') }}
+                    {{ form_widget(form.fonction) }}
+                    {{ form_errors(form.fonction) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.dateNomination, 'Date de nomination') }}
+                    {{ form_widget(form.dateNomination) }}
+                    {{ form_errors(form.dateNomination) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.motDePasse, 'Mot de passe') }}
+                    {{ form_widget(form.motDePasse) }}
+                    {{ form_errors(form.motDePasse) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.actif, 'Statut') }}
+                    {{ form_widget(form.actif) }}
+                    {{ form_errors(form.actif) }}
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>
+                    {% if is_edit %}Mettre à jour{% else %}Créer{% endif %}
+                </button>
+                <a href="{{ path('app_administrateur_utilisateurs') }}" class="btn btn-light ms-2">
+                    Annuler
+                </a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

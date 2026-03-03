@@ -1,0 +1,160 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Nouvel Enseignant - Eduport{% endblock %}
+
+{% block admin_content %}
+    <!-- Title -->
+    <div class="row">
+        <div class="col-12 mb-3">
+            <div class="d-sm-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 mb-sm-0">Nouvel Enseignant</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_administrateur_dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_administrateur_utilisateurs') }}">Utilisateurs</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Nouvel Enseignant</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-grid d-sm-block">
+                    <a href="{{ path('app_administrateur_utilisateurs') }}" class="btn btn-sm btn-primary-soft mb-0">
+                        <i class="bi bi-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body p-4">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            <div class="row g-3">
+                <!-- Informations personnelles -->
+                <div class="col-12">
+                    <h5 class="mb-3">Informations personnelles</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.prenom, 'Prénom *') }}
+                        {{ form_widget(form.prenom, {'attr': {'class': 'form-control', 'placeholder': 'Prénom'}}) }}
+                        {{ form_errors(form.prenom) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.nom, 'Nom *') }}
+                        {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Nom'}}) }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.email, 'Email *') }}
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'email@exemple.com'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                </div>
+
+                <!-- Informations professionnelles -->
+                <div class="col-12 mt-4">
+                    <h5 class="mb-3">Informations professionnelles</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.matriculeEnseignant, 'Matricule Enseignant *') }}
+                        {{ form_widget(form.matriculeEnseignant, {'attr': {'class': 'form-control', 'placeholder': 'ENS2024001'}}) }}
+                        {{ form_errors(form.matriculeEnseignant) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.diplome, 'Diplôme *') }}
+                        {{ form_widget(form.diplome, {'attr': {'class': 'form-control', 'placeholder': 'Diplôme obtenu'}}) }}
+                        {{ form_errors(form.diplome) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.specialite, 'Spécialité *') }}
+                        {{ form_widget(form.specialite, {'attr': {'class': 'form-control', 'placeholder': 'Spécialité'}}) }}
+                        {{ form_errors(form.specialite) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.anneesExperience, 'Années d\'expérience') }}
+                        {{ form_widget(form.anneesExperience, {'attr': {'class': 'form-control', 'placeholder': '0'}}) }}
+                        {{ form_errors(form.anneesExperience) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.typeContrat, 'Type de contrat') }}
+                        {{ form_widget(form.typeContrat, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.typeContrat) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.tauxHoraire, 'Taux horaire (€)') }}
+                        {{ form_widget(form.tauxHoraire, {'attr': {'class': 'form-control', 'placeholder': '0.00'}}) }}
+                        {{ form_errors(form.tauxHoraire) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="mb-3">
+                        {{ form_label(form.disponibilites, 'Disponibilités') }}
+                        {{ form_widget(form.disponibilites, {'attr': {'class': 'form-control', 'placeholder': 'Disponibilités', 'rows': 3}}) }}
+                        {{ form_errors(form.disponibilites) }}
+                    </div>
+                </div>
+
+                <!-- Statut et sécurité -->
+                <div class="col-12 mt-4">
+                    <h5 class="mb-3">Statut et sécurité</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.statut, 'Statut') }}
+                        {{ form_widget(form.statut, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.statut) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.motDePasse, 'Mot de passe *') }}
+                        {{ form_widget(form.motDePasse, {'attr': {'class': 'form-control', 'placeholder': 'Minimum 8 caractères'}}) }}
+                        <small class="text-muted">Le mot de passe sera crypté automatiquement</small>
+                        {{ form_errors(form.motDePasse) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-warning" name="save">
+                    <i class="bi bi-check-circle me-1"></i>Créer l'enseignant
+                </button>
+                <button type="submit" class="btn btn-outline-warning" name="save_and_new">
+                    <i class="bi bi-plus-circle me-1"></i>Créer et ajouter un autre
+                </button>
+                <a href="{{ path('app_administrateur_utilisateurs') }}" class="btn btn-light ms-2">
+                    Annuler
+                </a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

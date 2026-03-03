@@ -1,0 +1,356 @@
+<style>
+    .fn-page { font-family: 'Roboto', sans-serif; color: #1e1e2d; }
+    .fn-page h3, .fn-page h5, .fn-page .form-label { font-family: 'Heebo', sans-serif; }
+
+    .fn-layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    @media (max-width: 900px) { .fn-layout { grid-template-columns: 1fr; } }
+
+    .fn-card {
+        background: #fff;
+        border: 1px solid #e4e6ea;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .fn-card-header {
+        padding: 1.1rem 1.5rem;
+        border-bottom: 1px solid #e4e6ea;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        background: #fafafa;
+    }
+    .fn-card-header .header-icon {
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        background: #1e1e2d;
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .85rem;
+        flex-shrink: 0;
+    }
+    .fn-card-header h5 { margin: 0; font-size: .95rem; font-weight: 700; color: #1e1e2d; }
+    .fn-card-body { padding: 1.5rem; }
+
+    .fn-page .form-label {
+        font-size: .8rem; font-weight: 700;
+        color: #3d3d4e; margin-bottom: .35rem;
+        text-transform: uppercase; letter-spacing: .04em;
+    }
+    .fn-page .form-control,
+    .fn-page .form-select {
+        border: 1px solid #e4e6ea;
+        border-radius: 7px;
+        font-size: .875rem;
+        padding: .65rem .9rem;
+        background: #fff; color: #1e1e2d;
+        transition: border-color .2s, box-shadow .2s;
+        width: 100%;
+    }
+    .fn-page .form-control:focus,
+    .fn-page .form-select:focus {
+        border-color: #1e1e2d;
+        box-shadow: 0 0 0 3px rgba(30,30,45,.08);
+        background: #fff; outline: none;
+    }
+    .fn-page textarea.form-control { min-height: 110px; resize: vertical; }
+
+    .fn-sidebar-card {
+        background: #fff;
+        border: 1px solid #e4e6ea;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .fn-sidebar-card .s-header {
+        background: #1e1e2d;
+        padding: .9rem 1.2rem;
+        display: flex; align-items: center; gap: .5rem;
+    }
+    .fn-sidebar-card .s-header span {
+        font-family: 'Heebo', sans-serif;
+        font-size: .88rem; font-weight: 700; color: #fff;
+    }
+    .fn-sidebar-card .s-body { padding: 1.1rem 1.2rem; }
+
+    .tip-item {
+        display: flex; align-items: flex-start; gap: .6rem;
+        margin-bottom: .85rem; font-size: .82rem; color: #6c757d; line-height: 1.5;
+    }
+    .tip-item:last-child { margin-bottom: 0; }
+    .tip-item .tip-icon {
+        width: 26px; height: 26px; border-radius: 6px;
+        background: #f0f0f5; color: #1e1e2d;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .75rem; flex-shrink: 0; margin-top: .05rem;
+    }
+    .tip-item strong { display: block; color: #1e1e2d; font-size: .82rem; margin-bottom: .1rem; }
+
+    .fn-actions {
+        display: flex; justify-content: space-between; align-items: center;
+        padding-top: 1.25rem; margin-top: 1.25rem;
+        border-top: 1px solid #e4e6ea;
+    }
+    .btn-create {
+        background: #1e1e2d; color: #fff;
+        border: none; border-radius: 7px;
+        padding: .6rem 1.6rem;
+        font-family: 'Heebo', sans-serif; font-weight: 700; font-size: .875rem;
+        cursor: pointer; display: inline-flex; align-items: center; gap: .45rem;
+        transition: background .2s, transform .15s;
+    }
+    .btn-create:hover { background: #2d2d3f; transform: translateY(-1px); }
+
+    .btn-cancel {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .55rem 1.1rem;
+        border: 1px solid #e4e6ea; border-radius: 7px;
+        background: #fff; color: #6c757d; font-size: .85rem;
+        text-decoration: none;
+        transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-cancel:hover { background: #f8f8fa; color: #1e1e2d; border-color: #1e1e2d; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+    .mb-field { margin-bottom: 1.2rem; }
+
+    /* ✅ Upload */
+    .vich-hidden-input {
+        position: absolute;
+        width: 1px; height: 1px;
+        opacity: 0; overflow: hidden; z-index: -1;
+    }
+    .upload-zone {
+        border: 2px dashed #e4e6ea;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: border-color .2s, background .2s;
+        cursor: pointer;
+        background: #fafafa;
+    }
+    .upload-zone:hover { border-color: #1e1e2d; background: #f5f5f8; }
+    .upload-zone .upload-icon { font-size: 2rem; color: #adb5bd; margin-bottom: .5rem; }
+    .upload-zone p { margin: 0; font-size: .82rem; color: #6c757d; }
+    .upload-zone strong { color: #1e1e2d; }
+
+    .img-preview-wrap {
+        margin-top: .75rem;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e4e6ea;
+    }
+    .img-preview-wrap img {
+        width: 100%; max-height: 200px;
+        object-fit: cover; display: block;
+    }
+    .attachment-preview {
+        display: flex; align-items: center; gap: .6rem;
+        padding: .6rem .9rem;
+        background: #f0f0f5; border-radius: 7px;
+        margin-top: .6rem; font-size: .82rem; color: #1e1e2d;
+    }
+    .attachment-preview i { font-size: 1.1rem; color: #0d6efd; }
+</style>
+
+<div class="fn-page">
+
+{# ── En-tête ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">Nouveau forum</h3>
+        <p class="mb-0 text-muted small">
+            <a href="{{ path('forum_list') }}" class="text-muted text-decoration-none">Forums</a>
+            &nbsp;/&nbsp;Créer
+        </p>
+    </div>
+    <a class="btn-cancel" href="{{ path('forum_list') }}">
+        <i class="bi bi-arrow-left"></i>Retour
+    </a>
+</div>
+
+<div class="fn-layout">
+
+    <div class="fn-card">
+        <div class="fn-card-header">
+            <span class="header-icon"><i class="bi bi-chat-dots-fill"></i></span>
+            <h5>Informations du forum</h5>
+        </div>
+        <div class="fn-card-body">
+            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+                <div class="mb-field">
+                    <label class="form-label" for="{{ form.titre.vars.id }}">Titre</label>
+                    {{ form_widget(form.titre, { attr: { class: 'form-control', placeholder: 'Ex : Développement web, IA générative…' } }) }}
+                    {{ form_errors(form.titre) }}
+                </div>
+
+                <div class="mb-field">
+                    <label class="form-label" for="{{ form.description.vars.id }}">Description</label>
+                    {{ form_widget(form.description, { attr: { class: 'form-control', placeholder: 'Décrivez le sujet et les thèmes abordés…' } }) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                <div class="field-row mb-field">
+                    <div>
+                        <label class="form-label" for="{{ form.type.vars.id }}">Type</label>
+                        {{ form_widget(form.type, { attr: { class: 'form-select' } }) }}
+                        {{ form_errors(form.type) }}
+                    </div>
+                    <div>
+                        <label class="form-label" for="{{ form.statut.vars.id }}">Statut</label>
+                        {{ form_widget(form.statut, { attr: { class: 'form-select' } }) }}
+                        {{ form_errors(form.statut) }}
+                    </div>
+                </div>
+
+                {# ✅ Image de couverture #}
+                <div class="mb-field" style="position:relative;">
+                    <label class="form-label">
+                        <i class="bi bi-image me-1"></i>Image de couverture
+                        <span class="text-muted" style="text-transform:none;font-weight:400;letter-spacing:0;">(optionnelle)</span>
+                    </label>
+
+                    <div class="upload-zone" id="image-upload-zone">
+                        <div class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                        <p><strong>Cliquez pour choisir une image</strong></p>
+                        <p>JPG, PNG, WEBP, GIF — max 5 Mo</p>
+                    </div>
+
+                    {{ form_widget(form.imageCouvertureFile, { attr: { class: 'vich-hidden-input', id: 'input-image' } }) }}
+                    {{ form_errors(form.imageCouvertureFile) }}
+
+                    <div class="img-preview-wrap" id="image-preview-wrap" style="display:none;">
+                        <img id="image-preview" src="" alt="Aperçu">
+                    </div>
+                </div>
+
+                {# ✅ Pièce jointe #}
+                <div class="mb-field" style="position:relative;">
+                    <label class="form-label">
+                        <i class="bi bi-paperclip me-1"></i>Pièce jointe
+                        <span class="text-muted" style="text-transform:none;font-weight:400;letter-spacing:0;">(optionnelle)</span>
+                    </label>
+
+                    <div class="upload-zone" id="attachment-upload-zone">
+                        <div class="upload-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                        <p><strong>Cliquez pour choisir un fichier</strong></p>
+                        <p>PDF, ZIP, images — max 10 Mo</p>
+                    </div>
+
+                    {{ form_widget(form.pieceJointeFile, { attr: { class: 'vich-hidden-input', id: 'input-attachment' } }) }}
+                    {{ form_errors(form.pieceJointeFile) }}
+
+                    <div class="attachment-preview" id="attachment-preview" style="display:none;">
+                        <i class="bi bi-file-earmark"></i>
+                        <span id="attachment-name"></span>
+                    </div>
+                </div>
+
+                <div class="mb-field">
+                    <label class="form-label" for="{{ form.reglesModeration.vars.id }}">Règles de modération</label>
+                    {{ form_widget(form.reglesModeration, { attr: { class: 'form-control', placeholder: 'Ex : Respect mutuel, pas de spam…' } }) }}
+                    {{ form_errors(form.reglesModeration) }}
+                </div>
+
+                <div class="fn-actions">
+                    <a href="{{ path('forum_list') }}" class="btn-cancel">
+                        <i class="bi bi-x"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn-create">
+                        <i class="bi bi-check2-circle"></i>Créer le forum
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div class="fn-sidebar-card">
+        <div class="s-header">
+            <i class="bi bi-lightbulb-fill" style="color:#ffc107;"></i>
+            <span>Conseils</span>
+        </div>
+        <div class="s-body">
+            <div class="tip-item">
+                <span class="tip-icon"><i class="bi bi-fonts"></i></span>
+                <div><strong>Titre clair</strong>Choisissez un titre court et précis.</div>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon"><i class="bi bi-text-paragraph"></i></span>
+                <div><strong>Bonne description</strong>Expliquez les thèmes abordés.</div>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon"><i class="bi bi-shield-check"></i></span>
+                <div><strong>Règles de modération</strong>Des règles claires favorisent la qualité.</div>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon"><i class="bi bi-image"></i></span>
+                <div><strong>Image de couverture</strong>Uploadez une image depuis votre ordinateur.</div>
+            </div>
+            <div class="tip-item">
+                <span class="tip-icon"><i class="bi bi-paperclip"></i></span>
+                <div><strong>Pièce jointe</strong>PDF, ZIP ou image pour enrichir votre forum.</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ✅ Trouve tous les inputs file automatiquement
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    
+    if (fileInputs[0]) {
+        // Premier input = image
+        document.getElementById('image-upload-zone').addEventListener('click', function() {
+            fileInputs[0].click();
+        });
+
+        fileInputs[0].addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('image-upload-zone').innerHTML = `
+                <div class="upload-icon"><i class="bi bi-check-circle-fill" style="color:#198754;"></i></div>
+                <p><strong>${file.name}</strong></p>
+                <p style="color:#198754;">${(file.size/1024/1024).toFixed(2)} Mo</p>`;
+
+            const reader = new FileReader();
+            reader.onload = ev => {
+                document.getElementById('image-preview').src = ev.target.result;
+                document.getElementById('image-preview-wrap').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (fileInputs[1]) {
+        // Deuxième input = pièce jointe
+        document.getElementById('attachment-upload-zone').addEventListener('click', function() {
+            fileInputs[1].click();
+        });
+
+        fileInputs[1].addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('attachment-upload-zone').innerHTML = `
+                <div class="upload-icon"><i class="bi bi-check-circle-fill" style="color:#198754;"></i></div>
+                <p><strong>${file.name}</strong></p>
+                <p style="color:#198754;">${(file.size/1024/1024).toFixed(2)} Mo</p>`;
+
+            document.getElementById('attachment-name').textContent = file.name;
+            document.getElementById('attachment-preview').style.display = 'flex';
+        });
+    }
+
+});
+</script>

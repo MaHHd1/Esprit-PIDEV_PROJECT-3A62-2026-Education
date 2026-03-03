@@ -1,0 +1,81 @@
+parameters:
+    google_recaptcha_site_key: '%env(GOOGLE_RECAPTCHA_SITE_KEY)%'
+    google_recaptcha_secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
+    groq_api_key: '%env(GROQ_API_KEY)%'
+    app.hf_api_key: '%env(string:HF_API_KEY)%'
+    app.hf_model: '%env(default::string:HF_MODEL)%'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # =============================================
+    # PDO SESSION HANDLER FOR DATABASE SESSIONS
+    # =============================================
+    Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
+        arguments:
+            # Database connection string
+            - 'mysql:host=127.0.0.1;port=3307;dbname=gestion_utilisateur;charset=utf8mb4'
+            # Configuration options
+            - {
+                db_table: 'sessions',
+                db_id_col: 'sess_id',
+                db_data_col: 'sess_data',
+                db_lifetime_col: 'sess_lifetime',
+                db_time_col: 'sess_time',
+                db_username: 'root',
+                db_password: ''
+            }
+        public: true # Make it public so Symfony can use it
+
+    # Alias for easier reference
+    session.handler.pdo:
+        alias: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+
+    # =============================================
+    # CHATBOT SERVICES CONFIGURATION
+    # =============================================
+
+    # GROQ Chatbot Service
+    App\Service\GroqChatbotService:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
+        tags:
+            - { name: monolog.logger, channel: chatbot }
+
+    # GROQ General Service (uses a separate API key)
+    App\Service\GroqService:
+        arguments:
+            $apiKey: '%env(GROQ_API_KEY)%'
+
+    # HuggingFace Course Assistant Service
+    App\Service\HuggingFaceCourseAssistantService:
+        arguments:
+            $apiKey: '%app.hf_api_key%'
+            $model: '%app.hf_model%'
+
+    # Explicitly configure HTTP client
+    Symfony\Contracts\HttpClient\HttpClientInterface:
+        alias: http_client
+
+    # =============================================
+    # LOGGER CHANNEL FOR CHATBOT (optional)
+    # =============================================
+    monolog.logger.chatbot:
+        class: Psr\Log\LoggerInterface
+        factory: ['@logger', 'getChannel']
+        arguments: ['chatbot']
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones

@@ -1,0 +1,9 @@
+{% if student is defined %}
+    {% include 'participation_evenement/_edit_etudiant.html.twig' %}
+{% elseif teacher is defined or enseignant is defined %}
+    {% include 'participation_evenement/_edit_enseignant.html.twig' %}
+{% elseif admin is defined %}
+    {% include 'participation_evenement/_edit_admin.html.twig' %}
+{% else %}
+    {% include 'participation_evenement/_edit_public.html.twig' %}
+{% endif %}

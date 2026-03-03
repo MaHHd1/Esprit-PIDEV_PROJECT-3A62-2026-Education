@@ -1,0 +1,338 @@
+{# edit_profile.html.twig #}
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Modifier le Profil - Enseignant{% endblock %}
+
+{% block additional_styles %}
+    <style>
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .avatar-upload {
+            position: relative;
+            display: inline-block;
+        }
+        .avatar-upload input[type="file"] {
+            display: none;
+        }
+        .avatar-upload label {
+            cursor: pointer;
+        }
+        .upload-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .form-error {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .is-invalid:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+        }
+    </style>
+{% endblock %}
+
+{% block page_title %}Modifier le Profil{% endblock %}
+
+{% block page_subtitle %}Mettez à jour vos informations personnelles{% endblock %}
+
+{% block page_actions %}
+    <a href="{{ path('app_enseignant_dashboard') }}" class="btn btn-outline-primary mb-0 me-2">
+        <i class="fas fa-arrow-left me-1"></i>Retour au dashboard
+    </a>
+{% endblock %}
+
+{% block main_content %}
+    <!-- Edit profile form START -->
+    <div class="card border bg-transparent rounded-3">
+        <div class="card-header bg-transparent border-bottom">
+            <h3 class="mb-0">Informations personnelles</h3>
+        </div>
+        <div class="card-body">
+            {% for flash in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>{{ flash }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            {% for flash in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>{{ flash }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Create a Symfony form for Enseignant -->
+            {% if not form is defined %}
+                {# Create form manually if not passed #}
+                {{ form_start(edit_form, {'attr': {'method': 'post', 'novalidate': 'novalidate'}}) }}
+
+                <div class="row g-4">
+                    <!-- Personal Information Section -->
+                    <div class="col-12">
+                        <h5 class="mb-3"><i class="fas fa-user me-2"></i>Informations personnelles</h5>
+                    </div>
+
+                    <!-- First Name -->
+                    <div class="col-md-6">
+                        <label for="edit_form_nom" class="form-label">Nom *</label>
+                        {{ form_widget(edit_form.nom, {'attr': {'class': 'form-control'}}) }}
+                        {% if edit_form.nom.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.nom) }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Votre nom de famille.</div>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="col-md-6">
+                        <label for="edit_form_prenom" class="form-label">Prénom *</label>
+                        {{ form_widget(edit_form.prenom, {'attr': {'class': 'form-control'}}) }}
+                        {% if edit_form.prenom.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.prenom) }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Votre prénom.</div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label for="edit_form_email" class="form-label">Adresse email *</label>
+                        {{ form_widget(edit_form.email, {'attr': {'class': 'form-control', 'type': 'email'}}) }}
+                        {% if edit_form.email.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.email) }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Cette adresse sera utilisée pour la connexion et les notifications.</div>
+                    </div>
+
+                    <!-- Diploma -->
+                    <div class="col-md-6">
+                        <label for="edit_form_diplome" class="form-label">Diplôme *</label>
+                        {{ form_widget(edit_form.diplome, {'attr': {'class': 'form-select'}}) }}
+                        {% if edit_form.diplome.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.diplome) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Speciality -->
+                    <div class="col-md-6">
+                        <label for="edit_form_specialite" class="form-label">Spécialité *</label>
+                        {{ form_widget(edit_form.specialite, {'attr': {'class': 'form-control'}}) }}
+                        {% if edit_form.specialite.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.specialite) }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Votre domaine d'expertise principale.</div>
+                    </div>
+
+                    <!-- Experience -->
+                    <div class="col-md-6">
+                        <label for="edit_form_anneesExperience" class="form-label">Années d'expérience</label>
+                        {{ form_widget(edit_form.anneesExperience, {'attr': {'class': 'form-control', 'min': 0, 'max': 50}}) }}
+                        {% if edit_form.anneesExperience.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.anneesExperience) }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Nombre d'années d'expérience dans l'enseignement.</div>
+                    </div>
+
+                    <!-- Contract Type -->
+                    <div class="col-md-6">
+                        <label for="edit_form_typeContrat" class="form-label">Type de contrat *</label>
+                        {{ form_widget(edit_form.typeContrat, {'attr': {'class': 'form-select'}}) }}
+                        {% if edit_form.typeContrat.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.typeContrat) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <label for="edit_form_statut" class="form-label">Statut *</label>
+                        {{ form_widget(edit_form.statut, {'attr': {'class': 'form-select'}}) }}
+                        {% if edit_form.statut.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.statut) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Taux Horaire (if contract is Vacataire) -->
+                    <div class="col-md-6" id="tauxHoraireField">
+                        <label for="edit_form_tauxHoraire" class="form-label">Taux horaire (€)</label>
+                        {{ form_widget(edit_form.tauxHoraire, {'attr': {'class': 'form-control'}}) }}
+                        {% if edit_form.tauxHoraire.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.tauxHoraire) }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Taux horaire pour les vacataires.</div>
+                    </div>
+
+                    <!-- Disponibilités -->
+                    <div class="col-12">
+                        <label for="edit_form_disponibilites" class="form-label">Disponibilités</label>
+                        {{ form_widget(edit_form.disponibilites, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+                        {% if edit_form.disponibilites.vars.errors|length %}
+                            <div class="form-error">
+                                {{ form_errors(edit_form.disponibilites) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Form buttons -->
+                    <div class="col-12 mt-4">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('app_enseignant_dashboard') }}" class="btn btn-secondary">
+                                Annuler
+                            </a>
+                            <div>
+                                <button type="reset" class="btn btn-outline-danger me-2">
+                                    <i class="fas fa-undo me-1"></i>Réinitialiser
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>Enregistrer les modifications
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{ form_end(edit_form) }}
+            {% else %}
+                <!-- Fallback if form variable is named 'form' -->
+                {{ form_start(form, {'attr': {'method': 'post', 'novalidate': 'novalidate'}}) }}
+                <div class="row g-4">
+                    <!-- Same form fields as above but using 'form' variable -->
+                    <!-- ... you can duplicate the above form structure using 'form' variable ... -->
+                </div>
+                {{ form_end(form) }}
+            {% endif %}
+        </div>
+    </div>
+    <!-- Edit profile form END -->
+
+    <!-- Account Information Card -->
+    <div class="card border bg-transparent rounded-3 mt-4">
+        <div class="card-header bg-transparent border-bottom">
+            <h3 class="mb-0">Informations du compte</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-group list-group-borderless">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="fas fa-user-plus me-2"></i>Date de création</span>
+                            <span class="fw-bold">{{ enseignant.dateCreation|date('d/m/Y') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="fas fa-sign-in-alt me-2"></i>Dernière connexion</span>
+                            <span class="fw-bold">
+                                {% if enseignant.lastLogin %}
+                                    {{ enseignant.lastLogin|date('d/m/Y H:i') }}
+                                {% else %}
+                                    Jamais connecté
+                                {% endif %}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-group list-group-borderless">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="fas fa-shield-alt me-2"></i>Sécurité du compte</span>
+                            <span class="badge bg-success">Actif</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="fas fa-envelope me-2"></i>Notifications</span>
+                            <span class="badge bg-primary">Activées</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ path('app_enseignant_changer_password') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-key me-1"></i>Changer le mot de passe
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block additional_javascripts %}
+    <script>
+        // Show/hide tauxHoraire field based on typeContrat
+        function toggleTauxHoraireField() {
+            const typeContrat = document.querySelector('#edit_form_typeContrat').value;
+            const tauxHoraireField = document.getElementById('tauxHoraireField');
+
+            if (typeContrat === 'Vacataire') {
+                tauxHoraireField.style.display = 'block';
+            } else {
+                tauxHoraireField.style.display = 'none';
+            }
+        }
+
+        // Initial toggle
+        toggleTauxHoraireField();
+
+        // Add change event listener
+        document.querySelector('#edit_form_typeContrat').addEventListener('change', toggleTauxHoraireField);
+
+        // Form validation
+        const editProfileForm = document.querySelector('form');
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', function(e) {
+                const email = document.querySelector('#edit_form_email').value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    alert('Veuillez entrer une adresse email valide.');
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        // Reset form confirmation
+        const resetButton = document.querySelector('button[type="reset"]');
+        if (resetButton) {
+            resetButton.addEventListener('click', function(e) {
+                if (!confirm('Êtes-vous sûr de vouloir réinitialiser tous les champs ? Toutes les modifications non sauvegardées seront perdues.')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,7 @@
+{# templates/participation_evenement/_index_enseignant.html.twig #}
+{% extends 'enseignant/prof_base.html.twig' %}
+
+
+{% block main_content %}
+    {% include 'message/_content.html.twig' with {'user_type': 'enseignant'} %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Participation {{ participation_evenement.id }}{% endblock %}
+{% block page_title %}Participation {{ participation_evenement.id }}{% endblock %}
+{% block page_subtitle %}Details de la participation{% endblock %}
+
+{% block main_content %}
+    {% include 'participation_evenement/_show_content.html.twig' %}
+{% endblock %}

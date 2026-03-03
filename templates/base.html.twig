@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>{% block title %}NovaLearn - E-Learning{% endblock %}</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Webestica.com">
+    <meta name="description" content="NovaLearn - LMS, Education and Course Theme">
+
+    <script>
+        const storedTheme = localStorage.getItem('theme')
+        const getPreferredTheme = () => {
+            if (storedTheme) { return storedTheme }
+            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'light'
+        }
+        const setTheme = function (theme) {
+            if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark')
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', theme)
+            }
+        }
+        setTheme(getPreferredTheme())
+        window.addEventListener('DOMContentLoaded', () => {
+            var el = document.querySelector('.theme-icon-active');
+            if (el != 'undefined' && el != null) {
+                const showActiveTheme = theme => {
+                    const activeThemeIcon = document.querySelector('.theme-icon-active use')
+                    const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`)
+                    const svgOfActiveBtn = btnToActive.querySelector('.mode-switch use').getAttribute('href')
+                    document.querySelectorAll('[data-bs-theme-value]').forEach(element => { element.classList.remove('active') })
+                    btnToActive.classList.add('active')
+                    activeThemeIcon.setAttribute('href', svgOfActiveBtn)
+                }
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                    if (storedTheme !== 'light' || storedTheme !== 'dark') { setTheme(getPreferredTheme()) }
+                })
+                showActiveTheme(getPreferredTheme())
+                document.querySelectorAll('[data-bs-theme-value]').forEach(toggle => {
+                    toggle.addEventListener('click', () => {
+                        const theme = toggle.getAttribute('data-bs-theme-value')
+                        localStorage.setItem('theme', theme)
+                        setTheme(theme)
+                        showActiveTheme(theme)
+                    })
+                })
+            }
+        })
+    </script>
+
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}">
+
+    {% block admin_stylesheets %}
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/apexcharts/css/apexcharts.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/overlay-scrollbar/css/overlayscrollbars.min.css') }}">
+    {% endblock %}
+
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #f5f5f5; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Heebo', sans-serif; }
+
+        /* ── Toast container ── */
+        #mercure-toast-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 99999;
+        }
+        #mercure-toast-container .toast {
+            background: white; border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            min-width: 320px; margin-top: 10px;
+        }
+        #mercure-toast-container .toast-header { border-bottom: 1px solid #f0f0f0; }
+        #mercure-toast-container .toast-body a { text-decoration: none; }
+
+        /* ── Cloche notifications ── */
+        .notif-bell-wrap {
+            position: fixed; top: 15px; right: 80px;
+            z-index: 99998; display: inline-flex; align-items: center;
+        }
+        .icon-lg {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+        .notif-bell-btn {
+            background: #fff; border: 1px solid #e4e6ea; cursor: pointer;
+            padding: .5rem .65rem; border-radius: 10px; color: #6c757d;
+            font-size: 1.15rem; position: relative;
+            transition: color .2s, background .2s, box-shadow .2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+        }
+        .notif-bell-btn:hover { background: #f0f4ff; color: #0d6efd; }
+        .notif-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: #dc3545; color: #fff;
+            font-size: .6rem; font-weight: 700;
+            min-width: 18px; height: 18px; border-radius: 50px;
+            display: none; align-items: center; justify-content: center;
+            padding: 0 4px; border: 2px solid #fff; animation: pop .3s ease;
+        }
+        @keyframes pop {
+            0% { transform: scale(0); } 70% { transform: scale(1.3); } 100% { transform: scale(1); }
+        }
+        .notif-dropdown {
+            display: none; position: absolute;
+            top: calc(100% + 10px); right: 0; width: 340px;
+            background: #fff; border: 1px solid #e4e6ea; border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.15); z-index: 99999; overflow: hidden;
+        }
+        .notif-dropdown.open { display: block; animation: slideDown .2s ease; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .notif-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: .85rem 1rem; border-bottom: 1px solid #f0f0f5;
+            font-family: 'Heebo', sans-serif; font-weight: 700;
+            font-size: .88rem; color: #1e1e2d;
+        }
+        .notif-clear-btn {
+            font-size: .72rem; color: #6c757d; background: none;
+            border: none; cursor: pointer; padding: .2rem .5rem;
+            border-radius: 5px; transition: background .15s;
+        }
+        .notif-clear-btn:hover { background: #f0f0f5; color: #dc3545; }
+        .notif-list { max-height: 360px; overflow-y: auto; }
+        .notif-list::-webkit-scrollbar { width: 4px; }
+        .notif-list::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
+        .notif-item {
+            display: flex; align-items: flex-start; gap: .75rem;
+            padding: .85rem 1rem; border-bottom: 1px solid #f8f8fa;
+            transition: background .15s; animation: fadeIn .3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .notif-item:hover { background: #f8f9ff; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .95rem; flex-shrink: 0;
+        }
+        .notif-icon.success { background: rgba(25,135,84,.12); color: #198754; }
+        .notif-icon.primary { background: rgba(13,110,253,.12); color: #0d6efd; }
+        .notif-icon.warning { background: rgba(255,193,7,.15);  color: #856404; }
+        .notif-content { flex: 1; min-width: 0; }
+        .notif-title { font-size: .82rem; font-weight: 700; color: #1e1e2d; margin-bottom: .2rem; }
+        .notif-message { font-size: .77rem; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notif-time { font-size: .7rem; color: #adb5bd; margin-top: .25rem; }
+        .notif-link { font-size: .72rem; color: #0d6efd; text-decoration: none; font-weight: 600; display: inline-block; margin-top: .3rem; }
+        .notif-link:hover { text-decoration: underline; }
+        .notif-empty { text-align: center; padding: 2rem 1rem; color: #adb5bd; font-size: .82rem; }
+        .notif-empty i { font-size: 2rem; opacity: .3; display: block; margin-bottom: .5rem; }
+
+        {% if app.debug %}
+        /* Keep Symfony Web Debug Toolbar above custom fixed UI in dev. */
+        .sf-toolbar,
+        .sf-toolbarreset,
+        .sf-minitoolbar {
+            z-index: 2147483647 !important;
+        }
+
+        /* Avoid covering the mini toolbar button at bottom-right. */
+        #mercure-toast-container {
+            bottom: 64px;
+            z-index: 10000;
+        }
+
+        .notif-bell-wrap,
+        .notif-dropdown {
+            z-index: 10000 !important;
+        }
+        {% endif %}
+    </style>
+
+    {% block stylesheets %}{% endblock %}
+</head>
+
+<body>
+
+{# ✅ Résoudre l'utilisateur connecté peu importe la variable passée #}
+{% set _user = activeUser is defined and activeUser is not null ? activeUser
+             : (student is defined and student is not null ? student
+             : (enseignant is defined and enseignant is not null ? enseignant
+             : null)) %}
+{% set _isEnseignant = enseignant is defined and enseignant is not null %}
+{% set _isEtudiant   = student is defined and student is not null %}
+
+{# ✅ Variables JS Mercure #}
+{% if _user is not null %}
+<script>
+    window.mercureUserId       = {{ _user.id }};
+    window.mercurePublicUrl    = 'http://localhost:3000/.well-known/mercure';
+    window.mercureUsername     = '{{ _user.username|replace({' ': '_'}) }}';
+    window.mercureIsEnseignant = {{ _isEnseignant ? 'true' : 'false' }};
+    window.mercureIsEtudiant   = {{ _isEtudiant ? 'true' : 'false' }};
+</script>
+{% endif %}
+
+{# ✅ Cloche notifications #}
+{% if _user is not null %}
+<div class="notif-bell-wrap" id="quizNotifWrap">
+    <button class="notif-bell-btn" id="notifBellBtn" title="Notifications">
+        <i class="bi bi-bell-fill"></i>
+        <span class="notif-badge" id="notifBadge">0</span>
+    </button>
+    <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+            <span><i class="bi bi-bell me-1"></i>Notifications</span>
+            <button class="notif-clear-btn" id="notifClearBtn">
+                <i class="bi bi-trash me-1"></i>Tout effacer
+            </button>
+        </div>
+        <div class="notif-list" id="notifList">
+            <div class="notif-empty" id="notifEmpty">
+                <i class="bi bi-bell-slash"></i>
+                Aucune notification
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Contenu principal ── #}
+<div class="container py-4">
+    {% block body %}{% endblock %}
+</div>
+
+{# ── Toast container ── #}
+<div id="mercure-toast-container"></div>
+
+<div class="back-top"><i class="bi bi-arrow-up-short position-absolute top-50 start-50 translate-middle"></i></div>
+
+<script src="{{ asset('assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+
+{% block admin_javascripts %}
+    <script src="{{ asset('assets/vendor/purecounterjs/dist/purecounter_vanilla.js') }}"></script>
+    <script src="{{ asset('assets/vendor/apexcharts/js/apexcharts.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/overlay-scrollbar/js/overlayscrollbars.min.js') }}"></script>
+{% endblock %}
+
+<script src="{{ asset('assets/js/functions.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr('.datetimepicker', {
+            enableTime: true, dateFormat: "Y-m-d H:i",
+            time_24hr: true, locale: "fr", minDate: "today"
+        });
+    }
+});
+</script>
+
+{# ✅ MERCURE — Script unifié : messages + quiz + forum #}
+{% if _user is not null %}
+<script>
+(function() {
+    const userId       = window.mercureUserId;
+    const hubUrl       = window.mercurePublicUrl;
+    const username     = window.mercureUsername;
+    const isEnseignant = window.mercureIsEnseignant;
+    const isEtudiant   = window.mercureIsEtudiant;
+
+    if (!userId || !hubUrl) { console.warn('Mercure: config manquante'); return; }
+
+    const url = new URL(hubUrl);
+
+    url.searchParams.append('topic', '/user/' + userId + '/messages');
+
+    if (isEnseignant) {
+        url.searchParams.append('topic', 'notifications/enseignant/' + username);
+    }
+    if (isEtudiant) {
+        url.searchParams.append('topic', 'notifications/etudiants');
+    }
+
+    url.searchParams.append('topic', 'notifications/tous');
+    url.searchParams.append('topic', 'notifications/user/' + username);
+
+    console.log('Mercure: connexion sur', url.toString());
+
+    const es = new EventSource(url.toString());
+    es.onopen  = () => console.log('Mercure: connecté ✅');
+    es.onerror = () => console.warn('Mercure: connexion perdue, reconnexion...');
+
+    es.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            console.log('Mercure: message reçu ✅', data);
+
+            if (data.type === 'nouveau_message') {
+                showMessageToast(data);
+                const badge = document.getElementById('inbox-badge');
+                if (badge) {
+                    badge.textContent = parseInt(badge.textContent || '0') + 1;
+                    badge.classList.remove('d-none');
+                }
+                if (window.location.pathname.includes('/messages/inbox')) { refreshInbox(); }
+            }
+
+            if (data.type === 'quiz_passe'       ||
+                data.type === 'nouveau_quiz'      ||
+                data.type === 'nouveau_forum'     ||
+                data.type === 'forum_commentaire') {
+                addNotification(data);
+                showToast(data);
+            }
+
+        } catch(e) { console.warn('Mercure: erreur parsing', e); }
+    };
+
+    function refreshInbox() {
+        fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.text()).then(html => {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const n = doc.getElementById('messages-list');
+            const c = document.getElementById('messages-list');
+            if (n && c) c.innerHTML = n.innerHTML;
+        }).catch(e => console.warn(e));
+    }
+
+    function showMessageToast(data) {
+        const isUrgent = data.priorite === 'urgent';
+        const el = makeToast(`
+            <div class="toast-header">
+                <strong class="me-auto ${isUrgent ? 'text-danger' : 'text-primary'}">
+                    ${isUrgent ? '🔴 Message urgent' : '📩 Nouveau message'}
+                </strong>
+                <small class="text-muted">${data.dateEnvoi}</small>
+                <button type="button" class="btn-close" onclick="this.closest('.toast').remove()"></button>
+            </div>
+            <div class="toast-body">
+                <div><strong>De :</strong> ${data.expediteur}</div>
+                <div><strong>Objet :</strong> ${data.objet}</div>
+                <div class="mt-2">
+                    <a href="/messages/${data.messageId}" class="btn btn-sm btn-primary">Voir le message</a>
+                </div>
+            </div>`);
+        document.getElementById('mercure-toast-container').appendChild(el);
+        autoRemove(el, 6000);
+    }
+
+    let notifications = [];
+    const badge    = document.getElementById('notifBadge');
+    const dropdown = document.getElementById('notifDropdown');
+    const bellBtn  = document.getElementById('notifBellBtn');
+    const list     = document.getElementById('notifList');
+    const clearBtn = document.getElementById('notifClearBtn');
+
+    function addNotification(data) {
+        notifications.unshift(data);
+        renderList();
+        updateBadge();
+    }
+
+    function renderList() {
+        if (!list) return;
+        list.innerHTML = '';
+        if (notifications.length === 0) {
+            list.innerHTML = `
+                <div class="notif-empty">
+                    <i class="bi bi-bell-slash"></i>
+                    Aucune notification
+                </div>`;
+            return;
+        }
+        notifications.forEach(n => {
+            const item = document.createElement('div');
+            item.className = 'notif-item';
+            item.innerHTML = `
+                <div class="notif-icon ${esc(n.color) || 'primary'}">
+                    <i class="bi ${esc(n.icon) || 'bi-bell-fill'}"></i>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-title">${esc(n.titre)}</div>
+                    <div class="notif-message">${esc(n.message)}</div>
+                    <div class="notif-time"><i class="bi bi-clock me-1"></i>${esc(n.time || '')}</div>
+                    ${n.url ? `<a class="notif-link" href="${esc(n.url)}">Voir <i class="bi bi-arrow-right"></i></a>` : ''}
+                </div>`;
+            list.appendChild(item);
+        });
+    }
+
+    function updateBadge() {
+        if (!badge) return;
+        if (notifications.length > 0) {
+            badge.style.display = 'flex';
+            badge.textContent = notifications.length > 99 ? '99+' : notifications.length;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function showToast(data) {
+        const c = data.color || 'primary';
+        const el = makeToast(`
+            <div class="toast-header">
+                <strong class="me-auto text-${c}">
+                    <i class="bi ${esc(data.icon)} me-1"></i>${esc(data.titre)}
+                </strong>
+                <small class="text-muted">${esc(data.time || '')}</small>
+                <button type="button" class="btn-close" onclick="this.closest('.toast').remove()"></button>
+            </div>
+            <div class="toast-body">
+                <div>${esc(data.message)}</div>
+                ${data.url ? `<div class="mt-2"><a href="${esc(data.url)}" class="btn btn-sm btn-${c}">Voir</a></div>` : ''}
+            </div>`);
+        document.getElementById('mercure-toast-container').appendChild(el);
+        autoRemove(el, 6000);
+    }
+
+    if (bellBtn) {
+        bellBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+            if (dropdown.classList.contains('open') && badge) badge.style.display = 'none';
+        });
+    }
+    document.addEventListener('click', e => {
+        if (dropdown && !dropdown.contains(e.target) && e.target !== bellBtn) {
+            dropdown.classList.remove('open');
+        }
+    });
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            notifications = [];
+            renderList();
+            updateBadge();
+        });
+    }
+
+    function makeToast(html) {
+        const el = document.createElement('div');
+        el.className = 'toast show';
+        el.innerHTML = html;
+        return el;
+    }
+    function autoRemove(el, delay) {
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.5s';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 500);
+        }, delay);
+    }
+    function esc(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+})();
+</script>
+{% endif %}
+
+{% if app.debug %}
+<script>
+try { localStorage.setItem('toolbar/displayState', 'block'); } catch (e) {}
+</script>
+{% endif %}
+
+{% block javascripts %}{% endblock %}
+
+</body>
+</html>

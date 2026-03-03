@@ -1,0 +1,5 @@
+{% if activeUser.type == 'enseignant' %}
+    {% include 'comment/_new_enseignant.html.twig' %}
+{% elseif activeUser.type == 'etudiant' %}
+    {% include 'comment/_new_etudiant.html.twig' %}
+{% endif %}

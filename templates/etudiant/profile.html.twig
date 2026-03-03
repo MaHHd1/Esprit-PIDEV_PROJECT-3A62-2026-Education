@@ -1,0 +1,116 @@
+{% extends 'etudiant/student_base.html.twig' %}
+
+{% block title %}Mon Profil - Étudiant - Eduport{% endblock %}
+
+{% block student_content %}
+    <!-- Card START -->
+    <div class="card border">
+        <!-- Card header -->
+        <div class="card-header border-bottom">
+            <h4 class="card-header-title">Informations personnelles</h4>
+        </div>
+
+        <!-- Card body START -->
+        <div class="card-body">
+            <!-- Flash messages -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            <div class="row g-4">
+                <!-- Personal Information -->
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Nom complet</label>
+                        <p class="h5">{{ student.prenom }} {{ student.nom }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Email</label>
+                        <p class="h5">{{ student.email }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Matricule</label>
+                        <p class="h5">{{ student.matricule }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Date de naissance</label>
+                        <p class="h5">{{ student.dateNaissance|date('d/m/Y') }}</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Niveau d'étude</label>
+                        <p class="h5">{{ student.niveauEtude }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Spécialisation</label>
+                        <p class="h5">{{ student.specialisation }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Téléphone</label>
+                        <p class="h5">{{ student.telephone }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Date d'inscription</label>
+                        <p class="h5">{{ student.dateInscription|date('d/m/Y') }}</p>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="col-12">
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Adresse</label>
+                        <p class="h5">{{ student.adresse }}</p>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12">
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ path('app_etudiant_change_password') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-key me-2"></i>Changer mon mot de passe
+                        </a>
+                        <div>
+                            <a href="{{ path('app_etudiant_dashboard') }}" class="btn btn-primary me-2">
+                                <i class="bi bi-ui-checks-grid me-2"></i>Tableau de Bord
+                            </a>
+                            <a href="{{ path('app_etudiant_edit_profile') }}" class="btn btn-warning">
+                                <i class="bi bi-pencil-square me-2"></i>Modifier le profil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Card body END -->
+    </div>
+    <!-- Card END -->
+
+    <!-- Statistics Card -->
+    <div class="card border mt-4">
+        <div class="card-header border-bottom">
+            <h4 class="card-header-title">Statistiques académiques</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center mb-4 mb-md-0">
+                    <div class="display-4 text-primary fw-bold">5</div>
+                    <p class="text-muted mb-0">Cours Inscrits</p>
+                </div>
+                <div class="col-md-4 text-center mb-4 mb-md-0">
+                    <div class="display-4 text-success fw-bold">14.5</div>
+                    <p class="text-muted mb-0">Moyenne Générale</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="display-4 text-warning fw-bold">3</div>
+                    <p class="text-muted mb-0">Cours Terminés</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

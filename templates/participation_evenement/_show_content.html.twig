@@ -1,0 +1,98 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Participation #{{ participation_evenement.id }}</h5>
+        <div class="btn-group btn-group-sm">
+            <a href="{{ path('app_participation_evenement_index') }}" class="btn btn-outline-secondary">Retour</a>
+            <a href="{{ path('app_participation_evenement_edit', {'id': participation_evenement.id}) }}" class="btn btn-primary">Modifier</a>
+            {{ include('participation_evenement/_delete_form.html.twig', { participationEvenement: participation_evenement }) }}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <div class="border rounded p-3 h-100">
+                    <h6 class="mb-3">Participation</h6>
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <th>ID</th>
+                            <td>{{ participation_evenement.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Statut</th>
+                            <td>
+                                <span class="badge
+                                {% if participation_evenement.statut.value == 'inscrit' %}bg-primary
+                                {% elseif participation_evenement.statut.value == 'present' %}bg-success
+                                {% elseif participation_evenement.statut.value == 'absent' %}bg-danger
+                                {% else %}bg-warning text-dark{% endif %}">
+                                    {{ participation_evenement.statut.value|capitalize }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Inscription</th>
+                            <td>{{ participation_evenement.dateInscription ? participation_evenement.dateInscription|date('d/m/Y H:i') : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Arrivee</th>
+                            <td>{{ participation_evenement.heureArrivee ? participation_evenement.heureArrivee|date('H:i') : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Depart</th>
+                            <td>{{ participation_evenement.heureDepart ? participation_evenement.heureDepart|date('H:i') : '-' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="border rounded p-3 h-100">
+                    <h6 class="mb-3">Feedback</h6>
+                    {% if participation_evenement.feedbackNote %}
+                        <p class="mb-1"><strong>Note:</strong> {{ participation_evenement.feedbackNote }}/5</p>
+                    {% else %}
+                        <p class="text-muted mb-1">Pas encore note</p>
+                    {% endif %}
+                    <p class="mb-0">{{ participation_evenement.feedbackCommentaire ?? 'Aucun commentaire' }}</p>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="border rounded p-3">
+                    <h6 class="mb-3">Evenement</h6>
+                    {% if participation_evenement.evenement %}
+                        <p class="mb-1"><strong>{{ participation_evenement.evenement.titre }}</strong></p>
+                        <p class="text-muted mb-2">{{ participation_evenement.evenement.description|default('Aucune description') }}</p>
+                        <p class="mb-2">
+                            Debut: {{ participation_evenement.evenement.dateDebut ? participation_evenement.evenement.dateDebut|date('d/m/Y H:i') : '-' }}
+                            |
+                            Fin: {{ participation_evenement.evenement.dateFin ? participation_evenement.evenement.dateFin|date('d/m/Y H:i') : '-' }}
+                        </p>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_evenement_show', {'id': participation_evenement.evenement.id}) }}">
+                            Voir evenement
+                        </a>
+                    {% else %}
+                        <p class="text-muted mb-0">Evenement introuvable.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="border rounded p-3">
+                    <h6 class="mb-3">Check-in QR</h6>
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <img src="{{ checkin_qr_url }}" alt="QR Check-in" class="img-fluid border rounded p-2 bg-white">
+                        </div>
+                        <div class="col-md-8">
+                            <p class="mb-2">
+                                Lien: <small class="text-break">{{ checkin_url }}</small>
+                            </p>
+                            <a href="{{ checkin_url }}" class="btn btn-sm btn-success">Tester le check-in</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

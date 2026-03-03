@@ -1,0 +1,130 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block main_content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('teacher_quiz_index') }}">Mes Quiz</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('quiz_show', {id: quiz.id}) }}">{{ quiz.titre }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Modifier le quiz</li>
+    </ol>
+</nav>
+
+<!-- Card START -->
+<div class="card border bg-transparent rounded-3">
+    <div class="card-header bg-dark">
+        <h3 class="card-title mb-0 text-white">
+            <i class="bi bi-pencil-square me-2"></i>
+            Modifier le quiz
+        </h3>
+    </div>
+
+    <div class="card-body p-4">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+
+        {{ form_start(form) }}
+
+        <div class="row g-4">
+            <!-- Titre -->
+            <div class="col-12">
+                {{ form_row(form.titre, {
+                    label: 'Titre du quiz',
+                    attr: {
+                        class: 'form-control',
+                        placeholder: 'Ex: Quiz de mathématiques - Niveau 1'
+                    }
+                }) }}
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+                {{ form_row(form.description, {
+                    label: 'Description',
+                    attr: {
+                        class: 'form-control',
+                        placeholder: 'Décrivez le contenu et les objectifs de ce quiz...',
+                        rows: 4
+                    }
+                }) }}
+            </div>
+
+            <!-- Durée et nombre de tentatives -->
+            <div class="col-md-6">
+                {{ form_row(form.dureeMinutes, {
+                    label: 'Durée (en minutes)',
+                    attr: {
+                        class: 'form-control',
+                        placeholder: '30',
+                        min: 1
+                    }
+                }) }}
+                <small class="text-muted">Laissez vide pour un quiz sans limite de temps</small>
+            </div>
+
+            <div class="col-md-6">
+                {{ form_row(form.nombreTentativesAutorisees, {
+                    label: 'Nombre maximum de tentatives',
+                    attr: {
+                        class: 'form-control',
+                        placeholder: '3',
+                        min: 1
+                    }
+                }) }}
+                <small class="text-muted">Laissez vide pour un nombre illimité</small>
+            </div>
+
+            <!-- Dates de disponibilité -->
+            <div class="col-md-6">
+                {{ form_row(form.dateDebutDisponibilite, {
+                    label: 'Date de début',
+                    attr: { class: 'form-control' }
+                }) }}
+                <small class="text-muted">À partir de quand le quiz sera disponible</small>
+            </div>
+
+            <div class="col-md-6">
+                {{ form_row(form.dateFinDisponibilite, {
+                    label: 'Date de fin',
+                    attr: { class: 'form-control' }
+                }) }}
+                <small class="text-muted">Jusqu'à quand le quiz sera disponible</small>
+            </div>
+
+         
+
+         
+        
+        </div>
+
+        <!-- Buttons -->
+        <div class="mt-4 d-flex justify-content-between">
+            <a href="{{ path('quiz_show', {id: quiz.id}) }}" class="btn btn-secondary-soft mb-0">
+                <i class="bi bi-arrow-left me-1"></i>Retour
+            </a>
+            <button type="submit" class="btn btn-success mb-0">
+                <i class="bi bi-check-circle me-1"></i>Enregistrer les modifications
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+<!-- Card END -->
+
+<!-- Info card -->
+<div class="card border bg-light mt-4">
+    <div class="card-body">
+        <h5 class="card-title">
+            <i class="bi bi-lightbulb text-warning me-2"></i>Conseil
+        </h5>
+        <p class="mb-0">
+            Après avoir modifié votre quiz, vous pourrez ajouter ou réorganiser les questions, ainsi que gérer les options de correction.
+        </p>
+    </div>
+</div>
+{% endblock %}

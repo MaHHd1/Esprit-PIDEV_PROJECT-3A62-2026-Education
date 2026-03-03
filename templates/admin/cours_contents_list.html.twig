@@ -1,0 +1,85 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Administration — Contenus du Cours{% endblock %}
+
+{% block admin_content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-0">{{ cours.titre }}</h1>
+        <p class="text-muted mb-0">Code: {{ cours.codeCours }} | Module: {{ cours.module.titreModule }}</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ path('app_admin_contenu_new') }}" class="btn btn-primary">Ajouter un Contenu</a>
+        <a href="{{ path('app_admin_cours_edit', {'id': cours.id}) }}" class="btn btn-outline-primary">Modifier Cours</a>
+        <a href="{{ path('app_admin_module_courses', {'id': cours.module.id}) }}" class="btn btn-outline-secondary">Retour aux Cours</a>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0">Contenus de ce cours ({{ contenus|length }})</h5>
+      </div>
+      <div class="card-body">
+        {% if contenus|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Ordre</th>
+                  <th>Type</th>
+                  <th>Titre</th>
+                  <th>Public / Premium</th>
+                  <th>Vues</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for contenu in contenus %}
+                  <tr>
+                    <td>{{ contenu.ordreAffichage }}</td>
+                    <td>
+                      {% for type in contenu.typeContenuList %}
+                        <span class="badge bg-primary me-1">{{ type|upper }}</span>
+                      {% endfor %}
+                    </td>
+                    <td><strong>{{ contenu.titre }}</strong></td>
+                    <td>
+                      {% if contenu.estPublic %}
+                        <span class="badge bg-success">Public</span>
+                      {% else %}
+                        <span class="badge bg-warning">Premium</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ contenu.nombreVues }}</td>
+                    <td class="text-end">
+                      <a href="{{ path('app_admin_contenu_show', {'id': contenu.id}) }}" class="btn btn-sm btn-info">Voir détail</a>
+                      <a href="{{ path('app_admin_contenu_edit', {'id': contenu.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                      <form method="post" action="{{ path('app_admin_contenu_delete', {'id': contenu.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce contenu ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ contenu.id) }}" />
+                        <button class="btn btn-sm btn-danger">Supprimer</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if pagination is defined and pagination.total_pages > 1 %}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <small class="text-muted">Page {{ pagination.current_page }} / {{ pagination.total_pages }}</small>
+              <div class="btn-group btn-group-sm">
+                {% set prevPage = pagination.current_page > 1 ? pagination.current_page - 1 : 1 %}
+                {% set nextPage = pagination.current_page < pagination.total_pages ? pagination.current_page + 1 : pagination.total_pages %}
+                <a class="btn btn-outline-secondary {{ pagination.current_page <= 1 ? 'disabled' : '' }}" href="{{ path('app_admin_cours_contents', {'id': cours.id, 'page': prevPage}) }}">Precedent</a>
+                <a class="btn btn-outline-secondary {{ pagination.current_page >= pagination.total_pages ? 'disabled' : '' }}" href="{{ path('app_admin_cours_contents', {'id': cours.id, 'page': nextPage}) }}">Suivant</a>
+              </div>
+            </div>
+          {% endif %}
+        {% else %}
+          <p class="text-muted text-center py-4">Aucun contenu dans ce cours.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

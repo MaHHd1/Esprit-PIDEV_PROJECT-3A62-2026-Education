@@ -1,0 +1,9 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Nouvelle participation{% endblock %}
+{% block page_title %}Nouvelle participation{% endblock %}
+{% block page_subtitle %}Creer une participation evenement{% endblock %}
+
+{% block main_content %}
+    {% include 'participation_evenement/_new_content.html.twig' with {'user_type': 'enseignant'} %}
+{% endblock %}

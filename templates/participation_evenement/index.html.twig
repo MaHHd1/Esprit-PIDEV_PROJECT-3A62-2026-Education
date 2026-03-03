@@ -1,0 +1,8 @@
+{# templates/participation_evenement/index.html.twig #}
+{% if teacher is defined %}
+    {% include 'participation_evenement/_index_enseignant.html.twig' %}
+{% elseif student is defined %}
+    {% include 'participation_evenement/_index_etudiant.html.twig' %}
+{% elseif admin is defined %}
+    {% include 'participation_evenement/_index_admin.html.twig' %}
+{% endif %}

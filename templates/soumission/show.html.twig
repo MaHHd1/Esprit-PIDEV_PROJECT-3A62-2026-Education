@@ -1,0 +1,78 @@
+
+{% extends '/etudiant/student_base.html.twig' %}
+
+{% block title %}Détails de la soumission{% endblock %}
+
+{% block student_content %}
+<div class="container">
+    <h1>Détails de la soumission</h1>
+
+    <div class="card mt-4">
+        <div class="card-header bg-success text-white">
+            <h3>Soumission #{{ soumission.id }}</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tr>
+                    <th width="30%">Évaluation</th>
+                    <td>{{ soumission.evaluation.titre }}</td>
+                </tr>
+                {% if soumission.evaluation.pdfFilename %}
+                <tr>
+                    <th>Fichier d'évaluation</th>
+                    <td>
+                        <a href="{{ vich_uploader_asset(soumission.evaluation, 'pdfFile') }}" target="_blank" class="btn btn-sm btn-info">
+                            <i class="fas fa-download"></i> Télécharger l'énoncé
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <th>Étudiant</th>
+                    <td>{{ soumission.idEtudiant }}</td>
+                </tr>
+                <tr>
+                    <th>Date de soumission</th>
+                    <td>{{ soumission.dateSoumission|date('d/m/Y H:i') }}</td>
+                </tr>
+                <tr>
+                    <th>Statut</th>
+                    <td>
+                        {% if soumission.statut == 'soumise' %}
+                            <span class="badge bg-success">Soumise</span>
+                        {% elseif soumission.statut == 'en_retard' %}
+                            <span class="badge bg-warning">En retard</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Non soumise</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Fichier de soumission</th>
+                    <td>
+                        {% if soumission.pdfFilename %}
+                            <a href="{{ vich_uploader_asset(soumission, 'pdfFile') }}" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="fas fa-download"></i> Télécharger votre soumission
+                            </a>
+                        {% else %}
+                            Aucun fichier
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Commentaire étudiant</th>
+                    <td>{{ soumission.commentaireEtudiant ?? 'Aucun commentaire' }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="card-footer">
+            <a href="{{ path('app_soumission_edit', {'id': soumission.id}) }}" class="btn btn-warning">Modifier</a>
+            <a href="{{ path('app_soumission_index') }}" class="btn btn-secondary">Retour</a>
+            <form method="post" action="{{ path('app_soumission_delete', {'id': soumission.id}) }}" style="display:inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ soumission.id) }}">
+                <button class="btn btn-danger" onclick="return confirm('Supprimer ?');">Supprimer</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
