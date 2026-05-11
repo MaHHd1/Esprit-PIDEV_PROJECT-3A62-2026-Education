@@ -1,0 +1,198 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Administration — Détail Cours{% endblock %}
+
+{% block admin_content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-2">{{ cours.titre }}</h1>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_modules_list') }}">Modules</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_module_courses', {'id': cours.module.id}) }}">{{ cours.module.titreModule }}</a></li>
+            <li class="breadcrumb-item active">{{ cours.titre }}</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ path('app_admin_cours_edit', {'id': cours.id}) }}" class="btn btn-outline-primary">Modifier</a>
+        <form method="post" action="{{ path('app_admin_cours_delete', {'id': cours.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce cours ?');">
+          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cours.id) }}" />
+          <button class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Informations du Cours -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Informations du Cours</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Code :</strong>
+                <p><code>{{ cours.codeCours }}</code></p>
+              </div>
+              <div class="col-md-6">
+                <strong>Titre :</strong>
+                <p>{{ cours.titre }}</p>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Module :</strong>
+                <p>{{ cours.module.titreModule }}</p>
+              </div>
+              <div class="col-md-6">
+                <strong>Statut :</strong>
+                <p><span class="badge bg-success">{{ cours.statut }}</span></p>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Enseignants :</strong>
+                <p>
+                  {% if cours.enseignants|length > 0 %}
+                    {% for ens in cours.enseignants %}
+                      {{ ens.prenom ~ ' ' ~ ens.nom }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    —
+                  {% endif %}
+                </p>
+              </div>
+              <div class="col-md-6">
+                <strong>Niveau :</strong>
+                <p>{{ cours.niveau ?? '—' }}</p>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Crédits :</strong>
+                <p>{{ cours.credits ?? '—' }}</p>
+              </div>
+              <div class="col-md-6">
+                <strong>Langue :</strong>
+                <p>{{ cours.langue ?? '—' }}</p>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-12">
+                <strong>Description :</strong>
+                <p>{{ cours.description ?? '—' }}</p>
+              </div>
+            </div>
+            {% if cours.dateDebut %}
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <strong>Date de début :</strong>
+                  <p>{{ cours.dateDebut|date('d/m/Y') }}</p>
+                </div>
+                <div class="col-md-6">
+                  <strong>Date de fin :</strong>
+                  <p>{{ cours.dateFin ? cours.dateFin|date('d/m/Y') : '—' }}</p>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Contenus du Cours -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Contenus ({{ cours.contenus|length }})</h5>
+            <a href="{{ path('app_admin_contenu_new') }}" class="btn btn-sm btn-primary">Ajouter Contenu</a>
+          </div>
+          <div class="card-body">
+            {% if cours.contenus|length > 0 %}
+              <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Ordre</th>
+                      <th>Type</th>
+                      <th>Titre</th>
+                      <th>Public</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for contenu in cours.contenus %}
+                      <tr>
+                        <td>{{ contenu.ordreAffichage }}</td>
+                        <td>
+                          {% for type in contenu.typeContenuList %}
+                            <span class="badge bg-primary me-1">{{ type|upper }}</span>
+                          {% endfor %}
+                        </td>
+                        <td>{{ contenu.titre }}</td>
+                        <td>
+                          {% if contenu.estPublic %}
+                            <span class="badge bg-success">Public</span>
+                          {% else %}
+                            <span class="badge bg-warning">Premium</span>
+                          {% endif %}
+                        </td>
+                        <td class="text-end">
+                          <a href="{{ path('app_admin_contenu_show', {'id': contenu.id}) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                          <a href="{{ path('app_admin_contenu_edit', {'id': contenu.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                          <form method="post" action="{{ path('app_admin_contenu_delete', {'id': contenu.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ contenu.id) }}" />
+                            <button class="btn btn-sm btn-danger">Supprimer</button>
+                          </form>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <p class="text-muted text-center py-4">Aucun contenu pour ce cours.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Résumé</h5>
+          </div>
+          <div class="card-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-6">ID :</dt>
+              <dd class="col-sm-6"><code>{{ cours.id }}</code></dd>
+
+              <dt class="col-sm-6">Statut :</dt>
+              <dd class="col-sm-6"><span class="badge bg-success">{{ cours.statut }}</span></dd>
+
+              <dt class="col-sm-6">Contenus :</dt>
+              <dd class="col-sm-6"><span class="badge bg-primary">{{ cours.contenus|length }}</span></dd>
+
+              <dt class="col-sm-6">Crédits :</dt>
+              <dd class="col-sm-6">{{ cours.credits ?? '—' }}</dd>
+
+              <dt class="col-sm-6">Créé le :</dt>
+              <dd class="col-sm-6">{{ cours.dateCreation|date('d/m/Y') }}</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Actions</h5>
+          </div>
+          <div class="card-body d-flex flex-column gap-2">
+            <a href="{{ path('app_admin_module_courses', {'id': cours.module.id}) }}" class="btn btn-outline-secondary">Retour aux Cours</a>
+            <a href="{{ path('app_admin_modules_list') }}" class="btn btn-outline-secondary">Retour aux Modules</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

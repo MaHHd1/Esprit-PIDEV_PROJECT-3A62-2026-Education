@@ -1,0 +1,416 @@
+<style>
+    .fe-page { font-family: 'Roboto', sans-serif; color: #1e1e2d; }
+    .fe-page h3, .fe-page h5, .fe-page .form-label { font-family: 'Heebo', sans-serif; }
+
+    .fe-layout {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    @media (max-width: 900px) { .fe-layout { grid-template-columns: 1fr; } }
+
+    .fe-card {
+        background: #fff;
+        border: 1px solid #e4e6ea;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .fe-card-header {
+        padding: 1.1rem 1.5rem;
+        border-bottom: 1px solid #e4e6ea;
+        display: flex; align-items: center; gap: .6rem;
+        background: #fafafa;
+    }
+    .fe-card-header .header-icon {
+        width: 34px; height: 34px; border-radius: 8px;
+        background: #1e1e2d; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .85rem; flex-shrink: 0;
+    }
+    .fe-card-header h5 { margin: 0; font-size: .95rem; font-weight: 700; color: #1e1e2d; }
+    .fe-card-header .edit-badge {
+        margin-left: auto;
+        font-size: .68rem; font-weight: 700;
+        padding: .2rem .6rem; border-radius: 50px;
+        background: rgba(13,110,253,.1); color: #0d6efd;
+    }
+    .fe-card-body { padding: 1.5rem; }
+
+    .fe-page .form-label {
+        font-size: .8rem; font-weight: 700;
+        color: #3d3d4e; margin-bottom: .35rem;
+        text-transform: uppercase; letter-spacing: .04em;
+    }
+    .fe-page .form-control,
+    .fe-page .form-select {
+        border: 1px solid #e4e6ea; border-radius: 7px;
+        font-size: .875rem; padding: .65rem .9rem;
+        background: #fff; color: #1e1e2d;
+        transition: border-color .2s, box-shadow .2s;
+        width: 100%;
+    }
+    .fe-page .form-control:focus,
+    .fe-page .form-select:focus {
+        border-color: #1e1e2d;
+        box-shadow: 0 0 0 3px rgba(30,30,45,.08);
+        background: #fff; outline: none;
+    }
+    .fe-page textarea.form-control { min-height: 110px; resize: vertical; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+    .mb-field { margin-bottom: 1.2rem; }
+
+    .fe-actions {
+        display: flex; justify-content: space-between; align-items: center;
+        padding-top: 1.25rem; margin-top: 1.25rem;
+        border-top: 1px solid #e4e6ea;
+    }
+    .btn-save {
+        background: #198754; color: #fff;
+        border: none; border-radius: 7px; padding: .6rem 1.6rem;
+        font-family: 'Heebo', sans-serif; font-weight: 700; font-size: .875rem;
+        cursor: pointer; display: inline-flex; align-items: center; gap: .45rem;
+        transition: background .2s, transform .15s;
+        box-shadow: 0 3px 10px rgba(25,135,84,.25);
+    }
+    .btn-save:hover { background: #157347; transform: translateY(-1px); }
+    .btn-cancel {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .55rem 1.1rem;
+        border: 1px solid #e4e6ea; border-radius: 7px;
+        background: #fff; color: #6c757d; font-size: .85rem;
+        text-decoration: none;
+        transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-cancel:hover { background: #f8f8fa; color: #1e1e2d; border-color: #1e1e2d; }
+
+    .fe-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    .fe-sidebar-card {
+        background: #fff; border: 1px solid #e4e6ea;
+        border-radius: 10px; overflow: hidden;
+    }
+    .fe-sidebar-card .s-header {
+        padding: .85rem 1.2rem; border-bottom: 1px solid #e4e6ea;
+        display: flex; align-items: center; gap: .5rem; background: #fafafa;
+    }
+    .fe-sidebar-card .s-header span {
+        font-family: 'Heebo', sans-serif;
+        font-size: .82rem; font-weight: 700; color: #1e1e2d;
+    }
+    .fe-sidebar-card .s-body { padding: 1.1rem 1.2rem; }
+
+    .info-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: .45rem 0; border-bottom: 1px solid #f0f0f5; font-size: .82rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #6c757d; font-weight: 500; }
+    .info-value { color: #1e1e2d; font-weight: 600; }
+    .badge-type {
+        font-size: .68rem; font-weight: 700; padding: .2rem .55rem;
+        border-radius: 50px; background: rgba(30,30,45,.08); color: #1e1e2d;
+    }
+    .badge-statut {
+        font-size: .68rem; font-weight: 700; padding: .2rem .55rem;
+        border-radius: 50px; background: rgba(25,135,84,.1); color: #198754;
+    }
+    .tip-item {
+        display: flex; align-items: flex-start; gap: .6rem;
+        margin-bottom: .75rem; font-size: .8rem; color: #6c757d; line-height: 1.5;
+    }
+    .tip-item:last-child { margin-bottom: 0; }
+    .tip-icon {
+        width: 24px; height: 24px; border-radius: 6px;
+        background: #f0f0f5; color: #1e1e2d;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .72rem; flex-shrink: 0; margin-top: .05rem;
+    }
+    .tip-item strong { display: block; color: #1e1e2d; margin-bottom: .1rem; font-size: .8rem; }
+
+    /* ✅ Upload styles */
+    .upload-zone {
+        border: 2px dashed #e4e6ea;
+        border-radius: 10px;
+        padding: 1.2rem;
+        text-align: center;
+        transition: border-color .2s, background .2s;
+        cursor: pointer;
+        background: #fafafa;
+    }
+    .upload-zone:hover { border-color: #1e1e2d; background: #f5f5f8; }
+    .upload-zone .upload-icon { font-size: 1.6rem; color: #adb5bd; margin-bottom: .4rem; }
+    .upload-zone p { margin: 0; font-size: .8rem; color: #6c757d; }
+    .upload-zone strong { color: #1e1e2d; }
+
+    .img-preview-wrap {
+        margin-top: .75rem;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e4e6ea;
+    }
+    .img-preview-wrap img {
+        width: 100%;
+        max-height: 180px;
+        object-fit: cover;
+        display: block;
+    }
+    .attachment-preview {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        padding: .6rem .9rem;
+        background: #f0f0f5;
+        border-radius: 7px;
+        margin-top: .6rem;
+        font-size: .82rem;
+        color: #1e1e2d;
+    }
+    .attachment-preview i { font-size: 1.1rem; color: #0d6efd; }
+</style>
+
+<div class="fe-page">
+
+{# ── Breadcrumb ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="mb-0 text-muted small">
+        <a href="{{ path('forum_list') }}" class="text-muted text-decoration-none">
+            <i class="bi bi-chat-dots me-1"></i>Forums
+        </a>
+        <i class="bi bi-chevron-right mx-1" style="font-size:.65rem;"></i>
+        <a href="{{ path('forum_show', {id: forum.id}) }}" class="text-muted text-decoration-none">
+            {{ forum.titre|slice(0,30) }}{% if forum.titre|length > 30 %}…{% endif %}
+        </a>
+        <i class="bi bi-chevron-right mx-1" style="font-size:.65rem;"></i>
+        <span class="text-dark fw-semibold">Modifier</span>
+    </p>
+    <a class="btn-cancel" href="{{ path('forum_show', {id: forum.id}) }}">
+        <i class="bi bi-arrow-left"></i>Retour
+    </a>
+</div>
+
+<div class="fe-layout">
+
+    <div class="fe-card">
+        <div class="fe-card-header">
+            <span class="header-icon"><i class="bi bi-pencil-fill"></i></span>
+            <h5>Modifier le forum</h5>
+            <span class="edit-badge"><i class="bi bi-pencil me-1"></i>Édition</span>
+        </div>
+        <div class="fe-card-body">
+            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+                <div class="mb-field">
+                    <label class="form-label" for="{{ form.titre.vars.id }}">Titre</label>
+                    {{ form_widget(form.titre, { attr: { class: 'form-control' } }) }}
+                    {{ form_errors(form.titre) }}
+                </div>
+
+                <div class="mb-field">
+                    <label class="form-label" for="{{ form.description.vars.id }}">Description</label>
+                    {{ form_widget(form.description, { attr: { class: 'form-control' } }) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                <div class="field-row mb-field">
+                    <div>
+                        <label class="form-label" for="{{ form.type.vars.id }}">Type</label>
+                        {{ form_widget(form.type, { attr: { class: 'form-select' } }) }}
+                        {{ form_errors(form.type) }}
+                    </div>
+                    <div>
+                        <label class="form-label" for="{{ form.statut.vars.id }}">Statut</label>
+                        {{ form_widget(form.statut, { attr: { class: 'form-select' } }) }}
+                        {{ form_errors(form.statut) }}
+                    </div>
+                </div>
+
+                {# ✅ Image de couverture avec preview existante #}
+                <div class="mb-field">
+                    <label class="form-label">
+                        <i class="bi bi-image me-1"></i>Image de couverture
+                    </label>
+
+                    {# Afficher l'image actuelle si elle existe #}
+                    {% if forum.imageCouvertureUrl %}
+                    <div class="img-preview-wrap mb-2" id="image-preview-wrap">
+                        <img id="image-preview"
+                             src="{{ asset('uploads/forum/images/' ~ forum.imageCouvertureUrl) }}"
+                             alt="Image actuelle">
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Image actuelle — choisissez-en une nouvelle pour la remplacer
+                    </p>
+                    {% else %}
+                    <div class="img-preview-wrap" id="image-preview-wrap" style="display:none;">
+                        <img id="image-preview" src="" alt="Aperçu">
+                    </div>
+                    {% endif %}
+
+                    <div class="upload-zone" id="image-upload-zone"
+                         onclick="document.getElementById('{{ form.imageCouvertureFile.vars.id }}').click()">
+                        <div class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                        <p><strong>Cliquez pour changer l'image</strong></p>
+                        <p>JPG, PNG, WEBP, GIF — max 5 Mo</p>
+                    </div>
+                    <div style="display:none;">
+                        {{ form_widget(form.imageCouvertureFile) }}
+                    </div>
+                    {{ form_errors(form.imageCouvertureFile) }}
+                </div>
+
+                {# ✅ Pièce jointe avec fichier existant #}
+                <div class="mb-field">
+                    <label class="form-label">
+                        <i class="bi bi-paperclip me-1"></i>Pièce jointe
+                    </label>
+
+                    {% if forum.pieceJointeUrl %}
+                    <div class="attachment-preview mb-2">
+                        <i class="bi bi-file-earmark-fill"></i>
+                        <span>{{ forum.pieceJointeUrl }}</span>
+                        <a href="{{ asset('uploads/forum/attachments/' ~ forum.pieceJointeUrl) }}"
+                           target="_blank" class="ms-auto btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download me-1"></i>Télécharger
+                        </a>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Choisissez un nouveau fichier pour remplacer l'actuel
+                    </p>
+                    {% endif %}
+
+                    <div class="upload-zone" id="attachment-upload-zone"
+                         onclick="document.getElementById('{{ form.pieceJointeFile.vars.id }}').click()">
+                        <div class="upload-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                        <p><strong>Cliquez pour choisir un fichier</strong></p>
+                        <p>PDF, ZIP, images — max 10 Mo</p>
+                    </div>
+                    <div style="display:none;">
+                        {{ form_widget(form.pieceJointeFile) }}
+                    </div>
+                    {{ form_errors(form.pieceJointeFile) }}
+
+                    <div class="attachment-preview" id="attachment-preview" style="display:none;">
+                        <i class="bi bi-file-earmark"></i>
+                        <span id="attachment-name"></span>
+                    </div>
+                </div>
+
+                <div class="mb-field">
+                    <label class="form-label" for="{{ form.reglesModeration.vars.id }}">Règles de modération</label>
+                    {{ form_widget(form.reglesModeration, { attr: { class: 'form-control' } }) }}
+                    {{ form_errors(form.reglesModeration) }}
+                </div>
+
+                <div class="fe-actions">
+                    <a href="{{ path('forum_show', {id: forum.id}) }}" class="btn-cancel">
+                        <i class="bi bi-x"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check2-circle"></i>Enregistrer
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    {# ── Sidebar ── #}
+    <div class="fe-sidebar">
+        <div class="fe-sidebar-card">
+            <div class="s-header">
+                <i class="bi bi-info-circle-fill text-primary" style="font-size:.85rem;"></i>
+                <span>Informations actuelles</span>
+            </div>
+            <div class="s-body">
+                <div class="info-row">
+                    <span class="info-label">Type</span>
+                    <span class="badge-type">{{ forum.type }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Statut</span>
+                    <span class="badge-statut">{{ forum.statut }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Vues</span>
+                    <span class="info-value">{{ forum.nombreVues }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Créateur</span>
+                    <span class="info-value">{{ forum.createur ? forum.createur.nomComplet : '—' }}</span>
+                </div>
+                {% if forum.derniereActivite %}
+                <div class="info-row">
+                    <span class="info-label">Dernière activité</span>
+                    <span class="info-value" style="font-size:.75rem;">
+                        {{ forum.derniereActivite|date('d/m/Y') }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="fe-sidebar-card">
+            <div class="s-header">
+                <i class="bi bi-lightbulb-fill" style="color:#ffc107;font-size:.85rem;"></i>
+                <span>Conseils</span>
+            </div>
+            <div class="s-body">
+                <div class="tip-item">
+                    <span class="tip-icon"><i class="bi bi-pencil"></i></span>
+                    <div><strong>Titre clair</strong>Gardez un titre précis et facile à comprendre.</div>
+                </div>
+                <div class="tip-item">
+                    <span class="tip-icon"><i class="bi bi-shield-check"></i></span>
+                    <div><strong>Règles à jour</strong>Mettez à jour les règles si le forum évolue.</div>
+                </div>
+                <div class="tip-item">
+                    <span class="tip-icon"><i class="bi bi-image"></i></span>
+                    <div><strong>Image</strong>Uploadez directement depuis votre ordinateur.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script>
+// ✅ Preview image de couverture
+document.getElementById('{{ form.imageCouvertureFile.vars.id }}').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const zone = document.getElementById('image-upload-zone');
+    zone.innerHTML = `
+        <div class="upload-icon"><i class="bi bi-check-circle-fill" style="color:#198754;"></i></div>
+        <p><strong>${file.name}</strong></p>
+        <p style="color:#198754;">${(file.size / 1024 / 1024).toFixed(2)} Mo</p>`;
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        document.getElementById('image-preview').src = ev.target.result;
+        document.getElementById('image-preview-wrap').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+});
+
+// ✅ Preview pièce jointe
+document.getElementById('{{ form.pieceJointeFile.vars.id }}').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const zone = document.getElementById('attachment-upload-zone');
+    zone.innerHTML = `
+        <div class="upload-icon"><i class="bi bi-check-circle-fill" style="color:#198754;"></i></div>
+        <p><strong>${file.name}</strong></p>
+        <p style="color:#198754;">${(file.size / 1024 / 1024).toFixed(2)} Mo</p>`;
+
+    const preview = document.getElementById('attachment-preview');
+    document.getElementById('attachment-name').textContent = file.name;
+    preview.style.display = 'flex';
+});
+</script>

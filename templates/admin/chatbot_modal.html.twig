@@ -1,0 +1,208 @@
+<!-- Chatbot Modal -->
+<div class="modal fade" id="chatbotModal" tabindex="-1" aria-labelledby="chatbotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="chatbotModalLabel">
+                    <i class="fas fa-robot me-2"></i>Assistant IA NovaLearn
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="chatbot-container" style="height: 500px; display: flex; flex-direction: column;">
+                    <!-- Chat Messages Area -->
+                    <div class="chatbot-messages p-3" id="chatbotMessages" style="flex: 1; overflow-y: auto; background: #f8f9fc;">
+                        <div class="message bot mb-3 d-flex">
+                            <div class="message-avatar me-2">
+                                <div class="avatar-img rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-robot text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="message-content bg-white p-3 rounded-3 shadow-sm" style="max-width: 80%;">
+                                Bonjour! Je suis votre assistant IA pour l'administration de NovaLearn.<br><br>
+                                <strong>Je peux vous aider avec:</strong>
+                                <ul class="mt-2 mb-0">
+                                    <li>📊 Statistiques des utilisateurs</li>
+                                    <li>👥 Informations sur les étudiants</li>
+                                    <li>👨‍🏫 Détails des enseignants</li>
+                                    <li>🔐 Gestion des administrateurs</li>
+                                    <li>📝 Quiz et évaluations</li>
+                                </ul>
+                                <br>
+                                <em>Que souhaitez-vous savoir?</em>
+                                <div class="message-time small text-muted mt-2">{{ "now"|date("H:i") }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div class="typing-indicator px-3 py-2" id="typingIndicator" style="display: none; background: #f8f9fc;">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-grow spinner-grow-sm text-primary me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-muted">L'assistant réfléchit...</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Questions -->
+                    <div class="quick-questions px-3 py-2 bg-light border-top">
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light text-dark p-2 quick-question" onclick="useQuickQuestion(this)" style="cursor: pointer; border: 1px solid #dee2e6;">
+                                <i class="fas fa-chart-simple me-1"></i>Statistiques générales
+                            </span>
+                            <span class="badge bg-light text-dark p-2 quick-question" onclick="useQuickQuestion(this)" style="cursor: pointer; border: 1px solid #dee2e6;">
+                                <i class="fas fa-user-graduate me-1"></i>Nombre d'étudiants
+                            </span>
+                            <span class="badge bg-light text-dark p-2 quick-question" onclick="useQuickQuestion(this)" style="cursor: pointer; border: 1px solid #dee2e6;">
+                                <i class="fas fa-chalkboard-user me-1"></i>Enseignants actifs
+                            </span>
+                            <span class="badge bg-light text-dark p-2 quick-question" onclick="useQuickQuestion(this)" style="cursor: pointer; border: 1px solid #dee2e6;">
+                                <i class="fas fa-clock me-1"></i>Derniers inscrits
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="chatbot-input p-3 border-top bg-white">
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control"
+                                   id="chatbotQuestion"
+                                   placeholder="Posez votre question..."
+                                   onkeypress="if(event.key === 'Enter') sendChatbotMessage()">
+                            <button class="btn btn-primary" type="button" onclick="sendChatbotMessage()">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer
+                            </button>
+                        </div>
+                        <small class="text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle me-1"></i>
+                            L'assistant répond uniquement avec les données de votre base de données.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chatbot-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    .chatbot-messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    .chatbot-messages::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    .chatbot-messages::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    .quick-question:hover {
+        background: #e9ecef !important;
+        border-color: #adb5bd !important;
+    }
+</style>
+
+<script>
+    let isProcessing = false;
+
+    function addChatbotMessage(text, isUser = false) {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        const messageDiv = document.createElement('div');
+
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2, '0') + ':' +
+            now.getMinutes().toString().padStart(2, '0');
+
+        if (!isUser) {
+            messageDiv.className = 'message bot mb-3 d-flex';
+            messageDiv.innerHTML = `
+            <div class="message-avatar me-2">
+                <div class="avatar-img rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="fas fa-robot text-primary"></i>
+                </div>
+            </div>
+            <div class="message-content bg-white p-3 rounded-3 shadow-sm" style="max-width: 80%;">
+                ${text.replace(/\n/g, '<br>')}
+                <div class="message-time small text-muted mt-2">${time}</div>
+            </div>
+        `;
+        } else {
+            messageDiv.className = 'message user mb-3 d-flex justify-content-end';
+            messageDiv.innerHTML = `
+            <div class="message-content bg-primary text-white p-3 rounded-3 shadow-sm" style="max-width: 80%;">
+                ${text}
+                <div class="message-time small text-white-50 mt-2">${time}</div>
+            </div>
+        `;
+        }
+
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function useQuickQuestion(element) {
+        const question = element.textContent.trim();
+        document.getElementById('chatbotQuestion').value = question;
+        sendChatbotMessage();
+    }
+
+    async function sendChatbotMessage() {
+        if (isProcessing) return;
+
+        const questionInput = document.getElementById('chatbotQuestion');
+        const question = questionInput.value.trim();
+        if (!question) return;
+
+        // Add user message
+        addChatbotMessage(question, true);
+        questionInput.value = '';
+
+        // Show typing indicator
+        isProcessing = true;
+        document.getElementById('typingIndicator').style.display = 'block';
+
+        try {
+            const formData = new FormData();
+            formData.append('question', question);
+
+            const response = await fetch('{{ path('app_chatbot_ask') }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            // Hide typing indicator
+            document.getElementById('typingIndicator').style.display = 'none';
+            isProcessing = false;
+
+            if (data.success) {
+                addChatbotMessage(data.answer);
+            } else {
+                addChatbotMessage('Désolé, une erreur est survenue: ' + (data.error || 'Erreur inconnue'));
+            }
+
+        } catch (error) {
+            document.getElementById('typingIndicator').style.display = 'none';
+            isProcessing = false;
+            addChatbotMessage('Désolé, je ne peux pas répondre pour le moment. Veuillez réessayer.');
+            console.error('Error:', error);
+        }
+    }
+
+    // Clear messages when modal is closed
+    document.getElementById('chatbotModal')?.addEventListener('hidden.bs.modal', function () {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        if (messagesContainer) {
+            // Keep only the first bot message
+            while (messagesContainer.children.length > 1) {
+                messagesContainer.removeChild(messagesContainer.lastChild);
+            }
+        }
+        document.getElementById('chatbotQuestion').value = '';
+    });
+</script>

@@ -1,0 +1,9 @@
+<form class="row g-2 mb-3" method="get" action="{{ action }}">
+  <input type="hidden" name="u" value="{{ activeUser.id }}">
+  <div class="col-md-8">
+    <input class="form-control" name="q" value="{{ q }}" placeholder="Rechercher (objet ou contenu)...">
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-outline-dark w-100">Rechercher</button>
+  </div>
+</form>

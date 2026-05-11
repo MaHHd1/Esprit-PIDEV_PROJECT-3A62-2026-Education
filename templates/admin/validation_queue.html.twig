@@ -1,0 +1,61 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Administration - A valider{% endblock %}
+
+{% block admin_content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-0">Tableau a valider</h1>
+        <p class="text-muted mb-0">Cours brouillon et contenus non publics</p>
+      </div>
+      <a href="{{ path('app_admin_modules_list') }}" class="btn btn-outline-secondary">Retour</a>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header">
+            <h5 class="mb-0">Cours brouillon ({{ draft_courses|length }})</h5>
+          </div>
+          <div class="card-body">
+            {% if draft_courses|length > 0 %}
+              <ul class="list-group list-group-flush">
+                {% for c in draft_courses %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><strong>{{ c.codeCours }}</strong> - {{ c.titre }}</span>
+                    <a href="{{ path('app_admin_cours_edit', {'id': c.id}) }}" class="btn btn-sm btn-outline-primary">Valider</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted mb-0">Aucun cours en brouillon.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header">
+            <h5 class="mb-0">Contenus non publics ({{ private_contents|length }})</h5>
+          </div>
+          <div class="card-body">
+            {% if private_contents|length > 0 %}
+              <ul class="list-group list-group-flush">
+                {% for contenu in private_contents %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ contenu.titre }} <small class="text-muted">({{ contenu.cours ? contenu.cours.codeCours : '-' }})</small></span>
+                    <a href="{{ path('app_admin_contenu_edit', {'id': contenu.id}) }}" class="btn btn-sm btn-outline-primary">Revoir</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted mb-0">Aucun contenu non public.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

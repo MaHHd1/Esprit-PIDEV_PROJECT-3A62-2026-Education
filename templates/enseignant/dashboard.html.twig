@@ -1,0 +1,89 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Tableau de Bord Enseignant{% endblock %}
+
+{% block page_title %}{{ enseignant.prenom }} {{ enseignant.nom }}{% endblock %}
+{% block page_subtitle %}
+    <ul class="list-inline mb-0">
+        <li class="list-inline-item me-3 mb-1 mb-sm-0"><span class="h6">{{ enseignant.matriculeEnseignant }}</span> <span class="text-body fw-light">Matricule</span></li>
+        <li class="list-inline-item me-3 mb-1 mb-sm-0"><span class="h6">{{ enseignant.diplome }}</span> <span class="text-body fw-light">Diplome</span></li>
+        <li class="list-inline-item me-3 mb-1 mb-sm-0"><span class="h6">{{ enseignant.specialite }}</span> <span class="text-body fw-light">Specialite</span></li>
+    </ul>
+{% endblock %}
+{% block page_actions %}
+    <a href="{{ path('app_enseignant_statistiques') }}" class="btn btn-primary mb-0 me-2">Statistiques</a>
+    <a href="{{ path('app_enseignant_edit_profile') }}" class="btn btn-outline-primary mb-0">Voir mon profil</a>
+{% endblock %}
+
+{% block main_content %}
+    <div class="row mb-4">
+        <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-1">Cours assignes</h6>
+                    <h3 class="mb-0">{{ coursesCount|default(0) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-1">Etudiants total</h6>
+                    <h3 class="mb-0">{{ total_students|default(0) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-1">Etudiants actifs</h6>
+                    <h3 class="mb-0">{{ active_students|default(0) }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">Bienvenue, {{ enseignant.prenom }} !</h3>
+            <p class="card-text mb-3">Consultez le suivi reel des etudiants sur vos cours.</p>
+            <a href="{{ path('app_enseignant_liste_etudiants') }}" class="btn btn-primary">Voir mes etudiants</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title mb-0">Temps passe par etudiant (minutes)</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Etudiant</th>
+                        <th>Cours</th>
+                        <th class="text-end">Minutes</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in time_spent_rows|default([])|slice(0, 25) %}
+                        <tr>
+                            <td>
+                                <strong>{{ row.etudiant_prenom }} {{ row.etudiant_nom }}</strong>
+                                <div class="small text-muted">{{ row.etudiant_email }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border me-1">{{ row.cours_code }}</span>
+                                {{ row.cours_titre }}
+                            </td>
+                            <td class="text-end"><span class="badge bg-primary">{{ row.minutes }} min</span></td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-4">Aucune progression disponible.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

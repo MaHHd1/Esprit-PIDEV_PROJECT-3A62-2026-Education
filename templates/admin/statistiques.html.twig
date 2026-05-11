@@ -1,0 +1,447 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Statistiques Utilisateurs - Eduport{% endblock %}
+
+{% block admin_content %}
+    <!-- Title -->
+    <div class="row">
+        <div class="col-12 mb-3">
+            <div class="d-sm-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 mb-sm-0">Statistiques Utilisateurs</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_administrateur_dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Statistiques</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-grid d-sm-block">
+                    <a href="{{ path('app_administrateur_dashboard') }}" class="btn btn-sm btn-primary-soft mb-0">
+                        <i class="bi bi-arrow-left me-1"></i>Retour au Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="row g-4 mb-4">
+        <!-- Total Utilisateurs -->
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-primary bg-opacity-15 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0 fw-bold">{{ stats.totaux.total }}</h2>
+                        <span class="mb-0 h6 fw-light">Total Utilisateurs</span>
+                    </div>
+                    <div class="icon-lg rounded-circle bg-primary text-white mb-0">
+                        <i class="fas fa-users fa-fw"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étudiants -->
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-success bg-opacity-10 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0 fw-bold">{{ stats.totaux.etudiants }}</h2>
+                        <span class="mb-0 h6 fw-light">Étudiants</span>
+                    </div>
+                    <div class="icon-lg rounded-circle bg-success text-white mb-0">
+                        <i class="fas fa-user-graduate fa-fw"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enseignants -->
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-warning bg-opacity-10 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0 fw-bold">{{ stats.totaux.enseignants }}</h2>
+                        <span class="mb-0 h6 fw-light">Enseignants</span>
+                    </div>
+                    <div class="icon-lg rounded-circle bg-warning text-white mb-0">
+                        <i class="fas fa-user-tie fa-fw"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Administrateurs -->
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-purple bg-opacity-10 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0 fw-bold">{{ stats.totaux.administrateurs }}</h2>
+                        <span class="mb-0 h6 fw-light">Administrateurs</span>
+                    </div>
+                    <div class="icon-lg rounded-circle bg-purple text-white mb-0">
+                        <i class="fas fa-users-cog fa-fw"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-info bg-opacity-10 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0 fw-bold">{{ stats.totaux_cours_modules.cours|default(0) }}</h2>
+                        <span class="mb-0 h6 fw-light">Total Cours</span>
+                    </div>
+                    <div class="icon-lg rounded-circle bg-info text-white mb-0">
+                        <i class="fas fa-book fa-fw"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xxl-3">
+            <div class="card card-body bg-secondary bg-opacity-10 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0 fw-bold">{{ stats.totaux_cours_modules.modules|default(0) }}</h2>
+                        <span class="mb-0 h6 fw-light">Total Modules</span>
+                    </div>
+                    <div class="icon-lg rounded-circle bg-secondary text-white mb-0">
+                        <i class="fas fa-layer-group fa-fw"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row g-4">
+        <!-- Graphique 1: Répartition par type -->
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Répartition par Type d'Utilisateur</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="chartTypeUtilisateurs" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique 2: Créations de comptes (6 derniers mois) -->
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Créations de Comptes (6 derniers mois)</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="chartCreationsMois" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique 3: Statuts Étudiants -->
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Statuts des Étudiants</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="chartStatutsEtudiants" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique 4: Niveaux d'étude -->
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Répartition par Niveau d'Étude</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="chartNiveauxEtude" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Statut des Cours</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="chartStatutsCours" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Statut des Modules</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="chartStatutsModules" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Top Modules par nombre de Cours</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="chartCoursParModule" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow h-100">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Top Cours par Inscriptions</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="chartInscriptionsParCours" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des statistiques détaillées -->
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Statistiques Détailées</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <!-- Âge moyen -->
+                        <div class="col-md-4 mb-4">
+                            <div class="card border">
+                                <div class="card-body text-center">
+                                    <h3 class="text-primary">{{ stats.age_moyen }} ans</h3>
+                                    <p class="text-muted mb-0">Âge moyen des étudiants</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contrats enseignants -->
+                        <div class="col-md-8">
+                            <h6>Types de Contrat (Enseignants)</h6>
+                            {% if stats.par_contrat is not empty %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                        <tr>
+                                            <th>Type de Contrat</th>
+                                            <th class="text-end">Nombre</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for contrat in stats.par_contrat %}
+                                            <tr>
+                                                <td>{{ contrat.typeContrat|default('Non spécifié') }}</td>
+                                                <td class="text-end">{{ contrat.count }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Aucun type de contrat enregistré.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inclure Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Données pour les graphiques
+        const statsData = {
+            types: {
+                labels: ['Étudiants', 'Enseignants', 'Administrateurs'],
+                data: [
+                    {{ stats.totaux.etudiants }},
+                    {{ stats.totaux.enseignants }},
+                    {{ stats.totaux.administrateurs }}
+                ],
+                colors: ['#28a745', '#ffc107', '#6f42c1']
+            },
+            creations: {
+                labels: {{ stats.creations_par_mois|map(i => i.mois)|json_encode|raw }},
+                data: {{ stats.creations_par_mois|map(i => i.count)|json_encode|raw }}
+            },
+            statutsEtudiants: {
+                labels: {{ stats.par_statut.etudiants|map(s => s.statut|capitalize)|json_encode|raw }},
+                data: {{ stats.par_statut.etudiants|map(s => s.count)|json_encode|raw }}
+            },
+            niveaux: {
+                labels: {{ stats.par_niveau|map(n => n.niveauEtude|default('Non spécifié'))|json_encode|raw }},
+                data: {{ stats.par_niveau|map(n => n.count)|json_encode|raw }}
+            }
+        };
+
+        statsData.statutsCours = {
+            labels: {{ stats.par_statut.cours|map(s => s.statut|capitalize)|json_encode|raw }},
+            data: {{ stats.par_statut.cours|map(s => s.count)|json_encode|raw }}
+        };
+        statsData.statutsModules = {
+            labels: {{ stats.par_statut.modules|map(s => s.statut|capitalize)|json_encode|raw }},
+            data: {{ stats.par_statut.modules|map(s => s.count)|json_encode|raw }}
+        };
+        statsData.coursParModule = {
+            labels: {{ stats.cours_par_module|map(m => m.module)|json_encode|raw }},
+            data: {{ stats.cours_par_module|map(m => m.count)|json_encode|raw }}
+        };
+        statsData.inscriptionsParCours = {
+            labels: {{ stats.inscriptions_par_cours|map(c => c.code)|json_encode|raw }},
+            data: {{ stats.inscriptions_par_cours|map(c => c.count)|json_encode|raw }}
+        };
+
+        // Graphique 1: Répartition par type
+        const ctx1 = document.getElementById('chartTypeUtilisateurs').getContext('2d');
+        new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: statsData.types.labels,
+                datasets: [{
+                    data: statsData.types.data,
+                    backgroundColor: statsData.types.colors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Graphique 2: Créations par mois
+        const ctx2 = document.getElementById('chartCreationsMois').getContext('2d');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: statsData.creations.labels,
+                datasets: [{
+                    label: 'Créations de comptes',
+                    data: statsData.creations.data,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Nombre de créations'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Graphique 3: Statuts étudiants
+        const ctx3 = document.getElementById('chartStatutsEtudiants').getContext('2d');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: statsData.statutsEtudiants.labels,
+                datasets: [{
+                    label: 'Étudiants',
+                    data: statsData.statutsEtudiants.data,
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    borderColor: '#28a745',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Nombre d\'étudiants'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Graphique 4: Niveaux d'étude
+        const ctx4 = document.getElementById('chartNiveauxEtude').getContext('2d');
+        new Chart(ctx4, {
+            type: 'pie',
+            data: {
+                labels: statsData.niveaux.labels,
+                datasets: [{
+                    data: statsData.niveaux.data,
+                    backgroundColor: [
+                        '#28a745', '#20c997', '#0dcaf0', '#6f42c1',
+                        '#fd7e14', '#dc3545', '#adb5bd'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+
+        const ctx5 = document.getElementById('chartStatutsCours').getContext('2d');
+        new Chart(ctx5, {
+            type: 'bar',
+            data: { labels: statsData.statutsCours.labels, datasets: [{ label: 'Cours', data: statsData.statutsCours.data, backgroundColor: 'rgba(13, 202, 240, 0.7)', borderColor: '#0dcaf0', borderWidth: 1 }] },
+            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+        });
+
+        const ctx6 = document.getElementById('chartStatutsModules').getContext('2d');
+        new Chart(ctx6, {
+            type: 'doughnut',
+            data: { labels: statsData.statutsModules.labels, datasets: [{ data: statsData.statutsModules.data, backgroundColor: ['#6f42c1', '#20c997', '#fd7e14', '#adb5bd'] }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        const ctx7 = document.getElementById('chartCoursParModule').getContext('2d');
+        new Chart(ctx7, {
+            type: 'bar',
+            data: { labels: statsData.coursParModule.labels, datasets: [{ label: 'Cours', data: statsData.coursParModule.data, backgroundColor: 'rgba(111, 66, 193, 0.7)', borderColor: '#6f42c1', borderWidth: 1 }] },
+            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+        });
+
+        const ctx8 = document.getElementById('chartInscriptionsParCours').getContext('2d');
+        new Chart(ctx8, {
+            type: 'bar',
+            data: { labels: statsData.inscriptionsParCours.labels, datasets: [{ label: 'Inscriptions', data: statsData.inscriptionsParCours.data, backgroundColor: 'rgba(25, 135, 84, 0.7)', borderColor: '#198754', borderWidth: 1 }] },
+            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends 'etudiant/student_base.html.twig' %}
+
+{% block title %}Assistant Cours - Novalearn{% endblock %}
+
+{% block student_content %}
+<div class="card border mb-4">
+    <div class="card-body">
+        <h3 class="mb-2">Assistant IA du cours</h3>
+        <p class="text-muted mb-0">
+            Posez une question sur un cours inscrit. L'assistant repond uniquement pour expliquer le contenu du cours.
+        </p>
+    </div>
+</div>
+
+<div class="card border">
+    <div class="card-body">
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label for="assistant-course" class="form-label">Cours</label>
+                <select id="assistant-course" class="form-select">
+                    <option value="">Selectionner un cours</option>
+                    {% for course in courses %}
+                        <option value="{{ course.id }}">{{ course.codeCours }} - {{ course.titre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="assistant-question" class="form-label">Question</label>
+                <input id="assistant-question" class="form-control" type="text" placeholder="Ex: explique la difference entre ...">
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mb-3">
+            <button id="assistant-send" class="btn btn-primary" type="button">
+                <i class="bi bi-send me-1"></i>Envoyer
+            </button>
+            <button id="assistant-clear" class="btn btn-outline-secondary" type="button">
+                Vider
+            </button>
+        </div>
+
+        <div id="assistant-chat" class="border rounded p-3 bg-light" style="min-height: 260px; max-height: 520px; overflow-y: auto;">
+            <div class="text-muted">Assistant pret.</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function () {
+            var askUrl = "{{ path('app_etudiant_course_assistant_ask') }}";
+            var csrfToken = "{{ assistant_csrf_token }}";
+            var btnSend = document.getElementById('assistant-send');
+            var btnClear = document.getElementById('assistant-clear');
+            var courseSelect = document.getElementById('assistant-course');
+            var questionInput = document.getElementById('assistant-question');
+            var chat = document.getElementById('assistant-chat');
+
+            function appendMessage(role, text) {
+                var wrap = document.createElement('div');
+                wrap.className = 'mb-3';
+
+                var badge = document.createElement('span');
+                badge.className = role === 'user' ? 'badge bg-primary me-2' : 'badge bg-success me-2';
+                badge.textContent = role === 'user' ? 'Vous' : 'Assistant';
+
+                var content = document.createElement('span');
+                content.textContent = text;
+
+                wrap.appendChild(badge);
+                wrap.appendChild(content);
+                chat.appendChild(wrap);
+                chat.scrollTop = chat.scrollHeight;
+            }
+
+            function setSendingState(isSending) {
+                btnSend.disabled = isSending;
+                btnSend.innerHTML = isSending
+                    ? '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Envoi...'
+                    : '<i class="bi bi-send me-1"></i>Envoyer';
+            }
+
+            function askAssistant() {
+                var courseId = courseSelect.value;
+                var question = (questionInput.value || '').trim();
+
+                if (!courseId) {
+                    appendMessage('assistant', 'Selectionnez un cours.');
+                    return;
+                }
+                if (!question) {
+                    appendMessage('assistant', 'Saisissez une question.');
+                    return;
+                }
+
+                appendMessage('user', question);
+                setSendingState(true);
+
+                fetch(askUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        courseId: parseInt(courseId, 10),
+                        question: question
+                    })
+                })
+                .then(function (r) {
+                    return r.json().then(function (data) {
+                        return {ok: r.ok, data: data};
+                    });
+                })
+                .then(function (resp) {
+                    if (!resp.ok || !resp.data.ok) {
+                        appendMessage('assistant', resp.data.message || 'Erreur assistant.');
+                        return;
+                    }
+                    appendMessage('assistant', resp.data.answer || 'Je peux uniquement expliquer le contenu de ce cours.');
+                })
+                .catch(function () {
+                    appendMessage('assistant', 'Erreur reseau. Reessayez.');
+                })
+                .finally(function () {
+                    setSendingState(false);
+                    questionInput.value = '';
+                    questionInput.focus();
+                });
+            }
+
+            btnSend.addEventListener('click', askAssistant);
+            questionInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    askAssistant();
+                }
+            });
+            btnClear.addEventListener('click', function () {
+                chat.innerHTML = '<div class="text-muted">Conversation videe.</div>';
+            });
+        })();
+    </script>
+{% endblock %}
+

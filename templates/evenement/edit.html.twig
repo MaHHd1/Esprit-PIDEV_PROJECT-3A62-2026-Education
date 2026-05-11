@@ -1,0 +1,342 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Modifier l'événement : {{ evenement.titre }}{% endblock %}
+
+{% block admin_content %}
+    <div class="container py-4">
+        <!-- En-tête avec navigation -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('app_evenement_index') }}" class="text-decoration-none">
+                                <i class="bi bi-calendar-event me-1"></i> Événements
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}" class="text-decoration-none">
+                                {{ evenement.titre|slice(0, 20) }}{{ evenement.titre|length > 20 ? '...' : '' }}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">Modifier l'événement</h1>
+                <p class="text-muted mb-0">ID: #{{ evenement.id }} - {{ evenement.titre }}</p>
+            </div>
+            
+            <!-- Actions rapides -->
+            <div class="btn-group" role="group">
+                <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}" 
+                   class="btn btn-outline-info" title="Voir">
+                    <i class="bi bi-eye me-1"></i> Voir
+                </a>
+                <a href="{{ path('app_evenement_index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Liste
+                </a>
+            </div>
+        </div>
+
+        <!-- Informations actuelles de l'événement -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card card-body bg-primary bg-opacity-10 p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-primary">{{ evenement.capaciteMax|default('0') }}</h5>
+                            <small class="text-primary">Capacité</small>
+                        </div>
+                        <i class="bi bi-people text-primary fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-body bg-warning bg-opacity-10 p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-warning">
+                                {% if evenement.statut.value == 'planifie' %}Planifié
+                                {% elseif evenement.statut.value == 'en_cours' %}En cours
+                                {% elseif evenement.statut.value == 'termine' %}Terminé
+                                {% elseif evenement.statut.value == 'annule' %}Annulé
+                                {% endif %}
+                            </h5>
+                            <small class="text-warning">Statut</small>
+                        </div>
+                        <i class="bi bi-info-circle text-warning fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-body bg-success bg-opacity-10 p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-success">
+                                {{ evenement.visibilite.value|capitalize }}
+                            </h5>
+                            <small class="text-success">Visibilité</small>
+                        </div>
+                        <i class="bi bi-eye text-success fs-4"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-body bg-info bg-opacity-10 p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-info">
+                                {{ evenement.typeEvenement.value|capitalize }}
+                            </h5>
+                            <small class="text-info">Type</small>
+                        </div>
+                        <i class="bi bi-calendar-event text-info fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire d'édition -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Modifier les informations de l'événement
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'id': 'edit-evenement-form', 'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                
+                <div class="row g-3">
+                    <!-- Titre -->
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            {{ form_label(form.titre, 'Titre de l\'événement', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Entrez le titre de l\'événement'}}) }}
+                            <div class="invalid-feedback">
+                                Veuillez entrer un titre valide.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Type d'événement -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form_label(form.typeEvenement, 'Type d\'événement', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.typeEvenement, {'attr': {'class': 'form-select'}}) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="col-12">
+                        <div class="mb-3">
+                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez l\'événement...'}}) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Dates et heures -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.dateDebut, 'Date et heure de début', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            <div class="input-group">
+                                {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control datetimepicker'}}) }}
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.dateFin, 'Date et heure de fin', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            <div class="input-group">
+                                {{ form_widget(form.dateFin, {'attr': {'class': 'form-control datetimepicker'}}) }}
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lieu et capacité -->
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            {{ form_label(form.lieu, 'Lieu ou lien virtuel', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.lieu, {'attr': {'class': 'form-control', 'placeholder': 'Salle, adresse ou lien de réunion'}}) }}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ form_label(form.capaciteMax, 'Capacité maximale', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.capaciteMax, {'attr': {'class': 'form-control', 'min': '1'}}) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Statut et visibilité -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.statut, 'Statut', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.visibilite, 'Visibilité', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.visibilite, {'attr': {'class': 'form-select'}}) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Créateur (si défini) -->
+                    {% if form.createur is defined %}
+                    <div class="col-12">
+                        <div class="mb-3">
+                            {{ form_label(form.createur, 'Créateur', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.createur, {'attr': {'class': 'form-select'}}) }}
+                            <small class="form-text text-muted">
+                                L'utilisateur qui a créé cet événement
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                    <div>
+                        <a href="{{ path('app_evenement_show', {'id': evenement.id}) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i> Annuler
+                        </a>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" form="edit-evenement-form" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i> Mettre à jour
+                        </button>
+                        
+                        <button type="button" class="btn btn-danger" 
+                                onclick="if(confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) { document.getElementById('delete-form').submit(); }">
+                            <i class="bi bi-trash me-1"></i> Supprimer
+                        </button>
+                    </div>
+                </div>
+                
+                {{ form_end(form) }}
+                
+                <!-- Formulaire de suppression caché -->
+                <form id="delete-form" method="post" action="{{ path('app_evenement_delete', {'id': evenement.id}) }}" class="d-none">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                </form>
+            </div>
+            
+            <!-- Informations supplémentaires -->
+            <div class="card-footer bg-white">
+                <div class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    ID: #{{ evenement.id }}
+                    {% if evenement.createur %}
+                        | Créé par: {{ evenement.createur.email }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .form-label {
+            font-weight: 500;
+        }
+        
+        .form-label.required:after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .datetimepicker {
+            cursor: pointer;
+        }
+        
+        .card-footer {
+            padding: 1rem;
+        }
+        
+        .invalid-feedback {
+            display: block;
+        }
+        
+        .btn-group .btn {
+            margin-left: 0.5rem;
+            border-radius: 0.375rem;
+        }
+        
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validation du formulaire
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+            
+            // Formatage de la capacité
+            const capaciteInput = document.querySelector('#{{ form.capaciteMax.vars.id }}');
+            if (capaciteInput) {
+                capaciteInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value < 1) this.value = 1;
+                });
+            }
+            
+            // Validation des dates
+            const form = document.querySelector('form[name="{{ form.vars.name }}"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const dateDebutInput = document.querySelector('#{{ form.dateDebut.vars.id }}');
+                    const dateFinInput = document.querySelector('#{{ form.dateFin.vars.id }}');
+                    
+                    if (dateDebutInput.value && dateFinInput.value) {
+                        const dateDebut = new Date(dateDebutInput.value);
+                        const dateFin = new Date(dateFinInput.value);
+                        
+                        if (dateDebut >= dateFin) {
+                            e.preventDefault();
+                            alert('La date de fin doit être après la date de début.');
+                            return false;
+                        }
+                    }
+                });
+            }
+            
+            // Initialisation des datetimepickers (si vous utilisez flatpickr)
+            if (typeof flatpickr !== 'undefined') {
+                flatpickr('.datetimepicker', {
+                    enableTime: true,
+                    dateFormat: "Y-m-d H:i",
+                    time_24hr: true,
+                    locale: "fr",
+                    minDate: "today"
+                });
+            }
+        });
+    </script>
+{% endblock %}

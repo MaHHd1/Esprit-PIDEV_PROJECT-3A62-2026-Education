@@ -1,0 +1,87 @@
+{% extends 'etudiant/student_base.html.twig' %}
+
+{% block title %}Tableau de Bord Etudiant{% endblock %}
+
+{% block student_content %}
+    <div class="row mb-4">
+        <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="d-flex justify-content-center align-items-center p-4 bg-orange bg-opacity-15 rounded-3">
+                <span class="display-6 lh-1 text-orange mb-0"><i class="fas fa-book fa-fw"></i></span>
+                <div class="ms-4">
+                    <h5 class="mb-0 fw-bold">{{ enrolled_count|default(0) }}</h5>
+                    <p class="mb-0 h6 fw-light">Cours Inscrits</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="d-flex justify-content-center align-items-center p-4 bg-primary bg-opacity-10 rounded-3">
+                <span class="display-6 lh-1 text-primary mb-0"><i class="fas fa-search fa-fw"></i></span>
+                <div class="ms-4">
+                    <h5 class="mb-0 fw-bold">{{ available_count|default(0) }}</h5>
+                    <p class="mb-0 h6 fw-light">Cours Disponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-4 mb-3 mb-lg-0">
+            <div class="d-flex justify-content-center align-items-center p-4 bg-success bg-opacity-10 rounded-3">
+                <span class="display-6 lh-1 text-success mb-0"><i class="fas fa-user-graduate fa-fw"></i></span>
+                <div class="ms-4">
+                    <h5 class="mb-0 fw-bold">{{ student.niveauEtude }}</h5>
+                    <p class="mb-0 h6 fw-light">Niveau</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">Bienvenue, {{ student.prenom }} {{ student.nom }}</h3>
+            <p class="card-text mb-3">
+                Specialite: <strong>{{ student.specialisation }}</strong>
+            </p>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ path('app_etudiant_courses') }}" class="btn btn-primary">Mes cours inscrits</a>
+                <a href="{{ path('app_etudiant_courses_discover') }}" class="btn btn-outline-primary">Tous les cours non inscrits</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title mb-0">Mes Cours Recents</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Cours</th>
+                            <th>Enseignants</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in recent_courses|default([]) %}
+                            <tr>
+                                <td>
+                                    <strong>{{ c.titre }}</strong>
+                                    <div class="small text-muted">{{ c.codeCours }}</div>
+                                </td>
+                                <td>
+                                    {% if c.enseignants|length > 0 %}
+                                        {% for ens in c.enseignants %}{{ ens.nomComplet }}{% if not loop.last %}, {% endif %}{% endfor %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td><a href="{{ path('app_etudiant_course_show', {'id': c.id}) }}" class="btn btn-sm btn-primary">Consulter</a></td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="3" class="text-center text-muted py-4">Aucun cours inscrit.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

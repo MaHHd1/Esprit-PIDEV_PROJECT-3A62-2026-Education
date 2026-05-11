@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des participations</title>
+    <style>
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #222; }
+        h1 { margin: 0 0 8px; font-size: 22px; }
+        .meta { margin-bottom: 14px; color: #555; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { border: 1px solid #ddd; padding: 6px 8px; vertical-align: top; }
+        th { background: #f2f4f7; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Liste des participations</h1>
+    <div class="meta">
+        Généré le {{ generated|date('d/m/Y H:i') }}<br>
+        Total: {{ participations|length }} participation(s)
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Événement</th>
+                {% if is_admin %}<th>Utilisateur</th>{% endif %}
+                <th>Statut</th>
+                <th>Inscription</th>
+                <th>Arrivée</th>
+                <th>Départ</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for participation in participations %}
+            <tr>
+                <td>#{{ participation.id }}</td>
+                <td>{{ participation.evenement ? participation.evenement.titre : '-' }}</td>
+                {% if is_admin %}
+                    <td>{{ participation.utilisateur ? participation.utilisateur.email : '-' }}</td>
+                {% endif %}
+                <td>{{ participation.statut.value|capitalize }}</td>
+                <td>{{ participation.dateInscription ? participation.dateInscription|date('d/m/Y H:i') : '-' }}</td>
+                <td>{{ participation.heureArrivee ? participation.heureArrivee|date('d/m/Y H:i') : '-' }}</td>
+                <td>{{ participation.heureDepart ? participation.heureDepart|date('d/m/Y H:i') : '-' }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="{{ is_admin ? 7 : 6 }}">Aucune participation trouvée.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #333; padding: 30px; }
+
+        .header { border-bottom: 3px solid #4e73df; padding-bottom: 15px; margin-bottom: 25px; }
+        .header h1 { font-size: 20px; color: #4e73df; margin-bottom: 5px; }
+        .header .meta { font-size: 11px; color: #666; }
+
+        .info-box { background: #f8f9fa; border-left: 4px solid #4e73df; padding: 10px 15px; margin-bottom: 25px; }
+        .info-box table { width: 100%; }
+        .info-box td { padding: 3px 0; font-size: 11px; }
+        .info-box td:first-child { font-weight: bold; width: 40%; color: #555; }
+
+        .section-title { font-size: 14px; font-weight: bold; color: #4e73df;
+                         border-bottom: 1px solid #dee2e6; padding-bottom: 6px; margin-bottom: 15px; }
+
+        .question { margin-bottom: 20px; padding: 12px; border: 1px solid #dee2e6; border-radius: 4px; }
+        .question-header { display: table; width: 100%; margin-bottom: 8px; }
+        .question-num { display: table-cell; font-weight: bold; color: #4e73df; width: 30px; }
+        .question-text { display: table-cell; font-weight: bold; }
+        .question-points { display: table-cell; text-align: right; font-size: 10px;
+                           color: #fff; background: #4e73df; padding: 2px 8px; border-radius: 10px; width: 60px; }
+
+        .reponses { margin-top: 8px; padding-left: 30px; }
+        .reponse { padding: 4px 8px; margin-bottom: 4px; border-radius: 3px; font-size: 11px; }
+        .reponse-correcte { background: #d4edda; color: #155724; font-weight: bold; }
+        .reponse-incorrecte { background: #f8f9fa; color: #666; }
+        .check { color: #28a745; font-weight: bold; margin-right: 5px; }
+        .cross { color: #ccc; margin-right: 5px; }
+
+        .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #dee2e6;
+                  font-size: 10px; color: #999; text-align: center; }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+
+    {# ── Header ── #}
+    <div class="header">
+        <h1>📋 Corrigé du Quiz – {{ quiz.titre }}</h1>
+        <div class="meta">
+            Généré le {{ generated|date('d/m/Y à H:i') }}
+            &nbsp;·&nbsp;
+            Par : {{ enseignant.prenom }} {{ enseignant.nom }}
+        </div>
+    </div>
+
+    {# ── Infos quiz ── #}
+    <div class="info-box">
+        <table>
+            <tr>
+                <td>Titre :</td>
+                <td>{{ quiz.titre }}</td>
+            </tr>
+            {% if quiz.typeQuiz %}
+            <tr>
+                <td>Type :</td>
+                <td><span class="badge badge-info">{{ quiz.typeQuiz }}</span></td>
+            </tr>
+            {% endif %}
+            {% if quiz.dureeMinutes %}
+            <tr>
+                <td>Durée :</td>
+                <td>{{ quiz.dureeMinutes }} minutes</td>
+            </tr>
+            {% endif %}
+            {% if quiz.difficulteMoyenne %}
+            <tr>
+                <td>Difficulté :</td>
+                <td><span class="badge badge-warning">{{ quiz.difficulteMoyenne }}/10</span></td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>Nombre de questions :</td>
+                <td>{{ quiz.questions|length }}</td>
+            </tr>
+            {% if quiz.instructions %}
+            <tr>
+                <td>Instructions :</td>
+                <td>{{ quiz.instructions }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+
+    {# ── Questions + réponses correctes ── #}
+    <div class="section-title">Questions & Réponses correctes</div>
+
+    {% for question in quiz.questions %}
+    <div class="question">
+        <div class="question-header">
+            <span class="question-num">{{ loop.index }}.</span>
+            <span class="question-text">{{ question.texte }}</span>
+            <span class="question-points">{{ question.points ?? 1 }} pt{{ (question.points ?? 1) > 1 ? 's' : '' }}</span>
+        </div>
+
+        <div class="reponses">
+            {% for reponse in question.reponses %}
+                {% if reponse.estCorrecte %}
+                <div class="reponse reponse-correcte">
+                    <span class="check">✓</span>{{ reponse.texteReponse }}
+                </div>
+                {% else %}
+                <div class="reponse reponse-incorrecte">
+                    <span class="cross">○</span>{{ reponse.texteReponse }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <p style="color:#999; font-style:italic;">Aucune question dans ce quiz.</p>
+    {% endfor %}
+
+    {# ── Footer ── #}
+    <div class="footer">
+        Novalearn · Corrigé généré automatiquement · {{ enseignant.prenom }} {{ enseignant.nom }} · {{ generated|date('d/m/Y') }}
+    </div>
+
+</body>
+</html>

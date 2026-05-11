@@ -1,0 +1,70 @@
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">📤 Envoyés</h3>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-dark" href="{{ path('message_inbox') }}">Inbox</a>
+    <a class="btn btn-outline-dark" href="{{ path('message_archive') }}">Archives</a>
+    <a class="btn btn-primary" href="{{ path('message_new') }}">+ Nouveau</a>
+  </div>
+</div>
+
+{% include 'message/_searchbar.html.twig' with {action: path('message_sent')} %}
+
+<div class="text-muted mb-2">Total: {{ total }} | page {{ page }}/{{ pages }}</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-striped mb-0">
+      <thead>
+        <tr>
+          <th>Statut</th>
+          <th>Objet</th>
+          <th>Destinataire</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in messages %}
+          <tr>
+            <td><span class="badge text-bg-secondary">{{ m.statut }}</span></td>
+
+            <td>
+              <a href="{{ path('message_show', {id: m.id}) }}">{{ m.objet }}</a>
+            </td>
+
+            <td>{{ m.destinataire ? m.destinataire.nomComplet : '—' }}</td>
+
+            <td>{{ m.dateEnvoi ? m.dateEnvoi|date('Y-m-d H:i') : '' }}</td>
+
+            <td>
+              <div class="d-flex gap-2">
+                <form method="post" action="{{ path('message_toggle_archive', {id: m.id, from: 'sent'}) }}">
+                  <button class="btn btn-sm btn-outline-secondary">Archiver</button>
+                </form>
+
+                <form method="post"
+                      action="{{ path('message_delete', {id: m.id, from: 'sent'}) }}"
+                      onsubmit="return confirm('Supprimer ce message ?');">
+                  <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="text-center text-muted py-4">Aucun message.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<nav class="mt-3">
+  <ul class="pagination">
+    {% for p in 1..pages %}
+      <li class="page-item {% if p == page %}active{% endif %}">
+        <a class="page-link" href="{{ path('message_sent', {page: p, q: q}) }}">{{ p }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

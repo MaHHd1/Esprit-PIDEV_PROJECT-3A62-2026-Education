@@ -1,0 +1,177 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Nouveau Contenu - Enseignant{% endblock %}
+{% block page_title %}Nouveau contenu pour {{ cours.titre }}{% endblock %}
+{% block page_subtitle %}Ajout d'un chapitre/ressource{% endblock %}
+{% block page_actions %}
+    <a href="{{ path('app_enseignant_mes_cours_contenus', {'id': cours.id}) }}" class="btn btn-outline-secondary">Retour aux contenus</a>
+{% endblock %}
+
+{% block main_content %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        {{ form_label(form.cours) }}
+                        {{ form_widget(form.cours, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.cours) }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Types de contenu *</label>
+                        <div class="border rounded p-3">
+                            {% for child in form.typeContenu %}
+                                <div class="form-check">
+                                    {{ form_widget(child, {'attr': {'class': 'form-check-input js-content-type', 'data-type': child.vars.value}}) }}
+                                    <label class="form-check-label" for="{{ child.vars.id }}">{{ child.vars.label }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {{ form_errors(form.typeContenu) }}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form_label(form.titre) }}
+                        {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.titre) }}
+                    </div>
+
+                    <div class="col-12 js-type-panel" data-type-panel="lien video">
+                        {{ form_label(form.urlContenu, 'Lien externe (pour Lien/Video)') }}
+                        {{ form_widget(form.urlContenu, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.urlContenu) }}
+                        <div id="youtube-preview" class="border rounded p-2 mt-2 d-none"></div>
+                    </div>
+
+                    <div class="col-12 js-type-panel" data-type-panel="texte">
+                        {{ form_label(form.texteContenu, 'Texte du chapitre') }}
+                        {{ form_widget(form.texteContenu, {'attr': {'class': 'form-control', 'rows': 6}}) }}
+                        {{ form_errors(form.texteContenu) }}
+                    </div>
+
+                    <div class="col-md-4 js-type-panel" data-type-panel="pdf">
+                        {{ form_label(form.pdfFile) }}
+                        {{ form_widget(form.pdfFile, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.pdfFile) }}
+                    </div>
+
+                    <div class="col-md-4 js-type-panel" data-type-panel="ppt">
+                        {{ form_label(form.pptFile) }}
+                        {{ form_widget(form.pptFile, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.pptFile) }}
+                    </div>
+
+                    <div class="col-md-4 js-type-panel" data-type-panel="video">
+                        {{ form_label(form.videoFile) }}
+                        {{ form_widget(form.videoFile, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.videoFile) }}
+                    </div>
+
+                    <div class="col-12 js-type-panel" data-type-panel="quiz">
+                        <div class="border rounded p-3">
+                            <h6 class="mb-3">Association Quiz</h6>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <a href="{{ path('teacher_quiz_index') }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">Mes Quiz</a>
+                                <a href="{{ path('quiz_new') }}" class="btn btn-sm btn-primary" target="_blank" rel="noopener">Nouveau Quiz</a>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.quizExistingId, 'Quiz existant') }}
+                                {{ form_widget(form.quizExistingId, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.quizExistingId) }}
+                                <small class="text-muted">Creez d'abord le quiz via "Nouveau Quiz", puis revenez ici pour l'importer.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        {{ form_label(form.description) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_label(form.duree) }}
+                        {{ form_widget(form.duree, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.duree) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_label(form.ordreAffichage) }}
+                        {{ form_widget(form.ordreAffichage, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.ordreAffichage) }}
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            {{ form_widget(form.estPublic, {'attr': {'class': 'form-check-input'}}) }}
+                            {{ form_label(form.estPublic, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Ajouter le contenu</button>
+                    </div>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block additional_javascripts %}
+    <script>
+        (function () {
+            function selectedTypes() {
+                return Array.from(document.querySelectorAll('.js-content-type:checked')).map(function (el) {
+                    return el.getAttribute('data-type');
+                });
+            }
+
+            function updatePanels() {
+                var types = selectedTypes();
+                document.querySelectorAll('.js-type-panel').forEach(function (panel) {
+                    var allowed = panel.getAttribute('data-type-panel').split(' ');
+                    var show = allowed.some(function (t) { return types.includes(t); });
+                    panel.style.display = show ? '' : 'none';
+                });
+            }
+
+            document.querySelectorAll('.js-content-type').forEach(function (checkbox) {
+                checkbox.addEventListener('change', updatePanels);
+            });
+
+            var urlInput = document.getElementById('{{ form.urlContenu.vars.id }}');
+            var preview = document.getElementById('youtube-preview');
+            function loadPreview() {
+                if (!urlInput || !preview) {
+                    return;
+                }
+                var val = (urlInput.value || '').trim();
+                if (val === '') {
+                    preview.classList.add('d-none');
+                    preview.innerHTML = '';
+                    return;
+                }
+                fetch('{{ path('api_youtube_oembed') }}?url=' + encodeURIComponent(val))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data.ok || !data.preview) {
+                            preview.classList.add('d-none');
+                            preview.innerHTML = '';
+                            return;
+                        }
+                        preview.classList.remove('d-none');
+                        preview.innerHTML = (data.preview.thumbnail_url ? '<img src=\"' + data.preview.thumbnail_url + '\" class=\"img-fluid rounded mb-2\" alt=\"preview\">' : '') +
+                            '<div><strong>' + (data.preview.title || 'Video') + '</strong></div>';
+                    })
+                    .catch(function () {
+                        preview.classList.add('d-none');
+                        preview.innerHTML = '';
+                    });
+            }
+            if (urlInput) {
+                urlInput.addEventListener('blur', loadPreview);
+            }
+
+            updatePanels();
+            loadPreview();
+        })();
+    </script>
+{% endblock %}

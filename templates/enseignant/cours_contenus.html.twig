@@ -1,0 +1,95 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Contenus du Cours - Enseignant{% endblock %}
+{% block page_title %}{{ cours.titre }}{% endblock %}
+{% block page_subtitle %}Code: {{ cours.codeCours }} | Module: {{ cours.module ? cours.module.titreModule : '-' }}{% endblock %}
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_enseignant_mes_cours_contenus_new', {'id': cours.id}) }}" class="btn btn-primary">Ajouter un contenu</a>
+        <form method="post" action="{{ path('app_enseignant_mes_cours_toggle_visibility', {'id': cours.id}) }}" style="display:inline">
+            <input type="hidden" name="_token" value="{{ csrf_token('toggle_course_visibility' ~ cours.id) }}">
+            {% if cours.statut == 'ouvert' %}
+                <button class="btn btn-outline-warning">Masquer le cours</button>
+            {% else %}
+                <button class="btn btn-outline-success">Afficher le cours</button>
+            {% endif %}
+        </form>
+        <a href="{{ path('app_enseignant_mes_cours') }}" class="btn btn-outline-secondary">Retour a mes cours</a>
+    </div>
+{% endblock %}
+
+{% block main_content %}
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">Contenus ({{ contenus|length }})</h5>
+        </div>
+        <div class="card-body">
+            {% if contenus|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ordre</th>
+                                <th>Type</th>
+                                <th>Titre</th>
+                                <th>Visibilite</th>
+                                <th>Vues</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contenu in contenus %}
+                                <tr>
+                                    <td>{{ contenu.ordreAffichage }}</td>
+                                    <td>
+                                        {% for type in contenu.typeContenuList %}
+                                            <span class="badge bg-primary me-1">{{ type|upper }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ contenu.titre }}</td>
+                                    <td>
+                                        {% if contenu.estPublic %}
+                                            <span class="badge bg-success">Affiche</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Masque</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ contenu.nombreVues }}</td>
+                                    <td class="text-end">
+                                        <form method="post" action="{{ path('app_enseignant_mes_cours_contenu_toggle_visibility', {'contenuId': contenu.id}) }}" style="display:inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_contenu_visibility' ~ contenu.id) }}">
+                                            {% if contenu.estPublic %}
+                                                <button class="btn btn-sm btn-outline-warning">Masquer</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-success" {% if cours.statut != 'ouvert' %}disabled title="Le cours doit etre affiche"{% endif %}>Afficher</button>
+                                            {% endif %}
+                                        </form>
+                                        <a href="{{ path('app_enseignant_mes_cours_contenu_show', {'contenuId': contenu.id}) }}" class="btn btn-sm btn-outline-secondary">Detail</a>
+                                        <a href="{{ path('app_enseignant_mes_cours_contenu_edit', {'contenuId': contenu.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                                        <form method="post" action="{{ path('app_enseignant_mes_cours_contenu_delete', {'contenuId': contenu.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce contenu ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ contenu.id) }}">
+                                            <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if pagination is defined and pagination.total_pages > 1 %}
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">Page {{ pagination.current_page }} / {{ pagination.total_pages }}</small>
+                        <div class="btn-group btn-group-sm">
+                            {% set prevPage = pagination.current_page > 1 ? pagination.current_page - 1 : 1 %}
+                            {% set nextPage = pagination.current_page < pagination.total_pages ? pagination.current_page + 1 : pagination.total_pages %}
+                            <a class="btn btn-outline-secondary {{ pagination.current_page <= 1 ? 'disabled' : '' }}" href="{{ path('app_enseignant_mes_cours_contenus', {'id': cours.id, 'page': prevPage}) }}">Precedent</a>
+                            <a class="btn btn-outline-secondary {{ pagination.current_page >= pagination.total_pages ? 'disabled' : '' }}" href="{{ path('app_enseignant_mes_cours_contenus', {'id': cours.id, 'page': nextPage}) }}">Suivant</a>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-muted text-center py-4 mb-0">Aucun contenu dans ce cours.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

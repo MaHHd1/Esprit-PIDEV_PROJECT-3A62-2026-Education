@@ -1,0 +1,263 @@
+
+    <!-- Contenu principal -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <!-- Barre de navigation supérieure -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-3">
+            <div class="container-fluid">
+                <!-- Bouton pour ouvrir/fermer la sidebar sur mobile -->
+                <button class="navbar-toggler d-md-none me-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <!-- Recherche -->
+                <form class="d-flex flex-grow-1 me-4" action="{{ path('app_participation_evenement_index') }}" method="get">
+                    <div class="input-group">
+                        <input class="form-control border-end-0 border" 
+                               type="search" 
+                               name="search" 
+                               placeholder="Rechercher une participation..." 
+                               aria-label="Search"
+                               value="{{ app.request.query.get('search') }}">
+                        <button class="btn btn-outline-primary border-start-0 border" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Menu utilisateur -->
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if app.user %}
+                            <div class="avatar avatar-sm me-2">
+                                <div class="avatar-img rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                                    {{ app.user.prenom|default('A')|first|upper }}{{ app.user.nom|default('dmin')|first|upper }}
+                                </div>
+                            </div>
+                            <span class="text-dark">{{ app.user.prenom|default('Admin') }}</span>
+                        {% else %}
+                            <span class="text-dark">Compte</span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-person me-2"></i> Profil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="#">
+                                <i class="bi bi-power me-2"></i> Déconnexion
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Contenu de la page -->
+        <div class="py-4">
+            <!-- En-tête de page -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">Gestion des Participations</h1>
+                    <p class="text-muted mb-0">Liste de toutes les participations aux événements</p>
+                </div>
+                <div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('export_participations_list_pdf') }}" class="btn btn-outline-danger">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
+                        </a>
+                        <a href="{{ path('app_participation_evenement_new') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i> Nouvelle participation
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtres rapides -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" name="statut">
+                                <option value="">Tous les statuts</option>
+                                <option value="inscrit" {{ app.request.query.get('statut') == 'inscrit' ? 'selected' : '' }}>Inscrit</option>
+                                <option value="present" {{ app.request.query.get('statut') == 'present' ? 'selected' : '' }}>Présent</option>
+                                <option value="absent" {{ app.request.query.get('statut') == 'absent' ? 'selected' : '' }}>Absent</option>
+                                <option value="excuse" {{ app.request.query.get('statut') == 'excuse' ? 'selected' : '' }}>Excusé</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Événement</label>
+                            <select class="form-select" name="evenement">
+                                <option value="">Tous les événements</option>
+                                <!-- Options des événements seraient dynamiquement chargées -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Utilisateur</label>
+                            <select class="form-select" name="utilisateur">
+                                <option value="">Tous les utilisateurs</option>
+                                <!-- Options des utilisateurs seraient dynamiquement chargées -->
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="d-flex gap-2 w-100">
+                                <button type="submit" class="btn btn-primary flex-grow-1">
+                                    <i class="bi bi-funnel me-1"></i> Filtrer
+                                </button>
+                                <a href="{{ path('app_participation_evenement_index') }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tableau des participations -->
+            <div class="card shadow">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Événement</th>
+                                    <th>Utilisateur</th>
+                                    <th>Statut</th>
+                                    <th>Date inscription</th>
+                                    <th>Heure arrivée</th>
+                                    <th>Heure départ</th>
+                                    <th>Note feedback</th>
+                                    <th>Commentaire</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for participation in participation_evenements %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-muted">#{{ participation.id }}</td>
+                                    <td>
+                                        {% if participation.evenement %}
+                                            <a href="{{ path('app_evenement_show', {'id': participation.evenement.id}) }}">
+                                                <strong>{{ participation.evenement.titre }}</strong>
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">Non spécifié</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ participation.utilisateur ? participation.utilisateur.email : 'Anonyme' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill
+                                            {% if participation.statut.value == 'inscrit' %}bg-primary
+                                            {% elseif participation.statut.value == 'present' %}bg-success
+                                            {% elseif participation.statut.value == 'absent' %}bg-danger
+                                            {% elseif participation.statut.value == 'excuse' %}bg-warning text-dark{% endif %}">
+                                            {{ participation.statut.value|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="d-block">{{ participation.dateInscription ? participation.dateInscription|date('d/m/Y') : '-' }}</small>
+                                        <small class="text-muted">{{ participation.dateInscription ? participation.dateInscription|date('H:i') : '' }}</small>
+                                    </td>
+                                    <td>{{ participation.heureArrivee ? participation.heureArrivee|date('H:i') : '-' }}</td>
+                                    <td>{{ participation.heureDepart ? participation.heureDepart|date('H:i') : '-' }}</td>
+                                    <td>
+                                        {% if participation.feedbackNote %}
+                                            <span class="badge bg-info">{{ participation.feedbackNote }}/10</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if participation.feedbackCommentaire %}
+                                            <small>{{ participation.feedbackCommentaire|slice(0, 30) }}{{ participation.feedbackCommentaire|length > 30 ? '...' : '' }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ path('app_participation_evenement_show', {'id': participation.id}) }}" 
+                                               class="btn btn-outline-info" title="Voir">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ path('app_participation_evenement_edit', {'id': participation.id}) }}" 
+                                               class="btn btn-outline-primary" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form method="post" 
+                                                  action="{{ path('app_participation_evenement_delete', {'id': participation.id}) }}" 
+                                                  class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ participation.id) }}">
+                                                <button type="submit" 
+                                                        class="btn btn-outline-danger" 
+                                                        title="Supprimer"
+                                                        onclick="return confirm('Supprimer cette participation ?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="10" class="text-center py-4">
+                                        <div class="py-3">
+                                            <i class="bi bi-ticket-perforated fs-1 text-muted"></i>
+                                            <h5 class="mt-2 text-muted">Aucune participation trouvée</h5>
+                                            <p class="text-muted">Commencez par créer votre première participation</p>
+                                            <a href="{{ path('app_participation_evenement_new') }}" class="btn btn-primary">
+                                                <i class="bi bi-plus-lg me-1"></i> Créer une participation
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if participation_evenements|length > 0 %}
+                    <div class="card-footer bg-white border-top">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Affichage de {{ participation_evenements|length }} participation(s)
+                            </small>
+                            <!-- Pagination -->
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Précédent</span>
+                                    </li>
+                                    <li class="page-item active">
+                                        <span class="page-link">1</span>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">2</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">3</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Suivant</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
