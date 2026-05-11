@@ -1,0 +1,77 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Nouveau Cours - Enseignant{% endblock %}
+{% block page_title %}Nouveau Cours{% endblock %}
+{% block page_subtitle %}Creer un cours et l'associer a votre espace{% endblock %}
+{% block page_actions %}
+    <a href="{{ path('app_enseignant_mes_cours') }}" class="btn btn-outline-secondary">Retour a mes cours</a>
+{% endblock %}
+
+{% block main_content %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        {{ form_label(form.codeCours) }}
+                        {{ form_widget(form.codeCours, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.codeCours) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.titre) }}
+                        {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.titre) }}
+                    </div>
+                    <div class="col-12">
+                        {{ form_label(form.description) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.module) }}
+                        {{ form_widget(form.module, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.module) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.statut) }}
+                        {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.statut) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_label(form.niveau) }}
+                        {{ form_widget(form.niveau, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.niveau) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_label(form.credits) }}
+                        {{ form_widget(form.credits, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.credits) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_label(form.langue) }}
+                        {{ form_widget(form.langue, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.langue) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.dateDebut) }}
+                        {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.dateDebut) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.dateFin) }}
+                        {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.dateFin) }}
+                    </div>
+                    <div class="col-12">
+                        {{ form_label(form.prerequisIds, 'Prerequis (IDs de cours)') }}
+                        {{ form_widget(form.prerequisIds, {'attr': {'class': 'form-control', 'placeholder': 'Ex: 1,3,7'}}) }}
+                        {{ form_errors(form.prerequisIds) }}
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Enregistrer le cours</button>
+                    </div>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

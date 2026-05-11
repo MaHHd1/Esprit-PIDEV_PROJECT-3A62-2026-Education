@@ -1,0 +1,181 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Détails de l'événement : {{ evenement.titre }}{% endblock %}
+
+{% block admin_content %}
+    <div class="container py-4">
+        <h1 class="mb-4">Détails de l'événement</h1>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th width="200">ID</th>
+                            <td><strong>#{{ evenement.id }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Titre</th>
+                            <td><h5 class="mb-0">{{ evenement.titre }}</h5></td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>{{ evenement.description|default('Aucune description') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Type d'événement</th>
+                            <td>
+                                <span class="badge 
+                                    {% if evenement.typeEvenement.value == 'webinaire' %}bg-primary
+                                    {% elseif evenement.typeEvenement.value == 'examen' %}bg-danger
+                                    {% elseif evenement.typeEvenement.value == 'reunion' %}bg-info
+                                    {% elseif evenement.typeEvenement.value == 'atelier' %}bg-success
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ evenement.typeEvenement.value|capitalize }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date de début</th>
+                            <td>
+                                <i class="bi bi-calendar-event me-1"></i>
+                                {{ evenement.dateDebut ? evenement.dateDebut|date('d/m/Y H:i') : 'Non définie' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date de fin</th>
+                            <td>
+                                <i class="bi bi-calendar-check me-1"></i>
+                                {{ evenement.dateFin ? evenement.dateFin|date('d/m/Y H:i') : 'Non définie' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Lieu</th>
+                            <td>
+                                {% if evenement.lieu %}
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    {{ evenement.lieu }}
+                                {% else %}
+                                    Non précisé
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Capacité maximale</th>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ evenement.capaciteMax ? evenement.capaciteMax ~ ' personnes' : 'Illimité' }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Statut</th>
+                            <td>
+                                <span class="badge 
+                                    {% if evenement.statut.value == 'planifie' %}bg-info
+                                    {% elseif evenement.statut.value == 'en_cours' %}bg-warning text-dark
+                                    {% elseif evenement.statut.value == 'termine' %}bg-success
+                                    {% elseif evenement.statut.value == 'annule' %}bg-danger
+                                    {% else %}bg-secondary{% endif %}">
+                                    <i class="bi 
+                                        {% if evenement.statut.value == 'planifie' %}bi-clock
+                                        {% elseif evenement.statut.value == 'en_cours' %}bi-play-circle
+                                        {% elseif evenement.statut.value == 'termine' %}bi-check-circle
+                                        {% elseif evenement.statut.value == 'annule' %}bi-x-circle
+                                        {% else %}bi-question-circle{% endif %}
+                                        me-1">
+                                    </i>
+                                    {{ evenement.statut.value|capitalize }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Visibilité</th>
+                            <td>
+                                <span class="badge 
+                                    {% if evenement.visibilite.value == 'public' %}bg-success
+                                    {% elseif evenement.visibilite.value == 'prive' %}bg-secondary
+                                    {% elseif evenement.visibilite.value == 'par_invitation' %}bg-primary
+                                    {% else %}bg-light text-dark{% endif %}">
+                                    <i class="bi 
+                                        {% if evenement.visibilite.value == 'public' %}bi-globe
+                                        {% elseif evenement.visibilite.value == 'prive' %}bi-lock
+                                        {% elseif evenement.visibilite.value == 'par_invitation' %}bi-envelope
+                                        {% else %}bi-eye{% endif %}
+                                        me-1">
+                                    </i>
+                                    {{ evenement.visibilite.value|replace({'_': ' '})|capitalize }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Créateur</th>
+                            <td>
+                                {% if evenement.createur %}
+                                    {% set email = evenement.createur.email %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <div class="avatar-img rounded-circle bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                {{ email|first|upper }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <small class="d-block">{{ email }}</small>
+                                            <small class="text-muted d-block">
+                                                {% if evenement.createur.getNom is defined and evenement.createur.getPrenom is defined %}
+                                                    {{ evenement.createur.getPrenom }} {{ evenement.createur.getNom }}
+                                                {% else %}
+                                                    Utilisateur
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">Anonyme</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card-footer bg-transparent border-top">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ path('app_evenement_index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+                        </a>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}" class="btn btn-primary">
+                            <i class="bi bi-pencil me-1"></i> Modifier
+                        </a>
+                        {{ include('evenement/_delete_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .table td {
+            padding: 12px 8px;
+            vertical-align: middle;
+        }
+        .table th {
+            padding: 12px 8px;
+            font-weight: 600;
+            color: #495057;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .badge {
+            font-size: 0.85em;
+            padding: 0.4em 0.8em;
+            font-weight: 500;
+        }
+        .avatar-img {
+            font-size: 0.9rem;
+        }
+    </style>
+{% endblock %}

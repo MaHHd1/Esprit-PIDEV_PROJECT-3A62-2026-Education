@@ -1,0 +1,92 @@
+{% extends 'enseignant/prof_base.html.twig'  %}
+
+{% block title %}Gérer les réponses - {{ question.texte }}{% endblock %}
+
+{% block main_content %}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('quiz_index') }}">Mes Quiz</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('quiz_manage_questions', {id: question.quiz.id}) }}">{{ question.quiz.titre }}</a></li>
+            <li class="breadcrumb-item active">Gérer les réponses</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="bi bi-list-check me-2"></i>Réponses de la question
+            </h4>
+        </div>
+        <div class="card-body">
+            <h5 class="mb-4">{{ question.texte }}</h5>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="50%">Texte de la réponse</th>
+                            <th width="15%" class="text-center">Correcte</th>
+                            <th width="15%" class="text-center">Points</th>
+                            <th width="15%" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reponse in question.reponses %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ reponse.texteReponse }}</td>
+                            <td class="text-center">
+                                {% if reponse.estCorrecte %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Oui
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Non
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {{ reponse.pourcentagePoints ?? '100' }}%
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ path('reponse_edit', {id: reponse.id}) }}" 
+                                   class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" 
+                                      action="{{ path('reponse_delete', {id: reponse.id}) }}" 
+                                      style="display:inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reponse.id) }}">
+                                    <button type="submit" 
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réponse ?')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                Aucune réponse trouvée
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ path('quiz_manage_questions', {id: question.quiz.id}) }}" 
+               class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Retour aux questions
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

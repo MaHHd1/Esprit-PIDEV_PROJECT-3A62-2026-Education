@@ -1,0 +1,40 @@
+{# templates/soumission/edit.html.twig #}
+{% extends '/etudiant/student_base.html.twig' %}
+
+{% block title %}Modifier la soumission{% endblock %}
+
+{% block student_content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1>Modifier la soumission</h1>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                {# Affichage du PDF d'évaluation #}
+                {% if soumission.evaluation.pdfFilename %}
+                <div class="alert alert-info mb-3">
+                    <strong>Fichier de l'évaluation :</strong><br>
+                    <a href="{{ vich_uploader_asset(soumission.evaluation, 'pdfFile') }}" target="_blank" class="btn btn-sm btn-primary">
+                        <i class="fas fa-file-pdf"></i> {{ soumission.evaluation.titre }}
+                    </a>
+                </div>
+                {% endif %}
+
+                {{ form_row(form.evaluation) }}
+                {{ form_row(form.idEtudiant) }}
+                {{ form_row(form.pdfFile) }}
+                {{ form_row(form.commentaireEtudiant) }}
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-warning">Mettre à jour</button>
+            <a href="{{ path('app_soumission_index') }}" class="btn btn-secondary">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

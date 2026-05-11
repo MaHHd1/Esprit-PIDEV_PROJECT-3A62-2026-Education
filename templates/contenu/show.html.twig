@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ contenu.titre }}{% endblock %}
+
+{% block body %}
+  {% set res = contenu.ressourcesForDisplay %}
+
+  <h1>{{ contenu.titre }}</h1>
+  <p>{{ contenu.description|raw }}</p>
+
+  {% if res.video_file is defined and res.video_file %}
+    <div class="video-player mb-3">
+      <video controls width="800">
+        <source src="{{ res.video_file }}" type="video/mp4">
+        Votre navigateur ne supporte pas la lecture video.
+      </video>
+    </div>
+  {% endif %}
+
+  {% if res.video_link is defined and res.video_link %}
+    <p><strong>Video (lien):</strong> <a href="{{ res.video_link }}" target="_blank" rel="noopener noreferrer">{{ res.video_link }}</a></p>
+  {% endif %}
+
+  {% if res.pdf is defined and res.pdf %}
+    <p><a href="{{ res.pdf }}" target="_blank" rel="noopener noreferrer">Telecharger le PDF</a></p>
+  {% endif %}
+
+  {% if res.ppt is defined and res.ppt %}
+    <p><a href="{{ res.ppt }}" target="_blank" rel="noopener noreferrer">Telecharger le PPT</a></p>
+  {% endif %}
+
+  {% if res.lien is defined and res.lien %}
+    <p><strong>Lien:</strong> <a href="{{ res.lien }}" target="_blank" rel="noopener noreferrer">{{ res.lien }}</a></p>
+  {% endif %}
+
+  {% if res.texte is defined and res.texte %}
+    <div class="mt-3">
+      <h3>Texte</h3>
+      <p>{{ res.texte|nl2br }}</p>
+    </div>
+  {% endif %}
+
+  <p><strong>Vues :</strong> {{ contenu.nombreVues }}</p>
+{% endblock %}

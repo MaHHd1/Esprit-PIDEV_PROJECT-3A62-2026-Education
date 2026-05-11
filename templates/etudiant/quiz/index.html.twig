@@ -1,0 +1,241 @@
+{% extends 'etudiant/student_base.html.twig' %}
+
+{% block title %}Mes Quiz - Novalearn{% endblock %}
+
+{% block student_content %}
+
+<div class="mb-4">
+    <h3 class="mb-0">Quiz Disponibles</h3>
+    <a href="{{ path('quiz_ai_generate') }}" class="btn btn-sm btn-warning mb-0">
+        <i class="bi bi-stars me-1"></i>Générer avec IA
+    </a>
+</div>
+
+<div class="row g-4">
+
+    <!-- Colonne principale : liste des quiz -->
+    <div class="col-lg-8">
+
+        <!-- Search and Filters -->
+        <div class="card border mb-4">
+            <div class="card-body">
+                <form action="{{ path('quiz_index') }}" method="get" class="row g-3">
+                    <div class="col-md-12">
+                        <input type="text" name="search" class="form-control"
+                               placeholder="Rechercher un quiz..."
+                               value="{{ app.request.query.get('search', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="type" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tous les types</option>
+                            <option value="evaluation"   {{ app.request.query.get('type') == 'evaluation'   ? 'selected' : '' }}>Évaluation</option>
+                            <option value="entrainement" {{ app.request.query.get('type') == 'entrainement' ? 'selected' : '' }}>Entraînement</option>
+                            <option value="revision"     {{ app.request.query.get('type') == 'revision'     ? 'selected' : '' }}>Révision</option>
+                            <option value="diagnostique" {{ app.request.query.get('type') == 'diagnostique' ? 'selected' : '' }}>Diagnostique</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="difficulte" class="form-select" onchange="this.form.submit()">
+                            <option value="">Toutes difficultés</option>
+                            <option value="facile"    {{ app.request.query.get('difficulte') == 'facile'    ? 'selected' : '' }}>Facile</option>
+                            <option value="moyen"     {{ app.request.query.get('difficulte') == 'moyen'     ? 'selected' : '' }}>Moyen</option>
+                            <option value="difficile" {{ app.request.query.get('difficulte') == 'difficile' ? 'selected' : '' }}>Difficile</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="sort" class="form-select" onchange="this.form.submit()">
+                            <option value="recent"          {{ app.request.query.get('sort') == 'recent'          ? 'selected' : '' }}>Plus récent</option>
+                            <option value="titre"           {{ app.request.query.get('sort') == 'titre'           ? 'selected' : '' }}>Titre (A-Z)</option>
+                            <option value="difficulte_asc"  {{ app.request.query.get('sort') == 'difficulte_asc'  ? 'selected' : '' }}>Difficulté ↑</option>
+                            <option value="difficulte_desc" {{ app.request.query.get('sort') == 'difficulte_desc' ? 'selected' : '' }}>Difficulté ↓</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Rechercher
+                        </button>
+                    </div>
+
+                    {% if app.request.query.get('search') or app.request.query.get('type') or app.request.query.get('difficulte') %}
+                    <div class="col-12">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="text-muted">Filtres actifs:</span>
+                            {% if app.request.query.get('search') %}
+                                <span class="badge bg-primary">
+                                    Recherche: "{{ app.request.query.get('search') }}"
+                                    <a href="{{ path('quiz_index', app.request.query.all|filter((v, k) => k != 'search')) }}" class="text-white text-decoration-none ms-1">×</a>
+                                </span>
+                            {% endif %}
+                            {% if app.request.query.get('type') %}
+                                <span class="badge bg-info">
+                                    Type: {{ app.request.query.get('type')|capitalize }}
+                                    <a href="{{ path('quiz_index', app.request.query.all|filter((v, k) => k != 'type')) }}" class="text-white text-decoration-none ms-1">×</a>
+                                </span>
+                            {% endif %}
+                            {% if app.request.query.get('difficulte') %}
+                                <span class="badge bg-warning">
+                                    Difficulté: {{ app.request.query.get('difficulte')|capitalize }}
+                                    <a href="{{ path('quiz_index', app.request.query.all|filter((v, k) => k != 'difficulte')) }}" class="text-white text-decoration-none ms-1">×</a>
+                                </span>
+                            {% endif %}
+                            <a href="{{ path('quiz_index') }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Réinitialiser
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Results count -->
+        <div class="mb-3">
+            <p class="text-muted">
+                {% if quizzes is defined and quizzes.totalItemCount is defined %}
+                    {{ quizzes.totalItemCount }} quiz trouvé{{ quizzes.totalItemCount > 1 ? 's' : '' }}
+                {% else %}
+                    Aucun quiz trouvé
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Quiz list -->
+        <div class="row g-4">
+            {% if quizzes is defined and quizzes.totalItemCount is defined and quizzes.totalItemCount > 0 %}
+                {% for quiz in quizzes %}
+                <div class="col-12">
+                    <div class="card border">
+                        <div class="card-body">
+                            <div class="row g-0">
+                                <div class="col-md-9">
+                                    <h5 class="card-title mb-2">
+                                        <a href="{{ path('quiz_show', {id: quiz.id}) }}">
+                                            {{ quiz.titre|default('Titre non défini') }}
+                                        </a>
+                                    </h5>
+                                    <p class="text-truncate mb-2">{{ quiz.description|default('Pas de description') }}</p>
+                                    <ul class="list-inline mb-0">
+                                        {% if quiz.dureeMinutes %}
+                                            <li class="list-inline-item h6 fw-light mb-1 mb-sm-0">
+                                                <i class="far fa-clock text-danger me-2"></i>{{ quiz.dureeMinutes }} min
+                                            </li>
+                                        {% endif %}
+                                        {% if quiz.typeQuiz %}
+                                            <li class="list-inline-item h6 fw-light mb-1 mb-sm-0">
+                                                <i class="fas fa-tag text-info me-2"></i>{{ quiz.typeQuiz }}
+                                            </li>
+                                        {% endif %}
+                                        {% if quiz.difficulteMoyenne %}
+                                            <li class="list-inline-item h6 fw-light mb-1 mb-sm-0">
+                                                <i class="fas fa-signal text-warning me-2"></i>Difficulté: {{ quiz.difficulteMoyenne }}
+                                            </li>
+                                        {% endif %}
+                                        {% if quiz.questions|length > 0 %}
+                                            <li class="list-inline-item h6 fw-light mb-1 mb-sm-0">
+                                                <i class="fas fa-question-circle text-primary me-2"></i>{{ quiz.questions|length }} questions
+                                            </li>
+                                        {% endif %}
+                                        {% if quiz.idCours and coursMap is defined and coursMap[quiz.idCours] is defined %}
+                                            <li class="list-inline-item h6 fw-light mb-1 mb-sm-0">
+                                                <i class="bi bi-book text-primary me-2"></i>{{ coursMap[quiz.idCours] }}
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-3 text-md-end">
+                                    <a href="{{ path('quiz_show', {id: quiz.id}) }}" class="btn btn-outline-primary mb-2 w-100">
+                                        <i class="bi bi-eye me-2"></i>Voir détails
+                                    </a>
+                                    <a href="{{ path('quiz_show_complet', {id: quiz.id}) }}" class="btn btn-success mb-0 w-100">
+                                        <i class="bi bi-play-circle me-2"></i>Commencer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>Aucun quiz disponible pour le moment.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Pagination -->
+        {% if quizzes is defined and quizzes.pageCount is defined and quizzes.pageCount > 1 %}
+        <div class="d-sm-flex justify-content-sm-between align-items-sm-center mt-4">
+            <p class="mb-0 text-muted">
+                Page {{ quizzes.currentPageNumber }} sur {{ quizzes.pageCount }}
+                &nbsp;·&nbsp; {{ quizzes.totalItemCount }} quiz au total
+            </p>
+            <div>{{ knp_pagination_render(quizzes) }}</div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Colonne droite : Bloc Auto-évaluations -->
+    <div class="col-lg-4">
+        <div class="card border">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-journal-check me-2"></i>Mes Auto-évaluations</span>
+                <span class="badge bg-white text-primary">{{ historiqueAutoeval is defined ? historiqueAutoeval|length : 0 }}</span>
+            </div>
+            <div class="card-body p-0" style="max-height: 520px; overflow-y: auto;">
+                {% if historiqueAutoeval is defined and historiqueAutoeval is not empty %}
+                    <ul class="list-group list-group-flush">
+                        {% for q in historiqueAutoeval %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <div class="fw-bold small">{{ q.titre }}</div>
+                                <div class="text-muted" style="font-size:11px;">
+                                    {{ q.questions|length }} question(s) —
+                                    {{ q.dateCreation ? q.dateCreation|date('d/m/Y H:i') : 'N/A' }}
+                                </div>
+                            </div>
+                            <a href="{{ path('quiz_show_complet', {id: q.id}) }}" class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="bi bi-play-fill"></i>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-journal-x fs-1 d-block mb-2"></i>
+                        Aucune auto-évaluation pour l'instant.<br>
+                        <small>
+                            <a href="{{ path('quiz_ai_generate') }}">Générer un quiz avec l'IA</a>
+                        </small>
+                    </div>
+                {% endif %}
+            </div>
+            {% if historiqueAutoeval is defined and historiqueAutoeval is not empty %}
+            <div class="card-footer text-center">
+                <a href="{{ path('quiz_ai_generate') }}" class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-stars me-1"></i>Générer un nouveau
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+let searchTimeout;
+const searchInput = document.querySelector('input[name="search"]');
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => { this.form.submit(); }, 600);
+    });
+}
+</script>
+{% endblock %}

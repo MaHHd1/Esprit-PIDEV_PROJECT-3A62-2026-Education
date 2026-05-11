@@ -1,0 +1,206 @@
+{% extends 'admin/admin_base.html.twig' %}
+{% import 'admin/macros/form_errors.html.twig' as form_errors %}
+
+{% block title %}Modifier Cours - Administration{% endblock %}
+
+{% block admin_content %}
+    <!-- Title -->
+    <div class="row">
+        <div class="col-12 mb-3">
+            <div class="d-sm-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 mb-sm-0">Modifier le Cours</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_admin_modules_list') }}">Modules</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_admin_module_show', {'id': cours.module.id}) }}">{{ cours.module.titreModule }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_admin_cours_show', {'id': cours.id}) }}">{{ cours.titre }}</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-grid d-sm-block">
+                    <a href="{{ path('app_admin_cours_show', {'id': cours.id}) }}" class="btn btn-sm btn-primary-soft mb-0">
+                        <i class="bi bi-arrow-left me-1"></i>Retour au détail
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body p-4">
+            <form id="teacher_filter_form" method="get"></form>
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            
+            <!-- Erreurs globales -->
+            {{ form_errors.global_errors(form) }}
+            
+            <div class="row g-3">
+                <!-- Informations du Cours -->
+                <div class="col-12">
+                    <h5 class="mb-3">Informations du Cours</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.codeCours, 'Code du Cours *') }}
+                        {{ form_errors.field_with_errors(form.codeCours) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.titre, 'Titre *') }}
+                        {{ form_errors.field_with_errors(form.titre) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="mb-3">
+                        {{ form_label(form.description, 'Description') }}
+                        {{ form_errors.textarea_with_errors(form.description, 4) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.module, 'Module *') }}
+                        {{ form_errors.select_with_errors(form.module) }}
+                    </div>
+                </div>
+
+                <!-- Filtres enseignants -->
+                <div class="col-12 mt-4">
+                    <h5 class="mb-3">Filtrer les Enseignants</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="search_ens" class="form-label">Rechercher par Nom</label>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="search_ens" name="search_ens" form="teacher_filter_form" class="form-control" placeholder="Nom ou prénom" value="{{ search_ens }}">
+                            {% if specialite %}
+                                <input type="hidden" name="specialite" form="teacher_filter_form" value="{{ specialite }}">
+                            {% endif %}
+                            <button type="submit" form="teacher_filter_form" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="specialite_filter" class="form-label">Filtrer par Spécialité</label>
+                        <div class="d-flex gap-2">
+                            <select id="specialite_filter" name="specialite" form="teacher_filter_form" class="form-select">
+                                <option value="">-- Toutes les spécialités --</option>
+                                {% for spec in specialites %}
+                                    <option value="{{ spec }}" {% if spec == specialite %}selected{% endif %}>{{ spec }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if search_ens %}
+                                <input type="hidden" name="search_ens" form="teacher_filter_form" value="{{ search_ens }}">
+                            {% endif %}
+                            <button type="submit" form="teacher_filter_form" class="btn btn-outline-primary"><i class="bi bi-funnel"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="mb-3">
+                        <h6 class="mb-2">Enseignants <small class="text-muted">(Sélectionnez un ou plusieurs)</small></h6>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            {% if form.enseignants|length > 0 %}
+                                {% for child in form.enseignants %}
+                                    <div class="form-check">
+                                        {{ form_widget(child, {'attr': {'class': 'form-check-input' ~ (child.vars.errors|length > 0 ? ' is-invalid' : '')}}) }}
+                                        <label class="form-check-label" for="{{ child.vars.id }}">
+                                            {{ child.vars.label }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted text-center">Aucun enseignant trouvé avec ces filtres.</p>
+                            {% endif %}
+                        </div>
+                        {% if form.enseignants.vars.errors|length > 0 %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.enseignants.vars.errors %}
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ error.message }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Détails -->
+                <div class="col-12 mt-4">
+                    <h5 class="mb-3">Détails</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.niveau, 'Niveau') }}
+                        {{ form_errors.field_with_errors(form.niveau) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.credits, 'Crédits') }}
+                        {{ form_errors.field_with_errors(form.credits) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.langue, 'Langue') }}
+                        {{ form_errors.field_with_errors(form.langue) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.statut, 'Statut') }}
+                        {{ form_errors.select_with_errors(form.statut) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.dateDebut, 'Date de début') }}
+                        {{ form_errors.field_with_errors(form.dateDebut) }}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_label(form.dateFin, 'Date de fin') }}
+                        {{ form_errors.field_with_errors(form.dateFin) }}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="mb-3">
+                        {{ form_label(form.prerequisIds, 'Prerequis (IDs de cours)') }}
+                        {{ form_errors.field_with_errors(form.prerequisIds) }}
+                        <small class="text-muted">Exemple: 1,3,7</small>
+                    </div>
+                </div>
+
+                <!-- Boutons -->
+                <div class="col-12 mt-4">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Mettre à jour
+                        </button>
+                        <a href="{{ path('app_admin_cours_show', {'id': cours.id}) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Annuler
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

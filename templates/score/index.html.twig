@@ -1,0 +1,26 @@
+{# templates/score/index.html.twig #}
+{% extends enseignant is defined ? 'enseignant/prof_base.html.twig' : 'etudiant/student_base.html.twig' %}
+
+{% block title %}{% if enseignant is defined %}Mes Corrections{% else %}Mes Notes{% endif %}{% endblock %}
+
+{# === Blocks for ENSEIGNANT (prof_base) === #}
+{% block page_title %}
+    {% if enseignant is defined %}Mes Corrections{% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+    {% if enseignant is defined %}Scores attribués aux étudiants{% endif %}
+{% endblock %}
+
+{% block main_content %}
+    {% if enseignant is defined %}
+        {% include 'score/_content.html.twig' with {'user_type': 'enseignant'} %}
+    {% endif %}
+{% endblock %}
+
+{# === Block for ETUDIANT (student_base) === #}
+{% block student_content %}
+    {% if student is defined %}
+        {% include 'score/_content.html.twig' with {'user_type': 'etudiant'} %}
+    {% endif %}
+{% endblock %}

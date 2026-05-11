@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ cours.titre }}{% endblock %}
+
+{% block body %}
+  <h1>{{ cours.titre }} <small>({{ cours.codeCours }})</small></h1>
+
+  <p>{{ cours.description|default('')|raw }}</p>
+
+  <p><strong>Enseignants :</strong>
+    {% if cours.enseignants|length > 0 %}
+      {% for ens in cours.enseignants %}
+        {{ ens.nomComplet }}{% if not loop.last %}, {% endif %}
+      {% endfor %}
+    {% else %}
+      -
+    {% endif %}
+  </p>
+
+  <p><strong>Module :</strong>
+    {% if cours.module %}
+      {{ cours.module.titreModule }}
+    {% else %}
+      -
+    {% endif %}
+  </p>
+
+  <p><strong>Niveau :</strong> {{ cours.niveau ?? '-' }}</p>
+  <p><strong>Credits :</strong> {{ cours.credits ?? '-' }}</p>
+
+  <h2>Contenus</h2>
+  <ul>
+    {% for contenu in cours.contenus %}
+      {% if contenu.estPublic %}
+        <li>
+          <a href="{{ path('app_contenu_show', {'id': contenu.id}) }}">{{ contenu.titre }}</a>
+        </li>
+      {% endif %}
+    {% else %}
+      <li>Aucun contenu disponible pour ce cours.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

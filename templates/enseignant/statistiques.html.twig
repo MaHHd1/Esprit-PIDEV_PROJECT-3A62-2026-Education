@@ -1,0 +1,161 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Statistiques Enseignant{% endblock %}
+{% block page_title %}Statistiques{% endblock %}
+{% block page_subtitle %}Analyses de vos cours{% endblock %}
+{% block page_actions %}
+    <a href="{{ path('app_enseignant_dashboard') }}" class="btn btn-outline-secondary">Retour dashboard</a>
+{% endblock %}
+
+{% block main_content %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-3">Cours les plus visites</h5>
+                    {% if views_by_course|length > 0 %}
+                        <canvas id="chartViewsByCourse" height="220"></canvas>
+                    {% else %}
+                        <p class="text-muted mb-0">Aucune vue enregistree pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="mb-3">Moyenne temps passe par cours</h5>
+                    {% if avg_time_by_course|length > 0 %}
+                        <canvas id="chartAvgTimeByCourse" height="220"></canvas>
+                    {% else %}
+                        <p class="text-muted mb-0">Aucune donnee de temps disponible.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="mb-3">Details vues</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Cours</th>
+                                <th class="text-end">Vues</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in views_by_course %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ row.cours_titre }}</div>
+                                        <small class="text-muted">{{ row.cours_code }}</small>
+                                    </td>
+                                    <td class="text-end"><span class="badge bg-primary">{{ row.views }}</span></td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="2" class="text-muted text-center">Aucune donnee.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="mb-3">Details temps moyen</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Cours</th>
+                                <th class="text-end">Moyenne</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in avg_time_by_course %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ row.cours_titre }}</div>
+                                        <small class="text-muted">{{ row.cours_code }} | {{ row.enrolled_count }} inscrits</small>
+                                    </td>
+                                    <td class="text-end"><span class="badge bg-success">{{ row.avg_minutes }} min</span></td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="2" class="text-muted text-center">Aucune donnee.</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block additional_javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const viewsLabels = {{ views_by_course|map(v => v.cours_code)|json_encode|raw }};
+        const viewsData = {{ views_by_course|map(v => v.views)|json_encode|raw }};
+        const avgTimeLabels = {{ avg_time_by_course|map(v => v.cours_code)|json_encode|raw }};
+        const avgTimeData = {{ avg_time_by_course|map(v => v.avg_minutes)|json_encode|raw }};
+
+        if (viewsLabels.length > 0) {
+            const ctxViews = document.getElementById('chartViewsByCourse');
+            if (ctxViews) {
+                new Chart(ctxViews.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: viewsLabels,
+                        datasets: [{
+                            label: 'Vues uniques',
+                            data: viewsData,
+                            backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                            borderColor: '#0d6efd',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {beginAtZero: true, ticks: {precision: 0}}
+                        }
+                    }
+                });
+            }
+        }
+
+        if (avgTimeLabels.length > 0) {
+            const ctxAvg = document.getElementById('chartAvgTimeByCourse');
+            if (ctxAvg) {
+                new Chart(ctxAvg.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: avgTimeLabels,
+                        datasets: [{
+                            label: 'Temps moyen (min)',
+                            data: avgTimeData,
+                            backgroundColor: 'rgba(25, 135, 84, 0.7)',
+                            borderColor: '#198754',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {beginAtZero: true, ticks: {precision: 0}}
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+{% endblock %}

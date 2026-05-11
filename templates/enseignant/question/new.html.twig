@@ -1,0 +1,660 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Nouvelle question - {{ quiz.titre }}{% endblock %}
+
+{% block main_content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- En-tête -->
+                <div class="mb-4">
+                    <h2 class="mb-2">Nouvelle question</h2>
+                    <p class="text-muted">Quiz : {{ quiz.titre }}</p>
+                </div>
+
+                <!-- Messages d'erreur globaux -->
+                <div id="global-errors" class="alert alert-danger d-none" role="alert">
+                    <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Erreurs de validation</h6>
+                    <ul id="error-list" class="mb-0"></ul>
+                </div>
+
+                {{ form_start(form, {'attr': {'id': 'question-form', 'novalidate': 'novalidate'}}) }}
+
+                <!-- Étape 1 : Choix du type -->
+                <div id="step1">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-4">
+                                <i class="bi bi-1-circle me-2"></i>
+                                Choisissez le type de question
+                            </h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="question-type-card card h-100 text-center p-4 border-2" data-type="qcm" data-entity-type="choix_multiple">
+                                        <div class="card-body">
+                                            <i class="bi bi-list-check fs-1 text-primary mb-3"></i>
+                                            <h6>QCM</h6>
+                                            <small class="text-muted">Choix multiples</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="question-type-card card h-100 text-center p-4 border-2" data-type="vrai_faux" data-entity-type="vrai_faux">
+                                        <div class="card-body">
+                                            <i class="bi bi-check-circle fs-1 text-success mb-3"></i>
+                                            <h6>Vrai / Faux</h6>
+                                            <small class="text-muted">Deux options</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="question-type-card card h-100 text-center p-4 border-2" data-type="texte_libre" data-entity-type="texte_libre">
+                                        <div class="card-body">
+                                            <i class="bi bi-pencil-square fs-1 text-info mb-3"></i>
+                                            <h6>Texte libre</h6>
+                                            <small class="text-muted">Réponse ouverte</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-end mt-4">
+                                <button type="button" id="next-btn" class="btn btn-primary d-none">
+                                    Suivant <i class="bi bi-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Étape 2 : Détails de la question -->
+                <div id="step2" class="d-none">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-4">
+                                <i class="bi bi-2-circle me-2"></i>
+                                Détails de la question
+                            </h5>
+
+                            <!-- Texte question -->
+                            <div class="mb-4">
+                                {{ form_row(form.texte, {
+                                    'attr': {'class': 'form-control', 'rows': 4, 'id': 'question-texte'}
+                                }) }}
+                                <div class="invalid-feedback" id="texte-error"></div>
+                            </div>
+
+                            <!-- Points -->
+                            <div class="mb-4">
+                                {{ form_row(form.points, {
+                                    'attr': {'class': 'form-control', 'id': 'question-points'}
+                                }) }}
+                                <div class="invalid-feedback" id="points-error"></div>
+                            </div>
+
+                            <!-- Options QCM -->
+                            <div id="qcm-options" class="d-none mb-4">
+                                <label class="form-label fw-bold">Options de réponse</label>
+                                <div id="options-container" class="mb-3"></div>
+                                <div class="invalid-feedback d-block" id="qcm-error"></div>
+                                <button type="button" id="add-option" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    Ajouter une option
+                                </button>
+                            </div>
+
+                            <!-- Options Vrai/Faux -->
+                            <div id="vrai-faux-options" class="d-none mb-4">
+                                <label class="form-label fw-bold">Réponse correcte</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="vf" id="vf-true" value="true">
+                                        <label class="form-check-label" for="vf-true">
+                                            <i class="bi bi-check-circle text-success me-1"></i> Vrai
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="vf" id="vf-false" value="false">
+                                        <label class="form-check-label" for="vf-false">
+                                            <i class="bi bi-x-circle text-danger me-1"></i> Faux
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback d-block" id="vf-error"></div>
+                            </div>
+
+                            <!-- Options Texte libre -->
+                            <div id="texte-libre-options" class="d-none mb-4">
+                                <label class="form-label fw-bold">Mots-clés attendus (séparés par des virgules)</label>
+                                <input type="text" id="keywords-input" class="form-control" 
+                                       placeholder="Ex: photosynthèse, chlorophylle, lumière">
+                                <small class="form-text text-muted">
+                                    Ces mots-clés aideront à l'évaluation automatique
+                                </small>
+                            </div>
+
+                            <!-- Explication -->
+                            <div class="mb-4">
+                                {{ form_row(form.explication_reponse, {
+                                    'attr': {'class': 'form-control', 'rows': 3, 'id': 'question-explication'}
+                                }) }}
+                            </div>
+
+                            <!-- Champs cachés -->
+                            <input type="hidden" name="question_data" id="question-data">
+                            {{ form_widget(form.type_question, {'attr': {'id': 'question-type-field'}}) }}
+
+                            <!-- Boutons d'action -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" id="back-btn" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i> Retour
+                                </button>
+                                <button type="submit" id="submit-btn" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-2"></i> Créer la question
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+.question-type-card { 
+    cursor: pointer; 
+    transition: all 0.3s ease;
+    border: 2px solid #dee2e6;
+}
+.question-type-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-color: #0d6efd;
+}
+.question-type-card.selected { 
+    border-color: #0d6efd !important;
+    background-color: rgba(13,110,253,0.05);
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.2);
+}
+.option-item { 
+    background: #f8f9fa; 
+    border-radius: 8px; 
+    padding: 12px; 
+    margin-bottom: 10px; 
+    border: 2px solid transparent; 
+    transition: 0.2s;
+}
+.option-item:hover { 
+    border-color: #dee2e6;
+}
+.option-item.is-invalid {
+    border-color: #dc3545;
+}
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+.invalid-feedback.d-block {
+    display: block !important;
+}
+</style>
+
+<script>
+let selectedType = null;
+let selectedEntityType = null;
+let optionCount = 0;
+
+// Fonction pour réinitialiser les erreurs
+function clearErrors() {
+    const globalErrors = document.getElementById('global-errors');
+    const errorList = document.getElementById('error-list');
+    
+    if (globalErrors) {
+        globalErrors.classList.add('d-none');
+    }
+    
+    if (errorList) {
+        errorList.innerHTML = '';
+    }
+    
+    document.querySelectorAll('.is-invalid').forEach(el => {
+        el.classList.remove('is-invalid');
+    });
+    
+    document.querySelectorAll('.invalid-feedback').forEach(el => {
+        el.textContent = '';
+        el.classList.remove('d-block');
+    });
+}
+
+// Fonction pour afficher les erreurs
+function showErrors(errors) {
+    clearErrors();
+    
+    if (errors.length === 0) return;
+    
+    const globalErrors = document.getElementById('global-errors');
+    const errorList = document.getElementById('error-list');
+    
+    if (!globalErrors || !errorList) return;
+    
+    errors.forEach(error => {
+        const li = document.createElement('li');
+        li.textContent = error.message;
+        errorList.appendChild(li);
+        
+        // Marquer le champ invalide si applicable
+        if (error.field) {
+            const field = document.getElementById(error.field);
+            if (field) {
+                field.classList.add('is-invalid');
+                const errorDiv = document.getElementById(error.field + '-error');
+                if (errorDiv) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.classList.add('d-block');
+                }
+            }
+        }
+    });
+    
+    globalErrors.classList.remove('d-none');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// Validation du formulaire
+function validateForm() {
+    const errors = [];
+    
+    // Validation du texte de la question
+    const texteField = document.getElementById('question_texte');
+    if (!texteField) {
+        // Try alternative ID format
+        const alternativeField = document.querySelector('textarea[name="question[texte]"]');
+        if (alternativeField) {
+            if (!alternativeField.value.trim()) {
+                errors.push({
+                    field: 'question_texte',
+                    message: 'Le texte de la question est obligatoire'
+                });
+            } else if (alternativeField.value.trim().length < 5) {
+                errors.push({
+                    field: 'question_texte',
+                    message: 'Le texte de la question doit contenir au moins 5 caractères'
+                });
+            }
+        } else {
+            errors.push({
+                message: 'Champ texte de la question non trouvé'
+            });
+        }
+    } else {
+        if (!texteField.value.trim()) {
+            errors.push({
+                field: 'question_texte',
+                message: 'Le texte de la question est obligatoire'
+            });
+        } else if (texteField.value.trim().length < 5) {
+            errors.push({
+                field: 'question_texte',
+                message: 'Le texte de la question doit contenir au moins 5 caractères'
+            });
+        }
+    }
+    
+    // Validation des points
+    const pointsField = document.getElementById('question_points');
+    if (!pointsField) {
+        // Try alternative ID format
+        const alternativeField = document.querySelector('input[name="question[points]"]');
+        if (alternativeField) {
+            const pointsValue = parseInt(alternativeField.value);
+            if (!pointsValue || pointsValue < 1) {
+                errors.push({
+                    field: 'question_points',
+                    message: 'Les points doivent être un nombre supérieur ou égal à 1'
+                });
+            }
+        }
+    } else {
+        const pointsValue = parseInt(pointsField.value);
+        if (!pointsValue || pointsValue < 1) {
+            errors.push({
+                field: 'question_points',
+                message: 'Les points doivent être un nombre supérieur ou égal à 1'
+            });
+        }
+    }
+    
+    // Validation spécifique selon le type
+    if (selectedType === 'qcm') {
+        const optionsContainer = document.getElementById('options-container');
+        if (optionsContainer) {
+            const options = optionsContainer.querySelectorAll('.option-item');
+            
+            if (options.length < 2) {
+                errors.push({
+                    field: 'qcm',
+                    message: 'Un QCM doit avoir au moins 2 options'
+                });
+            }
+            
+            let hasCorrect = false;
+            let emptyOptions = false;
+            
+            options.forEach((opt, index) => {
+                const textInput = opt.querySelector('.option-text');
+                const correctCheckbox = opt.querySelector('.option-correct');
+                
+                if (textInput && correctCheckbox) {
+                    const text = textInput.value.trim();
+                    const isCorrect = correctCheckbox.checked;
+                    
+                    if (!text) {
+                        emptyOptions = true;
+                        opt.classList.add('is-invalid');
+                    }
+                    
+                    if (isCorrect) {
+                        hasCorrect = true;
+                    }
+                }
+            });
+            
+            if (emptyOptions) {
+                errors.push({
+                    field: 'qcm',
+                    message: 'Toutes les options doivent avoir un texte'
+                });
+            }
+            
+            if (!hasCorrect) {
+                errors.push({
+                    field: 'qcm',
+                    message: 'Vous devez marquer au moins une option comme correcte'
+                });
+            }
+        }
+    }
+    
+    if (selectedType === 'vrai_faux') {
+        const selected = document.querySelector('input[name="vf"]:checked');
+        if (!selected) {
+            errors.push({
+                field: 'vf',
+                message: 'Vous devez sélectionner la réponse correcte (Vrai ou Faux)'
+            });
+        }
+    }
+    
+    return errors;
+}
+
+// Sélection du type de question
+document.querySelectorAll('.question-type-card').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.question-type-card').forEach(c => {
+            c.classList.remove('selected');
+        });
+        
+        this.classList.add('selected');
+        selectedType = this.dataset.type;
+        selectedEntityType = this.dataset.entityType;
+        
+        const nextBtn = document.getElementById('next-btn');
+        if (nextBtn) {
+            nextBtn.classList.remove('d-none');
+        }
+    });
+});
+
+// Passer à l'étape 2
+const nextBtn = document.getElementById('next-btn');
+if (nextBtn) {
+    nextBtn.addEventListener('click', function() {
+        if (!selectedType || !selectedEntityType) {
+            alert('Veuillez sélectionner un type de question');
+            return;
+        }
+        
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        
+        if (step1) step1.classList.add('d-none');
+        if (step2) step2.classList.remove('d-none');
+        
+        // Set the type field
+        const typeField = document.getElementById('question-type-field');
+        if (typeField) {
+            typeField.value = selectedEntityType;
+        }
+        
+        showOptions(selectedType);
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+}
+
+// Retour à l'étape 1
+const backBtn = document.getElementById('back-btn');
+if (backBtn) {
+    backBtn.addEventListener('click', function() {
+        clearErrors();
+        
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        
+        if (step2) step2.classList.add('d-none');
+        if (step1) step1.classList.remove('d-none');
+        
+        const optionsContainer = document.getElementById('options-container');
+        if (optionsContainer) {
+            optionsContainer.innerHTML = '';
+        }
+        optionCount = 0;
+        
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+}
+
+// Fonction pour afficher les options selon le type
+function showOptions(type) {
+    const qcmOptions = document.getElementById('qcm-options');
+    const vfOptions = document.getElementById('vrai-faux-options');
+    const tlOptions = document.getElementById('texte-libre-options');
+    
+    if (qcmOptions) qcmOptions.classList.add('d-none');
+    if (vfOptions) vfOptions.classList.add('d-none');
+    if (tlOptions) tlOptions.classList.add('d-none');
+    
+    if (type === 'qcm') {
+        if (qcmOptions) {
+            qcmOptions.classList.remove('d-none');
+            addOption();
+            addOption();
+        }
+    } else if (type === 'vrai_faux') {
+        if (vfOptions) vfOptions.classList.remove('d-none');
+    } else if (type === 'texte_libre') {
+        if (tlOptions) tlOptions.classList.remove('d-none');
+    }
+}
+
+// Fonction pour ajouter une option QCM
+function addOption() {
+    optionCount++;
+    
+    const optionsContainer = document.getElementById('options-container');
+    if (!optionsContainer) return;
+    
+    const div = document.createElement('div');
+    div.className = 'option-item';
+    div.id = 'option-' + optionCount;
+    
+    div.innerHTML = `
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <input type="text" class="form-control option-text" 
+                       placeholder="Texte de l'option ${optionCount}"
+                       data-option-id="${optionCount}">
+            </div>
+            <div class="col-md-3">
+                <div class="form-check">
+                    <input class="form-check-input option-correct" type="checkbox" 
+                           id="correct-${optionCount}" data-option-id="${optionCount}">
+                    <label class="form-check-label" for="correct-${optionCount}">
+                        Réponse correcte
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-sm btn-outline-danger remove-option" 
+                        data-option-id="${optionCount}">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    optionsContainer.appendChild(div);
+    
+    // Add remove event listener
+    const removeBtn = div.querySelector('.remove-option');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+            const optionId = this.getAttribute('data-option-id');
+            const optionDiv = document.getElementById('option-' + optionId);
+            if (optionDiv) {
+                optionDiv.remove();
+            }
+        });
+    }
+}
+
+// Bouton ajouter option
+const addOptionBtn = document.getElementById('add-option');
+if (addOptionBtn) {
+    addOptionBtn.addEventListener('click', addOption);
+}
+
+// Soumission du formulaire
+const questionForm = document.getElementById('question-form');
+if (questionForm) {
+    questionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Valider le formulaire
+        const errors = validateForm();
+        
+        if (errors.length > 0) {
+            showErrors(errors);
+            return false;
+        }
+        
+        clearErrors();
+        
+        // Prepare question data
+        const data = { 
+            type: selectedType,
+            created_at: new Date().toISOString()
+        };
+        
+        if (selectedType === 'qcm') {
+            data.options = [];
+            
+            const optionsContainer = document.getElementById('options-container');
+            if (optionsContainer) {
+                const options = optionsContainer.querySelectorAll('.option-item');
+                
+                options.forEach(opt => {
+                    const textInput = opt.querySelector('.option-text');
+                    const correctCheckbox = opt.querySelector('.option-correct');
+                    
+                    if (textInput && correctCheckbox) {
+                        const text = textInput.value.trim();
+                        const isCorrect = correctCheckbox.checked;
+                        
+                        if (text) {
+                            data.options.push({
+                                text: text,
+                                isCorrect: isCorrect
+                            });
+                        }
+                    }
+                });
+            }
+        }
+        
+        if (selectedType === 'vrai_faux') {
+            const selected = document.querySelector('input[name="vf"]:checked');
+            if (selected) {
+                data.correct = selected.value;
+            }
+        }
+        
+        if (selectedType === 'texte_libre') {
+            const keywordsInput = document.getElementById('keywords-input');
+            if (keywordsInput) {
+                const keywords = keywordsInput.value.trim();
+                data.keywords = keywords ? keywords.split(',').map(k => k.trim()).filter(k => k.length > 0) : [];
+            }
+        }
+        
+        // Set the hidden question_data field
+        const questionDataField = document.getElementById('question-data');
+        if (questionDataField) {
+            questionDataField.value = JSON.stringify(data);
+        }
+        
+        // Make sure type_question field is set
+        const typeField = document.getElementById('question-type-field');
+        if (typeField && !typeField.value && selectedEntityType) {
+            typeField.value = selectedEntityType;
+        }
+        
+        console.log('Submitting form with data:', {
+            question_data: data,
+            type_question: typeField ? typeField.value : 'unknown'
+        });
+        
+        // Submit the form
+        this.submit();
+    });
+}
+
+// Initialize the form
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Question form initialized');
+    
+    // Check if form elements exist
+    const elements = [
+        'question-form', 'step1', 'step2', 'next-btn', 'back-btn',
+        'question-data', 'question-type-field', 'global-errors'
+    ];
+    
+    elements.forEach(id => {
+        const el = document.getElementById(id);
+        console.log(`${id}:`, el ? 'Found' : 'Not found');
+    });
+});
+</script>
+
+{% endblock %}

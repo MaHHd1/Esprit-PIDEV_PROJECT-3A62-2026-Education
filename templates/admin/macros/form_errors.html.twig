@@ -1,0 +1,85 @@
+{# templates/admin/macros/form_errors.html.twig #}
+
+{# Macro pour afficher une erreur de champ avec styling #}
+{% macro field_with_errors(form_field, field_class = 'form-control') %}
+    {% set has_errors = form_field.vars.errors|length > 0 %}
+    
+    {{ form_widget(form_field, {'attr': {'class': field_class ~ (has_errors ? ' is-invalid' : '')}}) }}
+    
+    {% if has_errors %}
+        <div class="invalid-feedback d-block">
+            {% for error in form_field.vars.errors %}
+                <i class="bi bi-exclamation-circle me-1"></i>{{ error.message }}<br>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour afficher les erreurs globales du formulaire #}
+{% macro global_errors(form) %}
+    {% if form.vars.errors|length > 0 %}
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-start" role="alert">
+            <i class="bi bi-exclamation-circle me-2 flex-shrink-0 mt-1"></i>
+            <div>
+                <strong>Erreurs de validation</strong>
+                <ul class="mb-0 mt-2">
+                    {% for error in form.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour champ Select avec erreurs #}
+{% macro select_with_errors(form_field, options = {}) %}
+    {% set has_errors = form_field.vars.errors|length > 0 %}
+    {% set field_class = options.class|default('form-select') %}
+    
+    {{ form_widget(form_field, {'attr': {'class': field_class ~ (has_errors ? ' is-invalid' : '')}}) }}
+    
+    {% if has_errors %}
+        <div class="invalid-feedback d-block">
+            {% for error in form_field.vars.errors %}
+                <i class="bi bi-exclamation-circle me-1"></i>{{ error.message }}<br>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour champ Checkbox #}
+{% macro checkbox_with_errors(form_field, options = {}) %}
+    {% set has_errors = form_field.vars.errors|length > 0 %}
+    
+    <div class="form-check">
+        {{ form_widget(form_field, {'attr': {'class': 'form-check-input' ~ (has_errors ? ' is-invalid' : '')}}) }}
+        <label class="form-check-label" for="{{ form_field.vars.id }}">
+            {{ form_field.vars.label }}
+        </label>
+    </div>
+    
+    {% if has_errors %}
+        <div class="invalid-feedback d-block">
+            {% for error in form_field.vars.errors %}
+                <i class="bi bi-exclamation-circle me-1"></i>{{ error.message }}<br>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour champ Textarea #}
+{% macro textarea_with_errors(form_field, rows = 4) %}
+    {% set has_errors = form_field.vars.errors|length > 0 %}
+    
+    {{ form_widget(form_field, {'attr': {'class': 'form-control' ~ (has_errors ? ' is-invalid' : ''), 'rows': rows}}) }}
+    
+    {% if has_errors %}
+        <div class="invalid-feedback d-block">
+            {% for error in form_field.vars.errors %}
+                <i class="bi bi-exclamation-circle me-1"></i>{{ error.message }}<br>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}

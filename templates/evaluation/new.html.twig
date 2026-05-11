@@ -1,0 +1,40 @@
+{# templates/evaluation/new.html.twig et edit.html.twig #}
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}{{ evaluation.id ? 'Modifier' : 'Nouvelle' }} évaluation{% endblock %}
+
+{% block main_content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1>{{ evaluation.id ? 'Modifier' : 'Nouvelle' }} évaluation</h1>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        
+        <div class="card">
+            <div class="card-body">
+                {{ form_row(form.titre) }}
+                {{ form_row(form.typeEvaluation) }}
+                {{ form_row(form.description) }}
+                {{ form_row(form.cours) }}
+                {% if evaluation.id %}
+                    {{ form_row(form.idEnseignant) }}
+                {% else %}
+                    {{ form_widget(form.idEnseignant, {'attr': {'style': 'display:none'}}) }}
+                {% endif %}
+                {{ form_row(form.dateLimite) }}
+                {{ form_row(form.noteMax) }}
+                {{ form_row(form.modeRemise) }}
+                {{ form_row(form.statut) }}
+                {{ form_row(form.pdfFile) }}
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">{{ evaluation.id ? 'Mettre à jour' : 'Créer' }}</button>
+            <a href="{{ path('app_evaluation_index') }}" class="btn btn-secondary">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

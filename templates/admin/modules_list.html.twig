@@ -1,0 +1,107 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Administration — Modules{% endblock %}
+
+{% block admin_content %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 mb-0">Modules</h1>
+      <div class="d-flex gap-2">
+        <a href="{{ path('app_admin_validation_queue') }}" class="btn btn-outline-warning">A valider</a>
+        <a href="{{ path('app_admin_module_new') }}" class="btn btn-primary">Ajouter un Module</a>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0">Liste des modules ({{ modules|length }})</h5>
+      </div>
+      <div class="card-body">
+        <form method="get" class="row g-2 align-items-end mb-3">
+          <div class="col-md-5">
+            <label class="form-label mb-1">Recherche</label>
+            <input
+              type="text"
+              name="q"
+              class="form-control"
+              placeholder="Titre, description, objectifs..."
+              value="{{ filters.q|default('') }}"
+            >
+          </div>
+          <div class="col-md-3">
+            <label class="form-label mb-1">Statut</label>
+            <select name="statut" class="form-select">
+              <option value="" {{ (filters.statut|default('')) == '' ? 'selected' : '' }}>Tous</option>
+              <option value="brouillon" {{ (filters.statut|default('')) == 'brouillon' ? 'selected' : '' }}>Brouillon</option>
+              <option value="publie" {{ (filters.statut|default('')) == 'publie' ? 'selected' : '' }}>Publie</option>
+              <option value="archive" {{ (filters.statut|default('')) == 'archive' ? 'selected' : '' }}>Archive</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label mb-1">Tri</label>
+            <select name="sort" class="form-select">
+              <option value="ordre_asc" {{ (filters.sort|default('ordre_asc')) == 'ordre_asc' ? 'selected' : '' }}>Ordre croissant</option>
+              <option value="ordre_desc" {{ (filters.sort|default('ordre_asc')) == 'ordre_desc' ? 'selected' : '' }}>Ordre decroissant</option>
+              <option value="titre_asc" {{ (filters.sort|default('ordre_asc')) == 'titre_asc' ? 'selected' : '' }}>Titre A-Z</option>
+              <option value="titre_desc" {{ (filters.sort|default('ordre_asc')) == 'titre_desc' ? 'selected' : '' }}>Titre Z-A</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex gap-2">
+            <button class="btn btn-primary w-100">Filtrer</button>
+            <a href="{{ path('app_admin_modules_list') }}" class="btn btn-outline-secondary">Reset</a>
+          </div>
+        </form>
+
+        {% if modules|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Titre</th>
+                  <th>Description</th>
+                  <th>Statut</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for module in modules %}
+                  <tr>
+                    <td><strong>{{ module.titreModule }}</strong></td>
+                    <td>{{ module.description|default('—')|slice(0, 60) ~ (module.description|length > 60 ? '...' : '') }}</td>
+                    <td>
+                      <span class="badge {{ module.statut == 'publie' ? 'bg-success' : (module.statut == 'archive' ? 'bg-dark' : 'bg-info') }}">
+                        {{ module.statut }}
+                      </span>
+                    </td>
+                    <td class="text-end">
+                      <a href="{{ path('app_admin_module_show', {'id': module.id}) }}" class="btn btn-sm btn-info">Voir détail</a>
+                      <a href="{{ path('app_admin_module_courses', {'id': module.id}) }}" class="btn btn-sm btn-outline-secondary">Voir cours</a>
+                      <a href="{{ path('app_admin_module_edit', {'id': module.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                      <form method="post" action="{{ path('app_admin_module_delete', {'id': module.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce module ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ module.id) }}" />
+                        <button class="btn btn-sm btn-danger">Supprimer</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if pagination is defined and pagination.total_pages > 1 %}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <small class="text-muted">Page {{ pagination.current_page }} / {{ pagination.total_pages }}</small>
+              <div class="btn-group btn-group-sm">
+                {% set prevPage = pagination.current_page > 1 ? pagination.current_page - 1 : 1 %}
+                {% set nextPage = pagination.current_page < pagination.total_pages ? pagination.current_page + 1 : pagination.total_pages %}
+                <a class="btn btn-outline-secondary {{ pagination.current_page <= 1 ? 'disabled' : '' }}" href="{{ path('app_admin_modules_list', {'page': prevPage, 'q': filters.q|default(''), 'statut': filters.statut|default(''), 'sort': filters.sort|default('ordre_asc')}) }}">Precedent</a>
+                <a class="btn btn-outline-secondary {{ pagination.current_page >= pagination.total_pages ? 'disabled' : '' }}" href="{{ path('app_admin_modules_list', {'page': nextPage, 'q': filters.q|default(''), 'statut': filters.statut|default(''), 'sort': filters.sort|default('ordre_asc')}) }}">Suivant</a>
+              </div>
+            </div>
+          {% endif %}
+        {% else %}
+          <p class="text-muted text-center py-4">Aucun module disponible.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

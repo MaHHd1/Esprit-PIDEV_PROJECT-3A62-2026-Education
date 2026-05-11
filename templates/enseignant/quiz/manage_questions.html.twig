@@ -1,0 +1,357 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Gérer les questions - {{ quiz.titre }}{% endblock %}
+
+{% block main_content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('teacher_quiz_index') }}">Mes Quiz</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('quiz_show', {id: quiz.id}) }}">{{ quiz.titre }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Gérer les questions</li>
+    </ol>
+</nav>
+
+<!-- Card START -->
+<div class="card border bg-transparent rounded-3">
+    <!-- Card header START -->
+    <div class="card-header bg-transparent border-bottom px-3">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-2">
+                <img src="{{ asset('assets/images/courses/4by3/01.jpg') }}" class="rounded-2" alt="Card image">
+            </div>
+            <div class="col-md-10">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="card-title mb-2">
+                            <a href="{{ path('quiz_show', {id: quiz.id}) }}">{{ quiz.titre }}</a>
+                        </h3>
+                        <p class="mb-2 text-muted">{{ quiz.description|slice(0, 150) }}{% if quiz.description|length > 150 %}...{% endif %}</p>
+                        <div class="mt-2">
+                            <span class="badge bg-light text-dark border">
+                                <i class="bi bi-question-circle me-1"></i>{{ quiz.questions|length }} question(s)
+                            </span>
+                            {% if quiz.dureeMinutes %}
+                                <span class="badge bg-light text-dark border ms-2">
+                                    <i class="bi bi-clock me-1"></i>{{ quiz.dureeMinutes }} min
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{{ path('teacher_question_new', {idQuiz: quiz.id}) }}" class="btn btn-sm btn-primary mb-0">
+                        <i class="bi bi-plus-circle me-1"></i>Ajouter une question
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Card header END -->
+
+    <!-- Card body START -->
+    <div class="card-body p-4">
+        <!-- Flash messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+
+        {% if quiz.questions is empty %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <i class="bi bi-question-circle display-1 text-muted"></i>
+                <h5 class="mt-3">Aucune question pour le moment</h5>
+                <p class="text-muted">Commencez par ajouter votre première question à ce quiz.</p>
+                <a href="{{ path('teacher_question_new', {idQuiz: quiz.id}) }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Créer la première question
+                </a>
+            </div>
+        {% else %}
+            <!-- Accordion START -->
+            <div class="accordion accordion-flush" id="questionsAccordion" data-quiz-id="{{ quiz.id }}">
+                {% for question in quiz.questions %}
+                    <div class="accordion-item bg-light mb-3 rounded question-item" data-question-id="{{ question.id }}" data-order="{{ question.ordreAffichage }}">
+                        <h2 class="accordion-header" id="heading{{ question.id }}">
+                            <button class="accordion-button collapsed bg-light rounded" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ question.id }}" aria-expanded="false" aria-controls="collapse{{ question.id }}">
+                                <span class="drag-handle me-3" style="cursor: move;">
+                                    <i class="bi bi-grip-vertical text-muted"></i>
+                                </span>
+                                <span class="text-secondary fw-bold me-3">{{ '%02d'|format(loop.index) }}</span>
+                                <span class="fw-bold text-dark">{{ question.texte }}</span>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ question.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ question.id }}" data-bs-parent="#questionsAccordion">
+                            <div class="accordion-body">
+                                {% set metadata = question.metadata %}
+                                
+                                <!-- Question Details -->
+                                <div class="mb-3">
+                                    <span class="badge bg-info text-white me-2">
+                                        {{ question.typeQuestion|upper|replace({'_': ' '}) }}
+                                    </span>
+                                    <span class="badge bg-primary text-white">
+                                        {{ question.points }} points
+                                    </span>
+                                </div>
+
+                                <!-- Explication -->
+                                {% if question.explicationReponse %}
+                                    <div class="alert alert-info mb-3">
+                                        <i class="bi bi-lightbulb me-2"></i>
+                                        <strong>Explication:</strong> {{ question.explicationReponse }}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Answer options based on type -->
+                                {% if question.typeQuestion == 'qcm' and metadata and metadata.options %}
+                                    {% for option in metadata.options %}
+                                        <p class="mb-2">
+                                            <b class="text-dark">{{ ['A', 'B', 'C', 'D', 'E'][loop.index0] ?? loop.index }}</b> 
+                                            {{ option.text }}
+                                            {% if option.isCorrect %}
+                                                <span class="badge bg-success ms-2">
+                                                    <i class="bi bi-check-circle me-1"></i>Correcte
+                                                </span>
+                                            {% endif %}
+                                        </p>
+                                    {% endfor %}
+                                    
+                                {% elseif question.typeQuestion == 'vrai_faux' and metadata %}
+                                    <p class="mb-2">
+                                        <b class="text-dark">Réponse correcte:</b>
+                                        <span class="badge bg-{{ metadata.correct ? 'success' : 'danger' }}">
+                                            {{ metadata.correct ? 'Vrai' : 'Faux' }}
+                                        </span>
+                                    </p>
+                                    
+                                {% elseif question.typeQuestion == 'texte_libre' and metadata and metadata.keywords %}
+                                    <p class="mb-2"><b class="text-dark">Mots-clés attendus:</b></p>
+                                    <div class="mb-3">
+                                        {% for keyword in metadata.keywords %}
+                                            <span class="badge bg-secondary me-1">{{ keyword }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Buttons -->
+                                <div class="mt-3">
+                                    <a href="{{ path('teacher_question_edit', {id: question.id}) }}" class="btn btn-sm btn-success-soft mb-0">
+                                        Edit
+                                    </a>
+                                    <button type="button" class="btn btn-danger-soft btn-sm mb-0 ms-2" data-bs-toggle="modal" data-bs-target="#deleteModal{{ question.id }}">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteModal{{ question.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger">
+                                    <h5 class="modal-title text-white">Confirmer la suppression</h5>
+                                    <button type="button" class="btn btn-sm btn-light mb-0" data-bs-dismiss="modal" aria-label="Close">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Êtes-vous sûr de vouloir supprimer cette question ?</p>
+                                    <p class="text-muted mb-0"><strong>{{ question.texte }}</strong></p>
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        Cette action est irréversible.
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary-soft" data-bs-dismiss="modal">Annuler</button>
+                                    <form method="post" action="{{ path('teacher_question_delete', {id: question.id}) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ question.id) }}">
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- Accordion END -->
+        {% endif %}
+    </div>
+    <!-- Card body END -->
+</div>
+<!-- Card END -->
+
+<style>
+/* Accordion custom styling */
+.accordion-button {
+    background-color: #f5f5f5 !important;
+    color: #212529;
+    font-size: 1rem;
+    padding: 1.25rem 1.5rem;
+    border: none;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #ffffff !important;
+    color: #212529;
+    box-shadow: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: transparent;
+}
+
+.accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+    transform: rotate(-180deg);
+}
+
+.accordion-item {
+    border: 1px solid #dee2e6;
+    margin-bottom: 0.75rem;
+}
+
+.accordion-body {
+    padding: 1.5rem;
+    background-color: #ffffff;
+}
+
+/* Drag handle */
+.drag-handle {
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.drag-handle:hover {
+    opacity: 1;
+}
+
+/* Question item */
+.question-item.sortable-ghost {
+    opacity: 0.4;
+}
+
+/* Buttons */
+.btn-success-soft {
+    background-color: #d1f4e8;
+    color: #0aa072;
+    border: none;
+}
+
+.btn-success-soft:hover {
+    background-color: #b8f0dd;
+    color: #0aa072;
+}
+
+.btn-danger-soft {
+    background-color: #ffe5e9;
+    color: #dc3545;
+    border: none;
+}
+
+.btn-danger-soft:hover {
+    background-color: #ffccd5;
+    color: #dc3545;
+}
+
+.btn-secondary-soft {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+    color: #6c757d;
+}
+
+.btn-secondary-soft:hover {
+    background-color: #dee2e6;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Alert */
+.alert-info {
+    background-color: #cff4fc;
+    border-color: #b6effb;
+    color: #055160;
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accordion = document.getElementById('questionsAccordion');
+            if (!accordion) return;
+
+            const quizId = accordion.dataset.quizId;
+            
+            const sortable = new Sortable(accordion, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                onEnd: function(evt) {
+                    updateQuestionOrder();
+                }
+            });
+
+            function updateQuestionOrder() {
+                const items = accordion.querySelectorAll('.question-item');
+                const order = [];
+
+                items.forEach((item, index) => {
+                    order.push({
+                        id: parseInt(item.dataset.questionId),
+                        order: index + 1
+                    });
+                });
+
+                fetch('{{ path('teacher_quiz_reorder_questions', {id: quiz.id}) }}', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ order: order })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        items.forEach((item, index) => {
+                            const numberSpan = item.querySelector('.text-secondary.fw-bold');
+                            if (numberSpan) {
+                                numberSpan.textContent = String(index + 1).padStart(2, '0');
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating order:', error);
+                    alert('Erreur lors de la mise à jour de l\'ordre des questions');
+                });
+            }
+        });
+    </script>
+{% endblock %}

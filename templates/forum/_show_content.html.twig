@@ -1,0 +1,456 @@
+<style>
+    .fs-page { font-family: 'Roboto', sans-serif; color: #1e1e2d; }
+    .fs-page h3, .fs-page h4, .fs-page h5, .fs-page h6 { font-family: 'Heebo', sans-serif; }
+
+    /* ── Forum header card ── */
+    .forum-header-card {
+        background: #fff;
+        border: 1px solid #e4e6ea;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+    .forum-cover {
+        width: 100%;
+        max-height: 220px;
+        object-fit: cover;
+        display: block;
+    }
+    .forum-header-body { padding: 1.5rem; }
+
+    .forum-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: .75rem;
+    }
+    .forum-title-row h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0;
+        color: #1e1e2d;
+        line-height: 1.3;
+    }
+
+    .badge-modified {
+        font-size: .68rem; font-weight: 700;
+        padding: .25rem .6rem; border-radius: 50px;
+        background: rgba(255,193,7,.15); color: #856404;
+    }
+    .badge-type {
+        font-size: .68rem; font-weight: 700;
+        padding: .25rem .6rem; border-radius: 50px;
+        background: rgba(30,30,45,.08); color: #1e1e2d;
+    }
+    .badge-statut {
+        font-size: .68rem; font-weight: 700;
+        padding: .25rem .6rem; border-radius: 50px;
+        background: rgba(25,135,84,.1); color: #198754;
+    }
+    .badge-owner {
+        font-size: .68rem; font-weight: 700;
+        padding: .25rem .6rem; border-radius: 50px;
+        background: rgba(13,110,253,.12); color: #0d6efd;
+    }
+
+    .forum-meta {
+        display: flex; align-items: center; gap: .75rem;
+        flex-wrap: wrap; font-size: .8rem; color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    .forum-meta .meta-sep { color: #dee2e6; }
+    .forum-meta i { font-size: .8rem; }
+
+    .forum-stats {
+        display: flex; gap: 1rem; flex-wrap: wrap;
+        padding: .85rem 1.5rem;
+        background: #fafafa;
+        border-top: 1px solid #e4e6ea;
+    }
+    .stat-pill {
+        display: flex; align-items: center; gap: .35rem;
+        font-size: .8rem; font-weight: 600;
+        padding: .3rem .75rem;
+        border-radius: 50px;
+        cursor: default;
+    }
+    .stat-pill.views   { background: rgba(30,30,45,.06);  color: #3d3d4e; }
+    .stat-pill.likes   { background: rgba(25,135,84,.1);  color: #198754; }
+    .stat-pill.dislikes{ background: rgba(220,53,69,.1);  color: #dc3545; }
+    .stat-pill.reports { background: rgba(253,126,20,.1); color: #fd7e14; }
+
+    /* ── Description ── */
+    .forum-desc {
+        font-size: .9rem; color: #495057;
+        line-height: 1.8; margin-bottom: 1rem;
+    }
+
+    /* ── Moderation rules ── */
+    .mod-rules {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-left: 4px solid #f59e0b;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+        font-size: .85rem; color: #78350f; line-height: 1.7;
+    }
+    .mod-rules strong {
+        display: flex; align-items: center; gap: .4rem;
+        font-size: .78rem; text-transform: uppercase;
+        letter-spacing: .06em; color: #92400e; margin-bottom: .4rem;
+    }
+
+    /* ── Action buttons row ── */
+    .forum-actions {
+        display: flex; flex-wrap: wrap; gap: .6rem;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e4e6ea;
+        background: #fff;
+    }
+    .btn-act {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .45rem 1rem;
+        border-radius: 7px; border: 1px solid #e4e6ea;
+        font-size: .82rem; font-weight: 600;
+        font-family: 'Heebo', sans-serif;
+        cursor: pointer; text-decoration: none;
+        transition: background .15s, color .15s, border-color .15s;
+        background: #fff;
+    }
+    .btn-act.primary  { background: #1e1e2d; color: #fff; border-color: #1e1e2d; }
+    .btn-act.primary:hover { background: #2d2d3f; }
+    .btn-act.success  { color: #198754; }
+    .btn-act.success:hover  { background: rgba(25,135,84,.08); border-color: #198754; }
+    .btn-act.danger   { color: #dc3545; }
+    .btn-act.danger:hover   { background: rgba(220,53,69,.08); border-color: #dc3545; }
+    .btn-act.warning  { color: #856404; }
+    .btn-act.warning:hover  { background: rgba(255,193,7,.1); border-color: #ffc107; }
+    .btn-act.ghost    { color: #6c757d; }
+    .btn-act.ghost:hover    { background: #f8f8fa; color: #1e1e2d; border-color: #adb5bd; }
+    .btn-act.edit     { color: #0d6efd; }
+    .btn-act.edit:hover     { background: rgba(13,110,253,.08); border-color: #0d6efd; }
+
+    /* ── Comments section ── */
+    .comments-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 1rem;
+    }
+    .comments-header h4 {
+        font-size: 1rem; font-weight: 700; margin: 0; color: #1e1e2d;
+    }
+    .comments-count {
+        font-size: .75rem; font-weight: 700;
+        background: #1e1e2d; color: #fff;
+        padding: .2rem .6rem; border-radius: 50px;
+    }
+
+    /* ── Comment card ── */
+    .comment-card {
+        background: #fff;
+        border: 1px solid #e4e6ea;
+        border-radius: 10px;
+        margin-bottom: .75rem;
+        transition: box-shadow .2s;
+        position: relative;
+        overflow: hidden;
+    }
+    .comment-card::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: #e4e6ea;
+        transition: background .2s;
+    }
+    .comment-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+    .comment-card:hover::before { background: #1e1e2d; }
+    .comment-card.is-reply {
+        margin-left: 2rem;
+        border-color: #ede9fe;
+    }
+    .comment-card.is-reply::before { background: #7c3aed; }
+
+    .comment-body { padding: 1rem 1.1rem 1rem 1.3rem; }
+
+    .comment-meta {
+        display: flex; align-items: center; gap: .5rem;
+        flex-wrap: wrap; margin-bottom: .65rem;
+    }
+    .comment-avatar {
+        width: 30px; height: 30px; border-radius: 50%;
+        background: #1e1e2d; color: #fff;
+        font-size: .72rem; font-weight: 700;
+        font-family: 'Heebo', sans-serif;
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .comment-card.is-reply .comment-avatar { background: #7c3aed; }
+    .comment-author { font-weight: 700; font-size: .87rem; color: #1e1e2d; }
+    .comment-date   { font-size: .75rem; color: #adb5bd; }
+    .badge-pending  {
+        font-size: .65rem; font-weight: 700; padding: .2rem .5rem; border-radius: 50px;
+        background: rgba(255,193,7,.15); color: #856404;
+    }
+    .comment-stats  { margin-left: auto; display: flex; gap: .6rem; font-size: .75rem; }
+    .comment-stats span { display: flex; align-items: center; gap: .25rem; color: #adb5bd; }
+    .comment-stats .c-like   { color: #198754; }
+    .comment-stats .c-dislike{ color: #dc3545; }
+    .comment-stats .c-report { color: #fd7e14; }
+
+    .comment-content {
+        font-size: .875rem; color: #495057; line-height: 1.75;
+        margin-bottom: .85rem;
+    }
+
+    .comment-actions {
+        display: flex; flex-wrap: wrap; gap: .4rem;
+        padding-top: .7rem;
+        border-top: 1px solid #f0f0f5;
+    }
+    .btn-cm {
+        display: inline-flex; align-items: center; gap: .3rem;
+        padding: .3rem .7rem;
+        border-radius: 6px; border: 1px solid #e4e6ea;
+        font-size: .75rem; font-weight: 600;
+        font-family: 'Heebo', sans-serif;
+        cursor: pointer; text-decoration: none;
+        transition: background .15s, color .15s, border-color .15s;
+        background: #fff;
+    }
+    .btn-cm.reply   { color: #0d6efd; }
+    .btn-cm.reply:hover   { background: rgba(13,110,253,.08); border-color: #0d6efd; }
+    .btn-cm.like    { color: #198754; }
+    .btn-cm.like:hover    { background: rgba(25,135,84,.08); border-color: #198754; }
+    .btn-cm.dislike { color: #dc3545; }
+    .btn-cm.dislike:hover { background: rgba(220,53,69,.08); border-color: #dc3545; }
+    .btn-cm.report  { color: #fd7e14; }
+    .btn-cm.report:hover  { background: rgba(253,126,20,.08); border-color: #fd7e14; }
+    .btn-cm.delete  { color: #6c757d; margin-left: auto; }
+    .btn-cm.delete:hover  { background: #f8f8fa; border-color: #adb5bd; color: #1e1e2d; }
+
+    .reply-info {
+        display: flex; align-items: center; gap: .35rem;
+        font-size: .75rem; color: #7c3aed; margin-top: .6rem;
+    }
+
+    /* ── Empty state ── */
+    .empty-comments {
+        text-align: center; padding: 2.5rem 1rem;
+        background: #fff; border: 1px solid #e4e6ea; border-radius: 10px;
+        color: #adb5bd;
+    }
+    .empty-comments i { font-size: 2.5rem; opacity: .3; display: block; margin-bottom: .75rem; }
+    .empty-comments p { font-size: .875rem; margin: 0; }
+</style>
+
+<div class="fs-page">
+
+{% set isOwner = (forum.createur == activeUser) %}
+
+{# ── En-tête navigation ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="mb-0 text-muted small">
+        <a href="{{ path('forum_list') }}" class="text-muted text-decoration-none">
+            <i class="bi bi-chat-dots me-1"></i>Forums
+        </a>
+        <i class="bi bi-chevron-right mx-1" style="font-size:.65rem;"></i>
+        <span class="text-dark fw-semibold">
+            {{ forum.titre|slice(0,40) }}{% if forum.titre|length > 40 %}…{% endif %}
+        </span>
+    </p>
+    <div class="d-flex gap-2 align-items-center">
+        {% if isOwner %}
+            <span class="badge-owner"><i class="bi bi-star-fill me-1"></i>Mon forum</span>
+            <a class="btn-act edit" href="{{ path('forum_edit', {id: forum.id}) }}">
+                <i class="bi bi-pencil"></i>Modifier
+            </a>
+        {% endif %}
+        <a class="btn-act ghost" href="{{ path('forum_list') }}">
+            <i class="bi bi-arrow-left"></i>Liste
+        </a>
+    </div>
+</div>
+
+{# ── Forum header card ── #}
+<div class="forum-header-card">
+
+    {# ✅ CORRIGÉ : utilise asset() avec le chemin uploads/ #}
+    {% if forum.imageCouvertureUrl %}
+        <img class="forum-cover"
+             src="{{ asset('uploads/forum/images/' ~ forum.imageCouvertureUrl) }}"
+             alt="{{ forum.titre }}">
+    {% endif %}
+
+    <div class="forum-header-body">
+
+        {# Titre + badges #}
+        <div class="forum-title-row">
+            <h3>
+                {{ forum.titre }}
+                {% if forum.estModifie %}
+                    <span class="badge-modified ms-2"><i class="bi bi-pencil-fill me-1"></i>modifié</span>
+                {% endif %}
+            </h3>
+            <div class="d-flex gap-1 flex-shrink-0">
+                <span class="badge-type">{{ forum.type }}</span>
+                <span class="badge-statut">{{ forum.statut }}</span>
+            </div>
+        </div>
+
+        {# Méta #}
+        <div class="forum-meta">
+            <span><i class="bi bi-person-fill"></i>{{ forum.createur.username }}</span>
+            {% if forum.estModifie and forum.dateModification %}
+                <span class="meta-sep">•</span>
+                <span><i class="bi bi-clock-history"></i>Modifié le {{ forum.dateModification|date('d/m/Y H:i') }}</span>
+            {% endif %}
+        </div>
+
+        {# Description #}
+        <div class="forum-desc">{{ forum.description|nl2br }}</div>
+
+        {# Règles de modération #}
+        {% if forum.reglesModeration %}
+            <div class="mod-rules">
+                <strong><i class="bi bi-shield-fill-check"></i>Règles de modération</strong>
+                {{ forum.reglesModeration|nl2br }}
+            </div>
+        {% endif %}
+
+        {# ✅ Pièce jointe #}
+        {% if forum.pieceJointeUrl %}
+            <a href="{{ asset('uploads/forum/attachments/' ~ forum.pieceJointeUrl) }}"
+               target="_blank"
+               style="display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .7rem;border-radius:6px;background:rgba(13,110,253,.07);color:#0d6efd;font-size:.75rem;font-weight:600;text-decoration:none;border:1px solid rgba(13,110,253,.15);margin-top:.5rem;">
+                <i class="bi bi-paperclip"></i>Pièce jointe
+                <i class="bi bi-box-arrow-up-right" style="font-size:.65rem;"></i>
+            </a>
+        {% endif %}
+
+    </div>
+
+    {# Stats #}
+    <div class="forum-stats">
+        <span class="stat-pill views"><i class="bi bi-eye-fill"></i>{{ forum.nombreVues }} vues</span>
+        <span class="stat-pill likes"><i class="bi bi-hand-thumbs-up-fill"></i>{{ forum.likes ?? 0 }}</span>
+        <span class="stat-pill dislikes"><i class="bi bi-hand-thumbs-down-fill"></i>{{ forum.dislikes ?? 0 }}</span>
+        <span class="stat-pill reports"><i class="bi bi-flag-fill"></i>{{ forum.signalements ?? 0 }}</span>
+    </div>
+
+    {# Actions #}
+    <div class="forum-actions">
+
+        <a class="btn-act primary" href="{{ path('comment_new', {forumId: forum.id}) }}">
+            <i class="bi bi-plus-lg"></i>Ajouter un commentaire
+        </a>
+
+        <form method="post" action="{{ path('forum_like', {id: forum.id}) }}">
+            <button type="submit" class="btn-act success">
+                <i class="bi bi-hand-thumbs-up-fill"></i>Like
+            </button>
+        </form>
+
+        <form method="post" action="{{ path('forum_dislike', {id: forum.id}) }}">
+            <button type="submit" class="btn-act danger">
+                <i class="bi bi-hand-thumbs-down-fill"></i>Dislike
+            </button>
+        </form>
+
+        <form method="post" action="{{ path('forum_report', {id: forum.id}) }}">
+            <button type="submit" class="btn-act warning">
+                <i class="bi bi-flag-fill"></i>Signaler
+            </button>
+        </form>
+
+        {% if isOwner %}
+            <a class="btn-act edit" href="{{ path('forum_edit', {id: forum.id}) }}">
+                <i class="bi bi-pencil"></i>Modifier
+            </a>
+            <form method="post"
+                  action="{{ path('forum_delete', {id: forum.id}) }}"
+                  onsubmit="return confirm('Supprimer ce forum définitivement ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ forum.id) }}">
+                <button type="submit" class="btn-act ghost">
+                    <i class="bi bi-trash"></i>Supprimer
+                </button>
+            </form>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{# ── Section commentaires ── #}
+<div class="comments-header">
+    <h4><i class="bi bi-chat-left-text-fill me-2"></i>Posts &amp; commentaires</h4>
+    <span class="comments-count">{{ comments|length }}</span>
+</div>
+
+{% if comments is empty %}
+    <div class="empty-comments">
+        <i class="bi bi-chat-left-dots"></i>
+        <p>Aucun commentaire pour l'instant.<br>Soyez le premier à contribuer !</p>
+    </div>
+{% else %}
+    {% for c in comments %}
+        <div class="comment-card {% if c.parent %}is-reply{% endif %}">
+            <div class="comment-body">
+
+                <div class="comment-meta">
+                    <span class="comment-avatar">{{ c.utilisateur.username|slice(0,1)|upper }}</span>
+                    <span class="comment-author">{{ c.utilisateur.username }}</span>
+                    <span class="comment-date"><i class="bi bi-clock me-1"></i>{{ c.datePublication|date('d/m/Y H:i') }}</span>
+                    {% if c.statut == 'en_attente' %}
+                        <span class="badge-pending"><i class="bi bi-hourglass-split me-1"></i>en attente</span>
+                    {% endif %}
+                    <div class="comment-stats">
+                        <span class="c-like"><i class="bi bi-hand-thumbs-up-fill"></i>{{ c.likes }}</span>
+                        <span class="c-dislike"><i class="bi bi-hand-thumbs-down-fill"></i>{{ c.dislikes }}</span>
+                        <span class="c-report"><i class="bi bi-flag-fill"></i>{{ c.signalements }}</span>
+                        <span><i class="bi bi-reply-all-fill"></i>{{ c.nbReponses }}</span>
+                    </div>
+                </div>
+
+                <div class="comment-content">{{ c.contenu|nl2br }}</div>
+
+                {% if c.parent %}
+                    <div class="reply-info">
+                        <i class="bi bi-arrow-return-right"></i>
+                        Réponse au commentaire #{{ c.parent.id }}
+                    </div>
+                {% endif %}
+
+                <div class="comment-actions">
+                    <a class="btn-cm reply" href="{{ path('comment_reply', {commentId: c.id}) }}">
+                        <i class="bi bi-reply-fill"></i>Répondre
+                    </a>
+
+                    <form method="post" action="{{ path('comment_like', {id: c.id}) }}">
+                        <button type="submit" class="btn-cm like"><i class="bi bi-hand-thumbs-up-fill"></i>Like</button>
+                    </form>
+
+                    <form method="post" action="{{ path('comment_dislike', {id: c.id}) }}">
+                        <button type="submit" class="btn-cm dislike"><i class="bi bi-hand-thumbs-down-fill"></i>Dislike</button>
+                    </form>
+
+                    <form method="post" action="{{ path('comment_report', {id: c.id}) }}">
+                        <button type="submit" class="btn-cm report"><i class="bi bi-flag-fill"></i>Signaler</button>
+                    </form>
+
+                    {% if c.utilisateur == activeUser %}
+                        <form method="post" action="{{ path('comment_delete', {id: c.id}) }}">
+                            <button type="submit" class="btn-cm delete"><i class="bi bi-trash"></i>Supprimer</button>
+                        </form>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+</div>{# /fs-page #}

@@ -1,0 +1,189 @@
+
+<style>
+    body { font-family: 'Roboto', sans-serif; }
+    h3, h5, label { font-family: 'Heebo', sans-serif; }
+
+    .form-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        overflow: hidden;
+    }
+    .form-card .card-header {
+        background: transparent;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.25rem 1.5rem;
+    }
+    .form-card .card-body {
+        padding: 1.75rem 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: .85rem;
+        color: #495057;
+        margin-bottom: .4rem;
+    }
+    .form-control, .form-select {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        font-size: .9rem;
+        padding: .6rem .9rem;
+        transition: border-color .2s, box-shadow .2s;
+        background: #fdfdfd;
+        width: 100%;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13,110,253,.1);
+        background: #fff;
+        outline: none;
+    }
+    textarea.form-control {
+        min-height: 180px;
+        resize: vertical;
+    }
+
+    .btn-send {
+        background: #0d6efd;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .55rem 1.5rem;
+        font-family: 'Heebo', sans-serif;
+        font-weight: 600;
+        font-size: .88rem;
+        transition: background .2s, transform .15s;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+    }
+    .btn-send:hover {
+        background: #0b5ed7;
+        transform: translateY(-1px);
+    }
+</style>
+
+
+{# ── En-tête ─────────────────────────────────────────────────── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">
+            <i class="bi bi-pencil-square text-primary me-2"></i>Nouveau message
+        </h3>
+        <p class="mb-0 text-muted small">
+            Connecté en tant que <strong>{{ activeUser.nomComplet }}</strong>
+        </p>
+    </div>
+
+    {# Inbox + Envoyés en boutons #}
+    <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-secondary mb-0"
+           href="{{ path('message_inbox') }}">
+            <i class="bi bi-inbox me-1"></i>Inbox
+        </a>
+        <a class="btn btn-sm btn-outline-secondary mb-0"
+           href="{{ path('message_sent') }}">
+            <i class="bi bi-send me-1"></i>Envoyés
+        </a>
+    </div>
+</div>
+
+{# ── Formulaire ──────────────────────────────────────────────── #}
+<div class="form-card">
+
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-envelope-plus text-primary me-2"></i>Rédiger un message
+        </h5>
+    </div>
+
+    <div class="card-body">
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+            {# Destinataire #}
+            <div class="mb-4">
+                <label class="form-label" for="{{ form.destinataire.vars.id }}">
+                    <i class="bi bi-person-fill text-primary me-1"></i>Destinataire
+                </label>
+                {{ form_widget(form.destinataire, { attr: { class: 'form-control' } }) }}
+                {{ form_errors(form.destinataire) }}
+            </div>
+
+            {# Objet #}
+            <div class="mb-4">
+                <label class="form-label" for="{{ form.objet.vars.id }}">
+                    <i class="bi bi-tag-fill text-primary me-1"></i>Objet
+                </label>
+                {{ form_widget(form.objet, {
+                    attr: {
+                        class: 'form-control',
+                        placeholder: 'Sujet du message…'
+                    }
+                }) }}
+                {{ form_errors(form.objet) }}
+            </div>
+
+            {# Contenu #}
+            <div class="mb-4">
+                <label class="form-label" for="{{ form.contenu.vars.id }}">
+                    <i class="bi bi-chat-left-text-fill text-primary me-1"></i>Message
+                </label>
+                {{ form_widget(form.contenu, {
+                    attr: {
+                        class: 'form-control',
+                        placeholder: 'Écrivez votre message ici…'
+                    }
+                }) }}
+                {{ form_errors(form.contenu) }}
+            </div>
+
+            {# Actions #}
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                <a href="{{ path('message_inbox') }}"
+                   class="btn btn-sm btn-outline-secondary mb-0">
+                    <i class="bi bi-arrow-left me-1"></i>Annuler
+                </a>
+                <button type="submit" class="btn-send">
+                    <i class="bi bi-send-fill"></i>Envoyer
+                </button>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+    {# ── Modal Message Bloqué ── #}
+{# ── Modal Message Bloqué ── #}
+{% if blocked is defined and blocked %}
+<div class="modal fade show" id="modalBlocked" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-3 shadow">
+            <div class="modal-header border-0 pb-0" style="background:#fff2f2; border-radius:12px 12px 0 0;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-x-fill text-danger" style="font-size:1.5rem;"></i>
+                    <h5 class="modal-title fw-bold text-danger mb-0">Message bloqué</h5>
+                </div>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="font-size:3rem;">🚫</div>
+                <p class="fw-semibold mt-2 mb-0" style="color:#495057;">
+                    Votre message n'a pas pu être envoyé.
+                </p>
+                <p class="text-muted small mt-1">
+                    Il a été détecté comme inapproprié par notre système de modération.
+                </p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pt-0">
+                <button type="button" class="btn btn-danger px-4"
+                        onclick="document.getElementById('modalBlocked').style.display='none'">
+                    <i class="bi bi-pencil-square me-1"></i>Corriger mon message
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+</div>
+

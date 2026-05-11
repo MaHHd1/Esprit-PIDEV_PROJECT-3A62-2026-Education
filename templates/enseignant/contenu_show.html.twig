@@ -1,0 +1,63 @@
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Detail contenu - Enseignant{% endblock %}
+{% block page_title %}{{ contenu.titre }}{% endblock %}
+{% block page_subtitle %}Cours: {{ contenu.cours.titre }} | Module: {{ contenu.cours.module.titreModule }}{% endblock %}
+{% block page_actions %}
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_enseignant_mes_cours_contenu_edit', {'contenuId': contenu.id}) }}" class="btn btn-primary">Modifier</a>
+        <a href="{{ path('app_enseignant_mes_cours_contenus', {'id': contenu.cours.id}) }}" class="btn btn-outline-secondary">Retour aux contenus</a>
+    </div>
+{% endblock %}
+
+{% block main_content %}
+    {% set types = contenu.typeContenuList %}
+    {% set res = contenu.ressourcesForDisplay %}
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">Informations du contenu</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Types:</strong>
+                    <p>
+                        {% for type in types %}
+                            <span class="badge bg-primary me-1">{{ type|upper }}</span>
+                        {% endfor %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <strong>Responsable:</strong>
+                    <p>{{ enseignant.prenom }} {{ enseignant.nom }}</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4"><strong>Ordre:</strong> {{ contenu.ordreAffichage }}</div>
+                <div class="col-md-4"><strong>Public:</strong> {% if contenu.estPublic %}Oui{% else %}Non{% endif %}</div>
+                <div class="col-md-4"><strong>Vues:</strong> {{ contenu.nombreVues }}</div>
+            </div>
+
+            <div class="mb-3">
+                <strong>Ressources:</strong>
+                <ul class="mb-0">
+                    {% if res.lien is defined and res.lien %}<li>Lien: <a href="{{ res.lien }}" target="_blank">{{ res.lien }}</a></li>{% endif %}
+                    {% if res.video_link is defined and res.video_link %}<li>Video lien: <a href="{{ res.video_link }}" target="_blank">{{ res.video_link }}</a></li>{% endif %}
+                    {% if res.video_file is defined and res.video_file %}<li>Video fichier: <a href="{{ res.video_file }}" target="_blank">ouvrir</a></li>{% endif %}
+                    {% if res.pdf is defined and res.pdf %}<li>PDF: <a href="{{ res.pdf }}" target="_blank">ouvrir</a></li>{% endif %}
+                    {% if res.ppt is defined and res.ppt %}<li>PPT: <a href="{{ res.ppt }}" target="_blank">ouvrir</a></li>{% endif %}
+                    {% if res.texte is defined and res.texte %}<li>Texte:</li><p class="mt-2">{{ res.texte|nl2br }}</p>{% endif %}
+                    {% if res is empty %}<li class="text-muted">Aucune ressource.</li>{% endif %}
+                </ul>
+            </div>
+
+            {% if contenu.description %}
+                <div>
+                    <strong>Description:</strong>
+                    <p>{{ contenu.description }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

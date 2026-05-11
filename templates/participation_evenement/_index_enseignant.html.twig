@@ -1,0 +1,8 @@
+{# templates/participation_evenement/_index_enseignant.html.twig #}
+{% extends 'enseignant/prof_base.html.twig' %}
+
+{% block title %}Mes Participations{% endblock %}
+
+{% block main_content %}
+    {% include 'participation_evenement/_content.html.twig' with {'user_type': 'enseignant'} %}
+{% endblock %}

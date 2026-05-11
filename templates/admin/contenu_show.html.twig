@@ -1,0 +1,193 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Administration - Detail Contenu{% endblock %}
+
+{% block admin_content %}
+  {% set types = contenu.typeContenuList %}
+  {% set res = contenu.ressourcesForDisplay %}
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-2">{{ contenu.titre }}</h1>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_modules_list') }}">Modules</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_module_courses', {'id': contenu.cours.module.id}) }}">{{ contenu.cours.module.titreModule }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_cours_show', {'id': contenu.cours.id}) }}">{{ contenu.cours.titre }}</a></li>
+            <li class="breadcrumb-item active">{{ contenu.titre }}</li>
+          </ol>
+        </nav>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ path('app_admin_contenu_edit', {'id': contenu.id}) }}" class="btn btn-outline-primary">Modifier</a>
+        <form method="post" action="{{ path('app_admin_contenu_delete', {'id': contenu.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce contenu ?');">
+          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ contenu.id) }}" />
+          <button class="btn btn-danger">Supprimer</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Informations du Contenu</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Types :</strong>
+                <p>
+                  {% for type in types %}
+                    <span class="badge bg-primary me-1">{{ type|upper }}</span>
+                  {% endfor %}
+                </p>
+              </div>
+              <div class="col-md-6">
+                <strong>Titre :</strong>
+                <p>{{ contenu.titre }}</p>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Cours :</strong>
+                <p><a href="{{ path('app_admin_cours_show', {'id': contenu.cours.id}) }}">{{ contenu.cours.titre }}</a></p>
+              </div>
+              <div class="col-md-6">
+                <strong>Module :</strong>
+                <p>{{ contenu.cours.module.titreModule }}</p>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Ordre d'affichage :</strong>
+                <p>{{ contenu.ordreAffichage }}</p>
+              </div>
+              <div class="col-md-6">
+                <strong>Visibilite :</strong>
+                <p>
+                  {% if contenu.estPublic %}
+                    <span class="badge bg-success">Public</span>
+                  {% else %}
+                    <span class="badge bg-warning">Premium</span>
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-12">
+                <strong>Ressources :</strong>
+                <ul class="mb-0">
+                  {% if res.lien is defined and res.lien %}
+                    <li>Lien: <a href="{{ res.lien }}" target="_blank" rel="noopener noreferrer">{{ res.lien }}</a></li>
+                  {% endif %}
+                  {% if res.video_link is defined and res.video_link %}
+                    <li>Video (lien): <a href="{{ res.video_link }}" target="_blank" rel="noopener noreferrer">{{ res.video_link }}</a></li>
+                  {% endif %}
+                  {% if res.video_file is defined and res.video_file %}
+                    <li>Video (fichier): <a href="{{ res.video_file }}" target="_blank" rel="noopener noreferrer">Ouvrir le fichier</a></li>
+                  {% endif %}
+                  {% if res.pdf is defined and res.pdf %}
+                    <li>PDF: <a href="{{ res.pdf }}" target="_blank" rel="noopener noreferrer">Ouvrir le PDF</a></li>
+                  {% endif %}
+                  {% if res.ppt is defined and res.ppt %}
+                    <li>PPT: <a href="{{ res.ppt }}" target="_blank" rel="noopener noreferrer">Ouvrir le PPT</a></li>
+                  {% endif %}
+                  {% if res.texte is defined and res.texte %}
+                    <li>Texte:</li>
+                    <p class="mt-2">{{ res.texte|nl2br }}</p>
+                  {% endif %}
+                  {% if res is empty %}
+                    <li class="text-muted">Aucune ressource enregistree.</li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+
+            {% if contenu.duree %}
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <strong>Duree :</strong>
+                  <p>{{ contenu.duree }} minutes</p>
+                </div>
+                <div class="col-md-6">
+                  <strong>Format :</strong>
+                  <p>{{ contenu.format ?? '-' }}</p>
+                </div>
+              </div>
+            {% endif %}
+
+            {% if contenu.description %}
+              <div class="row mb-3">
+                <div class="col-12">
+                  <strong>Description :</strong>
+                  <p>{{ contenu.description }}</p>
+                </div>
+              </div>
+            {% endif %}
+
+            <div class="row">
+              <div class="col-12">
+                <strong>Statistiques :</strong>
+                <p><i class="bi bi-eye"></i> {{ contenu.nombreVues }} vue(s) - <i class="bi bi-calendar"></i> Ajoute le {{ contenu.dateAjout|date('d/m/Y H:i') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Resume</h5>
+          </div>
+          <div class="card-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-6">ID :</dt>
+              <dd class="col-sm-6"><code>{{ contenu.id }}</code></dd>
+
+              <dt class="col-sm-6">Types :</dt>
+              <dd class="col-sm-6">
+                {% for type in types %}
+                  <span class="badge bg-primary me-1">{{ type|upper }}</span>
+                {% endfor %}
+              </dd>
+
+              <dt class="col-sm-6">Visibilite :</dt>
+              <dd class="col-sm-6">
+                {% if contenu.estPublic %}
+                  <span class="badge bg-success">Public</span>
+                {% else %}
+                  <span class="badge bg-warning">Premium</span>
+                {% endif %}
+              </dd>
+
+              <dt class="col-sm-6">Duree :</dt>
+              <dd class="col-sm-6">{{ contenu.duree ?? '-' }} min</dd>
+
+              <dt class="col-sm-6">Vues :</dt>
+              <dd class="col-sm-6">{{ contenu.nombreVues }}</dd>
+
+              <dt class="col-sm-6">Ajoute :</dt>
+              <dd class="col-sm-6">{{ contenu.dateAjout|date('d/m/Y') }}</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Actions</h5>
+          </div>
+          <div class="card-body d-flex flex-column gap-2">
+            <a href="{{ path('app_admin_cours_show', {'id': contenu.cours.id}) }}" class="btn btn-outline-secondary">Retour au Cours</a>
+            <a href="{{ path('app_admin_module_courses', {'id': contenu.cours.module.id}) }}" class="btn btn-outline-secondary">Retour aux Cours</a>
+            <a href="{{ path('app_admin_modules_list') }}" class="btn btn-outline-secondary">Retour aux Modules</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

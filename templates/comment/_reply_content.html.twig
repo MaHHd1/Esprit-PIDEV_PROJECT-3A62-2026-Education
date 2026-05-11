@@ -1,0 +1,365 @@
+
+
+<style>
+    .cp-page { font-family: 'Roboto', sans-serif; color: #1e1e2d; }
+    .cp-page h3, .cp-page h5, .cp-page .form-label { font-family: 'Heebo', sans-serif; }
+
+    /* ── Layout ── */
+    .cp-layout {
+        display: grid;
+        grid-template-columns: 1fr 260px;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    @media (max-width: 860px) { .cp-layout { grid-template-columns: 1fr; } }
+
+    /* ── Card principale ── */
+    .cp-card {
+        background: #fff;
+        border: 1px solid #e4e6ea;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .cp-card-header {
+        padding: 1.1rem 1.5rem;
+        border-bottom: 1px solid #e4e6ea;
+        display: flex; align-items: center; gap: .65rem;
+        background: #fafafa;
+    }
+    .cp-card-header .h-icon {
+        width: 34px; height: 34px; border-radius: 8px;
+        background: #1e1e2d; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .85rem; flex-shrink: 0;
+    }
+    .cp-card-header h5 {
+        margin: 0; font-size: .95rem; font-weight: 700; color: #1e1e2d;
+    }
+    .cp-card-body { padding: 1.5rem; }
+
+    /* ── Forum context banner ── */
+    .forum-context {
+        display: flex; align-items: center; gap: .75rem;
+        background: #f8f8fa;
+        border: 1px solid #e4e6ea;
+        border-radius: 8px;
+        padding: .75rem 1rem;
+        margin-bottom: 1.25rem;
+        font-size: .83rem;
+    }
+    .forum-context-icon {
+        width: 32px; height: 32px; border-radius: 7px;
+        background: rgba(13,110,253,.1); color: #0d6efd;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .82rem; flex-shrink: 0;
+    }
+    .forum-context-info { flex: 1; min-width: 0; }
+    .forum-context-label {
+        font-size: .7rem; text-transform: uppercase;
+        letter-spacing: .06em; color: #6c757d; font-weight: 700; margin-bottom: .1rem;
+    }
+    .forum-context-name {
+        font-family: 'Heebo', sans-serif; font-weight: 700;
+        color: #1e1e2d; font-size: .88rem;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .forum-context-user {
+        font-size: .75rem; color: #6c757d;
+        display: flex; align-items: center; gap: .35rem;
+        white-space: nowrap; flex-shrink: 0;
+    }
+    .user-dot {
+        width: 24px; height: 24px; border-radius: 50%;
+        background: #1e1e2d; color: #fff;
+        font-size: .65rem; font-weight: 700; font-family: 'Heebo', sans-serif;
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Parent comment preview ── */
+    .parent-preview {
+        border-left: 3px solid #d0d3da;
+        border-radius: 0 8px 8px 0;
+        background: #f8f8fa;
+        padding: .85rem 1rem;
+        margin-bottom: 1.25rem;
+    }
+    .parent-preview-label {
+        font-size: .7rem; text-transform: uppercase;
+        letter-spacing: .06em; color: #6c757d; font-weight: 700;
+        margin-bottom: .5rem;
+        display: flex; align-items: center; gap: .35rem;
+    }
+    .parent-preview-meta {
+        display: flex; align-items: center; gap: .5rem;
+        margin-bottom: .45rem;
+    }
+    .parent-preview-author {
+        font-family: 'Heebo', sans-serif; font-weight: 700;
+        font-size: .83rem; color: #1e1e2d;
+    }
+    .parent-preview-date {
+        font-size: .75rem; color: #adb5bd;
+    }
+    .parent-preview-content {
+        font-size: .83rem; color: #495057; line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .parent-user-dot {
+        width: 22px; height: 22px; border-radius: 50%;
+        background: #6c757d; color: #fff;
+        font-size: .6rem; font-weight: 700; font-family: 'Heebo', sans-serif;
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Field ── */
+    .cp-page .form-label {
+        font-size: .8rem; font-weight: 700;
+        color: #3d3d4e; margin-bottom: .35rem;
+        text-transform: uppercase; letter-spacing: .04em;
+    }
+    .cp-page .form-control {
+        border: 1px solid #e4e6ea;
+        border-radius: 7px; font-size: .9rem;
+        padding: .75rem .9rem;
+        background: #fff; color: #1e1e2d;
+        transition: border-color .2s, box-shadow .2s;
+        width: 100%; min-height: 200px; resize: vertical; line-height: 1.75;
+    }
+    .cp-page .form-control:focus {
+        border-color: #1e1e2d;
+        box-shadow: 0 0 0 3px rgba(30,30,45,.08);
+        outline: none;
+    }
+    .field-hint {
+        font-size: .75rem; color: #adb5bd; margin-top: .35rem;
+        display: flex; align-items: center; gap: .3rem;
+    }
+
+    /* ── Actions ── */
+    .cp-actions {
+        display: flex; justify-content: space-between; align-items: center;
+        padding-top: 1.25rem; margin-top: 1.25rem;
+        border-top: 1px solid #e4e6ea;
+    }
+    .btn-publish {
+        background: #1e1e2d; color: #fff;
+        border: none; border-radius: 7px; padding: .6rem 1.6rem;
+        font-family: 'Heebo', sans-serif; font-weight: 700; font-size: .875rem;
+        cursor: pointer; display: inline-flex; align-items: center; gap: .45rem;
+        transition: background .2s, transform .15s;
+        box-shadow: 0 3px 10px rgba(30,30,45,.2);
+    }
+    .btn-publish:hover { background: #2d2d3f; transform: translateY(-1px); }
+
+    .btn-cancel {
+        display: inline-flex; align-items: center; gap: .4rem;
+        padding: .55rem 1.1rem;
+        border: 1px solid #e4e6ea; border-radius: 7px;
+        background: #fff; color: #6c757d; font-size: .85rem;
+        text-decoration: none;
+        transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-cancel:hover { background: #f8f8fa; color: #1e1e2d; border-color: #1e1e2d; }
+
+    /* ── Sidebar ── */
+    .cp-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    .cp-sidebar-card {
+        background: #fff; border: 1px solid #e4e6ea; border-radius: 10px; overflow: hidden;
+    }
+    .cp-sidebar-card .s-header {
+        padding: .85rem 1.2rem; border-bottom: 1px solid #e4e6ea;
+        display: flex; align-items: center; gap: .5rem; background: #fafafa;
+    }
+    .cp-sidebar-card .s-header span {
+        font-family: 'Heebo', sans-serif; font-size: .82rem; font-weight: 700; color: #1e1e2d;
+    }
+    .cp-sidebar-card .s-body { padding: 1rem 1.2rem; }
+
+    .tip-item {
+        display: flex; align-items: flex-start; gap: .55rem;
+        margin-bottom: .7rem; font-size: .8rem; color: #6c757d; line-height: 1.5;
+    }
+    .tip-item:last-child { margin-bottom: 0; }
+    .tip-icon {
+        width: 24px; height: 24px; border-radius: 6px;
+        background: #f0f0f5; color: #1e1e2d;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .72rem; flex-shrink: 0; margin-top: .05rem;
+    }
+    .tip-item strong { display: block; color: #1e1e2d; margin-bottom: .08rem; font-size: .8rem; }
+
+    /* ── Sidebar author card ── */
+    .author-info {
+        display: flex; align-items: center; gap: .65rem;
+    }
+    .author-dot-lg {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: #6c757d; color: #fff;
+        font-size: .8rem; font-weight: 700; font-family: 'Heebo', sans-serif;
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .author-info-name {
+        font-family: 'Heebo', sans-serif; font-weight: 700;
+        font-size: .88rem; color: #1e1e2d;
+    }
+    .author-info-date {
+        font-size: .75rem; color: #adb5bd; margin-top: .1rem;
+    }
+</style>
+
+<div class="cp-page">
+
+{# ── Breadcrumb ── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="mb-0 text-muted small">
+        <a href="{{ path('forum_list', {u: activeUser.id}) }}"
+           class="text-muted text-decoration-none">
+            <i class="bi bi-chat-dots me-1"></i>Forums
+        </a>
+        <i class="bi bi-chevron-right mx-1" style="font-size:.65rem;"></i>
+        <a href="{{ path('forum_show', {id: parent.forum.id, u: activeUser.id}) }}"
+           class="text-muted text-decoration-none">
+            {{ parent.forum.titre|slice(0,30) }}{% if parent.forum.titre|length > 30 %}…{% endif %}
+        </a>
+        <i class="bi bi-chevron-right mx-1" style="font-size:.65rem;"></i>
+        <span class="text-dark fw-semibold">Répondre</span>
+    </p>
+    <a class="btn-cancel" href="{{ path('forum_show', {id: parent.forum.id, u: activeUser.id}) }}">
+        <i class="bi bi-arrow-left"></i>Retour
+    </a>
+</div>
+
+<div class="cp-layout">
+
+    {# ── Formulaire ── #}
+    <div class="cp-card">
+        <div class="cp-card-header">
+            <span class="h-icon"><i class="bi bi-reply-fill"></i></span>
+            <h5>Répondre à un commentaire</h5>
+        </div>
+        <div class="cp-card-body">
+
+            {# Contexte forum + utilisateur connecté #}
+            <div class="forum-context">
+                <span class="forum-context-icon"><i class="bi bi-chat-dots-fill"></i></span>
+                <div class="forum-context-info">
+                    <div class="forum-context-label">Forum</div>
+                    <div class="forum-context-name">{{ parent.forum.titre }}</div>
+                </div>
+                <div class="forum-context-user">
+                    <span class="user-dot">{{ activeUser.username|slice(0,1)|upper }}</span>
+                    {{ activeUser.username }}
+                </div>
+            </div>
+
+            {# Commentaire parent #}
+            <div class="parent-preview">
+                <div class="parent-preview-label">
+                    <i class="bi bi-chat-left-quote-fill" style="font-size:.7rem;"></i>
+                    Commentaire auquel vous répondez
+                </div>
+                <div class="parent-preview-meta">
+                    <span class="parent-user-dot">{{ parent.utilisateur.username|slice(0,1)|upper }}</span>
+                    <span class="parent-preview-author">{{ parent.utilisateur.username }}</span>
+                    <span class="parent-preview-date">• {{ parent.datePublication|date('d/m/Y à H:i') }}</span>
+                </div>
+                <div class="parent-preview-content">{{ parent.contenu }}</div>
+            </div>
+
+            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.contenu.vars.id }}">
+                        Votre réponse
+                    </label>
+                    {{ form_widget(form.contenu, {
+                        attr: {
+                            class: 'form-control',
+                            placeholder: 'Rédigez votre réponse…'
+                        }
+                    }) }}
+                    {{ form_errors(form.contenu) }}
+                    <p class="field-hint">
+                        <i class="bi bi-info-circle"></i>
+                        Soyez précis et respectueux dans votre réponse.
+                    </p>
+                </div>
+
+                <div class="cp-actions">
+                    <a href="{{ path('forum_show', {id: parent.forum.id, u: activeUser.id}) }}"
+                       class="btn-cancel">
+                        <i class="bi bi-x"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn-publish">
+                        <i class="bi bi-reply-fill"></i>Répondre
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    {# ── Sidebar ── #}
+    <div class="cp-sidebar">
+
+        {# Auteur du commentaire parent #}
+        <div class="cp-sidebar-card">
+            <div class="s-header">
+                <i class="bi bi-person-fill" style="color:#0d6efd;font-size:.85rem;"></i>
+                <span>Vous répondez à</span>
+            </div>
+            <div class="s-body">
+                <div class="author-info">
+                    <span class="author-dot-lg">{{ parent.utilisateur.username|slice(0,1)|upper }}</span>
+                    <div>
+                        <div class="author-info-name">{{ parent.utilisateur.username }}</div>
+                        <div class="author-info-date">
+                            <i class="bi bi-clock me-1"></i>{{ parent.datePublication|date('d/m/Y à H:i') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Bonnes pratiques #}
+        <div class="cp-sidebar-card">
+            <div class="s-header">
+                <i class="bi bi-lightbulb-fill" style="color:#ffc107;font-size:.85rem;"></i>
+                <span>Bonnes pratiques</span>
+            </div>
+            <div class="s-body">
+                <div class="tip-item">
+                    <span class="tip-icon"><i class="bi bi-reply"></i></span>
+                    <div>
+                        <strong>Restez dans le sujet</strong>
+                        Adressez directement le message auquel vous répondez.
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <span class="tip-icon"><i class="bi bi-people"></i></span>
+                    <div>
+                        <strong>Respectez la communauté</strong>
+                        Restez courtois et constructif.
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <span class="tip-icon"><i class="bi bi-check2"></i></span>
+                    <div>
+                        <strong>Soyez clair</strong>
+                        Une réponse bien structurée aide tout le monde.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</div>{# /cp-page #}

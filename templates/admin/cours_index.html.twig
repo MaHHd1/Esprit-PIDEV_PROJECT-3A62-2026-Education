@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration — Cours{% endblock %}
+
+{% block body %}
+  <h1>Administration — Cours</h1>
+
+  <p><a class="btn btn-primary" href="{{ path('app_admin_cours_new') }}">Créer un cours</a></p>
+
+  <table class="table">
+    <thead>
+      <tr><th>ID</th><th>Code</th><th>Titre</th><th>Statut</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for c in cours %}
+        <tr>
+          <td>{{ c.id }}</td>
+          <td>{{ c.codeCours }}</td>
+          <td>{{ c.titre }}</td>
+          <td>{{ c.statut }}</td>
+          <td>
+            <a href="{{ path('app_admin_cours_edit', {'id': c.id}) }}">Modifier</a>
+            <form method="post" action="{{ path('app_admin_cours_delete', {'id': c.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce cours ?');">
+              <input type="hidden" name="_token" value="dummy" />
+              <button class="btn btn-link">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">Aucun cours.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

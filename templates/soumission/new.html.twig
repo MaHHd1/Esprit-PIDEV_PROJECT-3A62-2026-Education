@@ -1,0 +1,95 @@
+{% extends '/etudiant/student_base.html.twig' %}
+
+{% block title %}Nouvelle soumission{% endblock %}
+
+{% block student_content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1>Nouvelle soumission</h1>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+        <div class="card mt-4">
+            <div class="card-body">
+
+                {# Choix de l’évaluation #}
+                {{ form_row(form.evaluation) }}
+
+                {# Infos de l’évaluation sélectionnée #}
+                <div id="evaluation-details" class="alert alert-info" style="display:none;">
+                    <p>
+                        <strong>Description :</strong><br>
+                        <span id="eval-description"></span>
+                    </p>
+                    <p>
+                        <strong>Date limite :</strong>
+                        <span id="eval-date-limite"></span>
+                    </p>
+                    <div id="eval-pdf-container" style="display:none;">
+                        <p>
+                            <strong>Fichier d'évaluation :</strong><br>
+                            <a id="eval-pdf-link" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="fas fa-file-pdf"></i> Télécharger le PDF
+                            </a>
+                        </p>
+                    </div>
+                </div>
+
+                {{ form_row(form.pdfFile) }}
+                {{ form_row(form.commentaireEtudiant) }}
+
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-success">Soumettre</button>
+            <a href="{{ path('app_soumission_index') }}" class="btn btn-secondary">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+{# JS pour afficher description + date limite + PDF #}
+<script>
+    const selectEval = document.getElementById('{{ form.evaluation.vars.id }}');
+    const detailsDiv = document.getElementById('evaluation-details');
+    const descSpan = document.getElementById('eval-description');
+    const dateSpan = document.getElementById('eval-date-limite');
+    const pdfContainer = document.getElementById('eval-pdf-container');
+    const pdfLink = document.getElementById('eval-pdf-link');
+
+    const evaluationsData = {
+        {% for choice in form.evaluation.vars.choices %}
+            '{{ choice.value }}': {
+                description: '{{ choice.data.description|default("Aucune description")|e("js") }}',
+                dateLimite: '{{ choice.data.dateLimite ? choice.data.dateLimite|date("d/m/Y H:i") : "Non définie" }}',
+                pdfUrl: '{{ choice.data.pdfFilename ? vich_uploader_asset(choice.data, 'pdfFile') : '' }}'
+            },
+        {% endfor %}
+    };
+
+    selectEval.addEventListener('change', function () {
+        const value = this.value;
+
+        if (evaluationsData[value]) {
+            detailsDiv.style.display = 'block';
+            descSpan.textContent = evaluationsData[value].description;
+            dateSpan.textContent = evaluationsData[value].dateLimite;
+            
+            // Afficher le PDF s'il existe
+            if (evaluationsData[value].pdfUrl) {
+                pdfContainer.style.display = 'block';
+                pdfLink.href = evaluationsData[value].pdfUrl;
+            } else {
+                pdfContainer.style.display = 'none';
+            }
+        } else {
+            detailsDiv.style.display = 'none';
+        }
+    });
+
+    // Affichage automatique si une évaluation est déjà sélectionnée
+    selectEval.dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

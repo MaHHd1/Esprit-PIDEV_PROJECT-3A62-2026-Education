@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Catalogue des cours{% endblock %}
+
+{% block body %}
+  <h1>Catalogue des cours</h1>
+
+  <div class="cours-list">
+    {% for c in cours %}
+      <div class="cours-item">
+        <h3><a href="{{ path('app_cours_show', {'id': c.id}) }}">{{ c.titre }} ({{ c.codeCours }})</a></h3>
+        <p>{{ c.description|raw|slice(0,200) }}{% if c.description and c.description|length > 200 %}...{% endif %}</p>
+        <p><strong>Enseignant :</strong> {{ c.enseignant ? c.enseignant.nomComplet : '—' }}</p>
+      </div>
+    {% else %}
+      <p>Aucun cours disponible.</p>
+    {% endfor %}
+  </div>
+
+{% endblock %}

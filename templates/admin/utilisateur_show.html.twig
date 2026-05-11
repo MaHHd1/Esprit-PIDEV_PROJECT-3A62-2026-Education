@@ -1,0 +1,265 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block title %}Détails Utilisateur - Eduport{% endblock %}
+
+{% block admin_content %}
+    <!-- Title -->
+    <div class="row">
+        <div class="col-12 mb-3">
+            <div class="d-sm-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2 mb-sm-0">Détails de l'utilisateur</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_administrateur_dashboard') }}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_administrateur_utilisateurs') }}">Liste des utilisateurs</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ user.prenom }} {{ user.nom }}</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-grid d-sm-block">
+                    <a href="{{ path('app_administrateur_utilisateurs') }}" class="btn btn-sm btn-primary-soft mb-0">
+                        <i class="bi bi-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left column -->
+        <div class="col-lg-4 col-xxl-3">
+            <!-- Profile card -->
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <div class="text-center">
+                        <!-- Avatar -->
+                        <div class="avatar avatar-xxl mb-3">
+                            <div class="avatar-img rounded-circle bg-{{ type == 'etudiant' ? 'success' : (type == 'enseignant' ? 'warning' : 'purple') }} bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 120px; height: 120px; font-size: 3rem;">
+                                <span class="text-{{ type == 'etudiant' ? 'success' : (type == 'enseignant' ? 'warning' : 'purple') }} fw-bold">
+                                    {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Info -->
+                        <h4>{{ user.prenom }} {{ user.nom }}</h4>
+                        <span class="badge bg-{{ type == 'etudiant' ? 'success' : (type == 'enseignant' ? 'warning' : 'purple') }} mb-3">
+                            {% if type == 'etudiant' %}Étudiant
+                            {% elseif type == 'enseignant' %}Enseignant
+                            {% else %}Administrateur
+                            {% endif %}
+                        </span>
+                        <p class="mb-0">{{ user.email }}</p>
+                        <!-- Only show telephone for etudiant and administrateur -->
+                        {% if type == 'etudiant' and user.telephone %}
+                            <p class="mb-0"><i class="bi bi-telephone me-1"></i>{{ user.telephone }}</p>
+                        {% elseif type == 'administrateur' and user.telephone %}
+                            <p class="mb-0"><i class="bi bi-telephone me-1"></i>{{ user.telephone }}</p>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- User info -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Date création:</span>
+                        <span class="fw-bold">{{ user.dateCreation|date('d/m/Y H:i') }}</span>
+                    </div>
+                    {% if user.lastLogin %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Dernière connexion:</span>
+                            <span class="fw-bold">{{ user.lastLogin|date('d/m/Y H:i') }}</span>
+                        </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between mb-0">
+                        <span>Statut:</span>
+                        <span class="badge bg-{{ (type == 'administrateur' and user.actif) or (type != 'administrateur' and user.statut == 'actif') ? 'success' : 'secondary' }}">
+                            {% if type == 'administrateur' %}
+                                {{ user.actif ? 'Actif' : 'Inactif' }}
+                            {% else %}
+                                {{ user.statut|capitalize }}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer border-top p-3">
+                    <div class="d-grid gap-2">
+                        <!-- Modifier button -->
+                        {% if type == 'etudiant' %}
+                            <a href="{{ path('app_etudiant_edit', {'id': user.id}) }}" class="btn btn-success">
+                                <i class="bi bi-pencil me-1"></i>Modifier l'étudiant
+                            </a>
+                        {% elseif type == 'enseignant' %}
+                            <a href="{{ path('app_enseignant_edit', {'id': user.id}) }}" class="btn btn-warning">
+                                <i class="bi bi-pencil me-1"></i>Modifier l'enseignant
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_administrateur_edit', {'id': user.id}) }}" class="btn btn-primary">
+                                <i class="bi bi-pencil me-1"></i>Modifier l'administrateur
+                            </a>
+                        {% endif %}
+
+                        <!-- Supprimer button -->
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}">
+                            <i class="bi bi-trash me-1"></i>Supprimer l'utilisateur
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="col-lg-8 col-xxl-9">
+            <!-- Details card -->
+            <div class="card shadow">
+                <div class="card-header border-bottom p-4">
+                    <h5 class="card-header-title mb-0">Informations détaillées</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if type == 'etudiant' %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Matricule</label>
+                                <p>{{ user.matricule }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Niveau d'étude</label>
+                                <p>{{ user.niveauEtude }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Spécialisation</label>
+                                <p>{{ user.specialisation }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Date de naissance</label>
+                                <p>
+                                    {% if user.dateNaissance %}
+                                        {{ user.dateNaissance|date('d/m/Y') }}
+                                        {% if user.age is defined %}
+                                            ({{ user.age }} ans)
+                                        {% endif %}
+                                    {% else %}
+                                        Non spécifiée
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Date d'inscription</label>
+                                <p>
+                                    {% if user.dateInscription %}
+                                        {{ user.dateInscription|date('d/m/Y') }}
+                                    {% else %}
+                                        Non spécifiée
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Téléphone</label>
+                                <p>{{ user.telephone|default('Non spécifié') }}</p>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Adresse</label>
+                                <p>{{ user.adresse|default('Non spécifiée') }}</p>
+                            </div>
+                        </div>
+
+                    {% elseif type == 'enseignant' %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Matricule enseignant</label>
+                                <p>{{ user.matriculeEnseignant }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Diplôme</label>
+                                <p>{{ user.diplome }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Spécialité</label>
+                                <p>{{ user.specialite }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Années d'expérience</label>
+                                <p>{{ user.anneesExperience }} ans</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Type de contrat</label>
+                                <p>{{ user.typeContrat }}</p>
+                            </div>
+                            {% if user.tauxHoraire %}
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Taux horaire</label>
+                                    <p>{{ user.tauxHoraire }} €/h</p>
+                                </div>
+                            {% endif %}
+                            {% if user.disponibilites %}
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Disponibilités</label>
+                                    <p>{{ user.disponibilites }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    {% else %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Département</label>
+                                <p>{{ user.departement }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Fonction</label>
+                                <p>{{ user.fonction }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Date de nomination</label>
+                                <p>
+                                    {% if user.dateNomination %}
+                                        {{ user.dateNomination|date('d/m/Y') }}
+                                    {% else %}
+                                        Non spécifiée
+                                    {% endif %}
+                                </p>
+                            </div>
+                            {% if user.telephone %}
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Téléphone</label>
+                                    <p>{{ user.telephone }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ user.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel{{ user.id }}">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{ user.prenom }} {{ user.nom }}</strong> ({{ user.email }}) ?</p>
+                    <p class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Cette action est irréversible.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form method="post" action="
+                        {% if type == 'etudiant' %}
+                            {{ path('app_etudiant_delete', {'id': user.id}) }}
+                        {% elseif type == 'enseignant' %}
+                            {{ path('app_enseignant_delete', {'id': user.id}) }}
+                        {% else %}
+                            {{ path('app_administrateur_delete', {'id': user.id}) }}
+                        {% endif %}
+                    ">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

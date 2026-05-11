@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration — Modules{% endblock %}
+
+{% block body %}
+  <h1>Modules</h1>
+
+  <p><a class="btn btn-primary" href="{{ path('app_admin_module_new') }}">Créer un module</a></p>
+
+  <table class="table">
+    <thead>
+      <tr><th>ID</th><th>Cours</th><th>Titre</th><th>Ordre</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for m in modules %}
+        <tr>
+          <td>{{ m.id }}</td>
+          <td>
+            {% if m.cours|length > 0 %}
+              <ul class="mb-0 ps-3">
+                {% for cours in m.cours %}
+                  <li>{{ cours.titre }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <em class="text-muted">Aucun cours</em>
+            {% endif %}
+          </td>
+          <td>{{ m.titreModule }}</td>
+          <td>{{ m.ordreAffichage }}</td>
+          <td>
+            <a href="{{ path('app_module_show', {'id': m.id}) }}">Voir</a>
+            <a href="{{ path('app_admin_module_edit', {'id': m.id}) }}">Modifier</a>
+            <form method="post" action="{{ path('app_admin_module_delete', {'id': m.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce module ?');">
+              <input type="hidden" name="_token" value="dummy" />
+              <button class="btn btn-link">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5">Aucun module.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

@@ -1,0 +1,327 @@
+{% extends 'etudiant/student_base.html.twig' %}
+
+{% block title %}{{ course.titre }} - Cours{% endblock %}
+
+{% block student_content %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <h3 class="mb-2">{{ course.titre }}</h3>
+                    <p class="text-muted mb-2">
+                        Code: {{ course.codeCours }} |
+                        Module: {{ course.module ? course.module.titreModule : '-' }}
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge bg-primary">Credits: {{ course.credits ?? '-' }}</span>
+                        <span class="badge bg-secondary">Niveau: {{ course.niveau ?? '-' }}</span>
+                        <span class="badge bg-info text-dark">Langue: {{ course.langue ?? '-' }}</span>
+                        <span class="badge bg-light text-dark border">
+                            Periode:
+                            {% if course.dateDebut %}
+                                {{ course.dateDebut|date('d/m/Y') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                            -
+                            {% if course.dateFin %}
+                                {{ course.dateFin|date('d/m/Y') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if course.description %}
+                        <p class="mb-0">{{ course.description }}</p>
+                    {% endif %}
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Progression</span>
+                            <span id="js-progress-text">{{ completed_count|default(0) }}/{{ total_count|default(0) }} ({{ progress_percent|default(0) }}%)</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div id="js-progress-bar" class="progress-bar bg-success" style="width: {{ progress_percent|default(0) }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('app_etudiant_course_calendar', {'id': course.id}) }}" class="btn btn-outline-primary">Exporter .ics</a>
+                    <a href="{{ path('app_etudiant_courses') }}" class="btn btn-outline-secondary">Retour a mes cours</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Contenus du cours ({{ contents|length }})</h5>
+        </div>
+        <div class="card-body">
+            {% if contents|length > 0 %}
+                <div class="accordion" id="studentCourseAccordion">
+                    {% for contenu in contents %}
+                        {% set headingId = 'heading_' ~ contenu.id %}
+                        {% set collapseId = 'collapse_' ~ contenu.id %}
+                        {% set resources = contenu.ressourcesForDisplay %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="{{ headingId }}">
+                                <button
+                                    class="accordion-button {% if not loop.first %}collapsed{% endif %}"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#{{ collapseId }}"
+                                    aria-expanded="{{ loop.first ? 'true' : 'false' }}"
+                                    aria-controls="{{ collapseId }}"
+                                >
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-semibold">{{ contenu.ordreAffichage }}. {{ contenu.titre }}</span>
+                                        <span class="small text-muted">
+                                            {% for type in contenu.typeContenuList %}
+                                                {{ type|upper }}{% if not loop.last %} | {% endif %}
+                                            {% endfor %}
+                                            {% if contenu.duree %}
+                                                | Duree: {{ contenu.duree }} min
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div
+                                id="{{ collapseId }}"
+                                class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+                                aria-labelledby="{{ headingId }}"
+                                data-bs-parent="#studentCourseAccordion"
+                                data-complete-url="{{ path('app_etudiant_content_complete', {'courseId': course.id, 'contenuId': contenu.id}) }}"
+                                data-complete-token="{{ csrf_token('complete_content_' ~ contenu.id) }}"
+                                data-completed="{{ contenu.id in (completed_ids|default([])) ? '1' : '0' }}"
+                            >
+                                <div class="accordion-body">
+                                    {% if contenu.description %}
+                                        <p>{{ contenu.description }}</p>
+                                    {% endif %}
+
+                                    {% if resources.texte is defined and resources.texte %}
+                                        <div class="alert alert-light border">
+                                            <strong>Texte:</strong>
+                                            <div class="mt-2">{{ resources.texte|nl2br }}</div>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if resources.video_link is defined and resources.video_link %}
+                                        <p class="mb-2">
+                                            <a href="{{ resources.video_link }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Ouvrir la video</a>
+                                        </p>
+                                        <div
+                                            class="youtube-preview border rounded p-2 mb-2"
+                                            data-url="{{ resources.video_link }}"
+                                            data-endpoint="{{ path('api_youtube_oembed') }}"
+                                        >
+                                            <small class="text-muted">Chargement preview video...</small>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if resources.lien is defined and resources.lien %}
+                                        <p class="mb-2">
+                                            <a href="{{ resources.lien }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Ouvrir le lien</a>
+                                        </p>
+                                    {% endif %}
+
+                                    {% if resources.pdf is defined and resources.pdf %}
+                                        {% set pdfHref = resources.pdf starts with 'http' ? resources.pdf : asset(resources.pdf) %}
+                                        <p class="mb-2">
+                                            <a href="{{ pdfHref }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-danger">Ouvrir le PDF</a>
+                                        </p>
+                                    {% endif %}
+
+                                    {% if resources.ppt is defined and resources.ppt %}
+                                        {% set pptHref = resources.ppt starts with 'http' ? resources.ppt : asset(resources.ppt) %}
+                                        <p class="mb-2">
+                                            <a href="{{ pptHref }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-warning">Ouvrir le PPT</a>
+                                        </p>
+                                    {% endif %}
+
+                                    {% if resources.video_file is defined and resources.video_file %}
+                                        {% set videoFileHref = resources.video_file starts with 'http' ? resources.video_file : asset(resources.video_file) %}
+                                        <p class="mb-2">
+                                            <a href="{{ videoFileHref }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success">Ouvrir la video</a>
+                                        </p>
+                                    {% endif %}
+
+                                    {% if resources.quiz_id is defined and resources.quiz_id %}
+                                        <div class="d-flex flex-wrap gap-2 mb-2">
+                                            <a href="{{ path('quiz_show', {'id': resources.quiz_id}) }}" class="btn btn-sm btn-outline-dark">Voir le quiz</a>
+                                            <a href="{{ path('quiz_show_complet', {'id': resources.quiz_id}) }}" class="btn btn-sm btn-dark">Passer le quiz</a>
+                                        </div>
+                                    {% elseif 'quiz' in contenu.typeContenuList %}
+                                        <p class="mb-2 text-muted">Quiz non associe a ce contenu.</p>
+                                    {% endif %}
+
+                                    <span class="badge bg-success js-completed-badge {{ contenu.id in (completed_ids|default([])) ? '' : 'd-none' }}">Termine</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted text-center mb-0 py-4">Aucun contenu public pour ce cours.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.querySelectorAll('.youtube-preview').forEach(function(el) {
+            var url = el.getAttribute('data-url');
+            var endpoint = el.getAttribute('data-endpoint');
+            if (!url || !endpoint) {
+                return;
+            }
+            fetch(endpoint + '?url=' + encodeURIComponent(url))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok || !data.preview) {
+                        el.innerHTML = '<small class="text-muted">Preview indisponible</small>';
+                        return;
+                    }
+                    var title = data.preview.title || 'Video';
+                    var thumb = data.preview.thumbnail_url || '';
+                    el.innerHTML = (thumb ? '<img src="' + thumb + '" class="img-fluid rounded mb-2" alt="preview">' : '') +
+                        '<div><strong>' + title + '</strong></div>';
+                })
+                .catch(function() {
+                    el.innerHTML = '<small class="text-muted">Preview indisponible</small>';
+                });
+        });
+
+        var totalCount = {{ total_count|default(0) }};
+        var completedCount = {{ completed_count|default(0) }};
+        var progressText = document.getElementById('js-progress-text');
+        var progressBar = document.getElementById('js-progress-bar');
+
+        function refreshProgressUi() {
+            if (!progressText || !progressBar || totalCount <= 0) {
+                return;
+            }
+            if (completedCount < 0) {
+                completedCount = 0;
+            }
+            if (completedCount > totalCount) {
+                completedCount = totalCount;
+            }
+            var percent = Math.round((completedCount / totalCount) * 100);
+            progressText.textContent = completedCount + '/' + totalCount + ' (' + percent + '%)';
+            progressBar.style.width = percent + '%';
+        }
+
+        function markPanelAsCompleted(panel) {
+            if (!panel || panel.getAttribute('data-completed') === '1' || panel.getAttribute('data-completing') === '1') {
+                return;
+            }
+            var url = panel.getAttribute('data-complete-url');
+            var token = panel.getAttribute('data-complete-token');
+            if (!url || !token) {
+                return;
+            }
+            panel.setAttribute('data-completing', '1');
+            fetch(url, {
+                method: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'},
+                body: '_token=' + encodeURIComponent(token)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.ok) {
+                    panel.removeAttribute('data-completing');
+                    return;
+                }
+                panel.setAttribute('data-completed', '1');
+                panel.removeAttribute('data-completing');
+                if (data.newly_completed) {
+                    completedCount += 1;
+                }
+                refreshProgressUi();
+                var badge = panel.querySelector('.js-completed-badge');
+                if (badge) {
+                    badge.classList.remove('d-none');
+                }
+            })
+            .catch(function() {
+                panel.removeAttribute('data-completing');
+            });
+        }
+
+        document.querySelectorAll('.accordion-collapse').forEach(function(panel) {
+            panel.addEventListener('shown.bs.collapse', function() {
+                markPanelAsCompleted(panel);
+            });
+
+            if (panel.classList.contains('show')) {
+                markPanelAsCompleted(panel);
+            }
+        });
+
+        var canTrack = {{ contents|length > 0 ? 'true' : 'false' }};
+        var trackUrl = "{{ path('app_etudiant_course_track_time', {'id': course.id}) }}";
+        var trackToken = "{{ track_time_token|default('') }}";
+        var lastTrackTick = Date.now();
+
+        function sendTrackedTime(seconds) {
+            if (!canTrack || !trackUrl || !trackToken || seconds <= 0) {
+                return;
+            }
+
+            var boundedSeconds = Math.min(120, Math.max(1, Math.floor(seconds)));
+            var body = '_token=' + encodeURIComponent(trackToken) + '&seconds=' + encodeURIComponent(String(boundedSeconds));
+
+            fetch(trackUrl, {
+                method: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'},
+                body: body,
+                keepalive: true
+            }).catch(function() {});
+        }
+
+        setInterval(function() {
+            if (!canTrack || document.visibilityState !== 'visible') {
+                return;
+            }
+
+            var now = Date.now();
+            var elapsedSeconds = (now - lastTrackTick) / 1000;
+            lastTrackTick = now;
+
+            if (elapsedSeconds >= 5) {
+                sendTrackedTime(elapsedSeconds);
+            }
+        }, 30000);
+
+        document.addEventListener('visibilitychange', function() {
+            var now = Date.now();
+            var elapsedSeconds = (now - lastTrackTick) / 1000;
+            lastTrackTick = now;
+
+            if (document.visibilityState === 'hidden' && elapsedSeconds >= 5) {
+                sendTrackedTime(elapsedSeconds);
+            }
+        });
+
+        window.addEventListener('beforeunload', function() {
+            var now = Date.now();
+            var elapsedSeconds = (now - lastTrackTick) / 1000;
+            if (!canTrack || !trackUrl || !trackToken || elapsedSeconds < 5) {
+                return;
+            }
+
+            var boundedSeconds = Math.min(120, Math.max(1, Math.floor(elapsedSeconds)));
+            var body = '_token=' + encodeURIComponent(trackToken) + '&seconds=' + encodeURIComponent(String(boundedSeconds));
+            if (navigator.sendBeacon) {
+                var blob = new Blob([body], {type: 'application/x-www-form-urlencoded;charset=UTF-8'});
+                navigator.sendBeacon(trackUrl, blob);
+                return;
+            }
+            sendTrackedTime(elapsedSeconds);
+        });
+    </script>
+{% endblock %}

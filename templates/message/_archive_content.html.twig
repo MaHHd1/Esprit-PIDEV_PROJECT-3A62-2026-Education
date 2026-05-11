@@ -1,0 +1,68 @@
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">🗄 Archives</h3>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-dark" href="{{ path('message_inbox', {u: activeUser.id}) }}">Inbox</a>
+    <a class="btn btn-outline-dark" href="{{ path('message_sent', {u: activeUser.id}) }}">Envoyés</a>
+    <a class="btn btn-primary" href="{{ path('message_new', {u: activeUser.id}) }}">+ Nouveau</a>
+  </div>
+</div>
+
+{% include 'message/_searchbar.html.twig' with {action: path('message_archive')} %}
+
+<div class="text-muted mb-2">Total: {{ total }} | page {{ page }}/{{ pages }}</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-striped mb-0">
+      <thead>
+        <tr>
+          <th>Objet</th>
+          <th>De</th>
+          <th>À</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in messages %}
+          <tr>
+            <td>
+              <a href="{{ path('message_show', {id: m.id, u: activeUser.id}) }}">{{ m.objet }}</a>
+            </td>
+            <td>{{ m.expediteur.username }}</td>
+            <td>{{ m.destinataire.username }}</td>
+            <td>{{ m.dateEnvoi ? m.dateEnvoi|date('Y-m-d H:i') : '' }}</td>
+
+            <td>
+              <div class="d-flex gap-2">
+                <form method="post" action="{{ path('message_toggle_archive', {id: m.id, u: activeUser.id, from: 'archive'}) }}">
+                  <button class="btn btn-sm btn-outline-secondary">Désarchiver</button>
+                </form>
+
+                <form method="post"
+                      action="{{ path('message_delete', {id: m.id, u: activeUser.id, from: 'archive'}) }}"
+                      onsubmit="return confirm('Supprimer ce message ?');">
+                  <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="text-center text-muted py-4">Aucun message archivé.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<nav class="mt-3">
+  <ul class="pagination">
+    {% for p in 1..pages %}
+      <li class="page-item {% if p == page %}active{% endif %}">
+        <a class="page-link" href="{{ path('message_archive', {u: activeUser.id, page: p, q: q}) }}">{{ p }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
+

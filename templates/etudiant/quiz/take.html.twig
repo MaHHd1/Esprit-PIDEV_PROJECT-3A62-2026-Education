@@ -1,0 +1,153 @@
+{% extends 'etudiant/student_base.html.twig' %}
+
+{% block title %}{{ quiz.titre }} - Passer le Quiz - Novalearn{% endblock %}
+
+{% block student_content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('quiz_index') }}">Mes Quiz</a></li>
+        <li class="breadcrumb-item"><a href="{{ path('quiz_show', {id: quiz.id}) }}">{{ quiz.titre }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Passer le quiz</li>
+    </ol>
+</nav>
+
+<!-- Quiz details START -->
+<div class="card border">
+    <div class="card-header border-bottom">
+        <div class="row g-0">
+            <div class="col-md-2">
+                <img src="{{ asset('assets/images/courses/4by3/01.jpg') }}" class="rounded-2" alt="Quiz image">
+            </div>
+            <div class="col-md-10">
+                <div class="card-body">
+                    <h3 class="card-title">
+                        <a href="{{ path('quiz_show', {id: quiz.id}) }}">{{ quiz.titre }}</a>
+                    </h3>
+                    <p class="mb-0">{{ quiz.description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <div class="card-body">
+        {% if quiz.questions|length == 0 %}
+            <div class="alert alert-warning">
+                Ce quiz ne contient aucune question.
+            </div>
+        {% else %}
+            {% if quiz.dureeMinutes %}
+            <h6 class="text-danger text-end mb-3">
+                <i class="bi bi-clock-history me-2"></i>Temps restant: <span id="timer">{{ quiz.dureeMinutes }}:00</span>
+            </h6>
+            {% endif %}
+
+            <form id="quizForm">
+                {% for question in quiz.questions %}
+                <div class="question-item mb-4 p-3 border rounded" id="question-{{ loop.index }}" {% if not loop.first %}style="display:none;"{% endif %}>
+                    <h4 class="mb-3">Question {{ loop.index }} sur {{ quiz.questions|length }}</h4>
+                    
+                    <h5 class="mb-2">{{ question.titre ?? question.description }}</h5>
+                    <p>{{ question.texte }}</p>
+                    
+                    <hr>
+                    
+                    {% if question.reponses|length > 0 %}
+                    <div class="vstack gap-2">
+                        {% for reponse in question.reponses %}
+                        <div>
+                            <input type="radio" 
+                                   class="btn-check" 
+                                   name="question{{ question.id }}" 
+                                   id="option{{ question.id }}_{{ reponse.id }}" 
+                                   value="{{ reponse.id }}" 
+                                   data-question-id="{{ question.id }}">
+                            <label class="btn btn-outline-primary w-100 text-start" for="option{{ question.id }}_{{ reponse.id }}">
+                                {{ reponse.texteReponse }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">Aucune réponse disponible.</div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between mt-4">
+                        {% if loop.index > 1 %}
+                        <button type="button" class="btn btn-secondary" onclick="showQuestion({{ loop.index - 1 }})">
+                            <i class="bi bi-arrow-left me-2"></i>Précédent
+                        </button>
+                        {% else %}
+                        <a href="{{ path('quiz_show', {id: quiz.id}) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Abandonner
+                        </a>
+                        {% endif %}
+
+                        {% if loop.last %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-2"></i>Terminer
+                        </button>
+                        {% else %}
+                        <button type="button" class="btn btn-primary" onclick="showQuestion({{ loop.index + 1 }})">
+                            Suivant<i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function showQuestion(num) {
+    document.querySelectorAll('.question-item').forEach(el => el.style.display = 'none');
+    document.getElementById('question-' + num).style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+   document.getElementById('quizForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    let answers = {};
+    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+        answers[radio.dataset.questionId] = radio.value;
+    });
+    
+    // Créer un formulaire et soumettre
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ path('quiz_submit', {id: quiz.id}) }}';
+    
+    for (let questionId in answers) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'answers[' + questionId + ']';
+        input.value = answers[questionId];
+        form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+});
+
+    {% if quiz.dureeMinutes %}
+    let duration = {{ quiz.dureeMinutes }} * 60;
+    let timerDisplay = document.getElementById('timer');
+    setInterval(function() {
+        let minutes = Math.floor(duration / 60);
+        let seconds = duration % 60;
+        timerDisplay.textContent = (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        if (--duration < 0) {
+            alert('Temps écoulé !');
+            document.getElementById('quizForm').submit();
+        }
+    }, 1000);
+    {% endif %}
+});
+</script>
+{% endblock %}
